@@ -29,7 +29,7 @@ add_custom_command(TARGET BlokusTests POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_FILE:BlokusLibrary>
         $<TARGET_FILE_DIR:BlokusTests>)
-
+        
 # Discover and register tests automatically
 include(GoogleTest)
 gtest_discover_tests(BlokusTests
