@@ -17,6 +17,9 @@ add_executable(BlokusTests
     # add other test files here
 )
 
+# Explicitly add a dependency to ensure the library is built first.
+add_dependencies(BlokusTests BlokusLibrary)
+
 target_link_libraries(BlokusTests
     PRIVATE
         BlokusLibrary
