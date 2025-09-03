@@ -1,6 +1,8 @@
 build
+install
 out
 .cache
 .idea
 .vs
 .vscode
+.DS_Store
