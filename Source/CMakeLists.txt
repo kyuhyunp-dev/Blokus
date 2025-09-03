@@ -1,4 +1,4 @@
-add_library(BlokusLibrary
+add_library(BlokusLibrary STATIC
     Game/Game.cpp
     Tracker/StatisticsTracker.cpp
 )
