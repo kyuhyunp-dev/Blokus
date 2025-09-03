@@ -17,8 +17,6 @@ add_executable(BlokusTests
     # add other test files here
 )
 
-# Explicitly add a dependency to ensure the library is built first.
-add_dependencies(BlokusTests BlokusLibrary)
 
 target_link_libraries(BlokusTests
     PRIVATE
@@ -26,6 +24,11 @@ target_link_libraries(BlokusTests
         GTest::gtest_main
         spdlog::spdlog
 )
+
+add_custom_command(TARGET BlokusTests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:BlokusLibrary>
+        $<TARGET_FILE_DIR:BlokusTests>)
 
 # Discover and register tests automatically
 include(GoogleTest)

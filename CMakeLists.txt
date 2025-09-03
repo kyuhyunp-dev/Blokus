@@ -49,7 +49,6 @@ add_subdirectory(Test)
 # ---- Main executable ----
 add_executable(Blokus Source/Main.cpp)
 target_link_libraries(Blokus PRIVATE BlokusLibrary)
-add_dependencies(Blokus BlokusLibrary)
 
 
 # Copy Assets after build (so running from build works)
