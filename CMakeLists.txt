@@ -59,11 +59,6 @@ add_custom_command(
             $<TARGET_FILE_DIR:${PROJECT_NAME}>/Assets
 )
 
-add_custom_command(TARGET Blokus POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:BlokusLibrary>
-        $<TARGET_FILE_DIR:Blokus>)
-
 # Install
 set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install")
 

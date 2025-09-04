@@ -26,10 +26,12 @@ target_link_libraries(BlokusTests
 )
 
 add_custom_command(TARGET BlokusTests POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:BlokusLibrary>
-        $<TARGET_FILE_DIR:BlokusTests>)
-        
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    $<TARGET_RUNTIME_DLLS:BlokusTests>
+    $<TARGET_FILE_DIR:BlokusTests>
+  COMMAND_EXPAND_LISTS
+)
+
 # Discover and register tests automatically
 include(GoogleTest)
 gtest_discover_tests(BlokusTests
