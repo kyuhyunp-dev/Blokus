@@ -25,12 +25,14 @@ target_link_libraries(BlokusTests
         spdlog::spdlog
 )
 
-add_custom_command(TARGET BlokusTests POST_BUILD
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    $<TARGET_RUNTIME_DLLS:BlokusTests>
-    $<TARGET_FILE_DIR:BlokusTests>
-  COMMAND_EXPAND_LISTS
-)
+if(BUILD_SHARED_LIBS)
+    add_custom_command(TARGET BlokusTests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_RUNTIME_DLLS:BlokusTests>
+        $<TARGET_FILE_DIR:BlokusTests>
+    COMMAND_EXPAND_LISTS
+    )
+endif()
 
 # Discover and register tests automatically
 include(GoogleTest)
