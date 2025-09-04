@@ -1,5 +1,7 @@
 # Blokus (C++ / SFML / GoogleTest)
-Blokus game, built in C++ using the [SFML](https://github.com/SFML/SFML) library, unit-tested with [GoogleTest](https://github.com/google/googletest). Continuous integration using a basic GitHub action. 
+Blokus game, built in C++ using the [SFML](https://github.com/SFML/SFML) library, unit-tested with [GoogleTest](https://github.com/google/googletest). 
+
+Continuous integration using a basic GitHub action. 
 
 ## Project Design
 
@@ -52,8 +54,11 @@ cmake --build .
 ```
 ### Visual Studio
 `Ctrl+S` to configure
+
 Click `Build` in the menu bar and click `Build All`
+
 Run tests by choosing `BlokusTests` and the play button
+
 Run the app by selecting `Blokus` and the play button
 
 
