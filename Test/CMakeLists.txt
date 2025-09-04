@@ -33,6 +33,22 @@ target_link_libraries(BlokusTests
 #     COMMAND_EXPAND_LISTS
 #     )
 # endif()
+if(WIN32)
+    add_custom_command(TARGET BlokusTests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_RUNTIME_DLLS:BlokusTests>
+            $<TARGET_FILE_DIR:BlokusTests>
+        COMMAND_EXPAND_LISTS
+    )
+else()
+    # Copy BlokusLibrary and other shared libs manually
+    add_custom_command(TARGET BlokusTests POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:BlokusLibrary>
+            $<TARGET_FILE_DIR:BlokusTests>
+    )
+endif()
+
 
 # Discover and register tests automatically
 include(GoogleTest)
