@@ -25,7 +25,7 @@ target_link_libraries(BlokusTests
         spdlog::spdlog
 )
 
-if(MSVC AND BUILD_SHARED_LIBS)
+if(MSVC AND WIN32 AND BUILD_SHARED_LIBS)
     add_custom_command(TARGET BlokusTests POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_RUNTIME_DLLS:BlokusTests>
