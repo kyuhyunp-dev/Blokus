@@ -46,11 +46,11 @@ cmake --build .
 ```
 #### Run Tests
 ```
-./bin/BlokusTests
+./bin/BlokusClientTests
 ```
 #### Run Game
 ```
-./bin/Blokus
+./bin/BlokusClient
 ```
 ### Visual Studio
 `Ctrl+S` to configure
