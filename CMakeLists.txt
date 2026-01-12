@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.28)
 project(Blokus LANGUAGES CXX)
 
 # specify the C++ standard
-add_library(tutorial_compiler_flags INTERFACE)
-target_compile_features(tutorial_compiler_flags INTERFACE cxx_std_17)
+add_library(project_configs INTERFACE)
+target_compile_features(project_configs INTERFACE cxx_std_17)
 
 # ---------------- Dependencies ----------------
 include(FetchContent)
@@ -23,6 +23,7 @@ FetchContent_Declare(
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
     GIT_TAG v1.14.1   # latest as of 2025
     GIT_SHALLOW ON
+    EXCLUDE_FROM_ALL
     SYSTEM)
 FetchContent_MakeAvailable(spdlog)
 
@@ -44,32 +45,13 @@ set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
-# ---- Assets ----
-set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/Assets")
+# ---- assets ----
+set(ASSETS_DIR "${CMAKE_SOURCE_DIR}/assets")
 
-# Add Source Directory (defines BlokusLibrary, BlokusTests)
-add_subdirectory(Source)
-add_subdirectory(Test)
+# Add Source Directory (defines BlokusClient, BlokusTests)
+add_subdirectory(src/client)
+add_subdirectory(tests/client)
 
-# ---- Main executable ----
-add_executable(Blokus Source/Main.cpp)
-target_link_libraries(Blokus PRIVATE BlokusLibrary)
-
-
-# Copy Assets after build (so running from build works)
-add_custom_command(
-    TARGET ${PROJECT_NAME} POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${ASSETS_DIR}
-            $<TARGET_FILE_DIR:${PROJECT_NAME}>/Assets
-)
-
-# Install
-set(CMAKE_INSTALL_PREFIX "${CMAKE_SOURCE_DIR}/install")
-
-# Also install Assets (so running from install works)
-install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION .)
-install(DIRECTORY ${ASSETS_DIR}/ DESTINATION Assets)
 
 # ---- Testing ----
 include(CTest)
