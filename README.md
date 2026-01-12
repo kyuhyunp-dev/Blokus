@@ -57,9 +57,9 @@ cmake --build .
 
 Click `Build` in the menu bar and click `Build All`
 
-Run tests by choosing `BlokusTests` and the play button
+Run tests by choosing `BlokusClientTests` and the play button
 
-Run the app by selecting `Blokus` and the play button
+Run the app by selecting `BlokusClient` and the play button
 
 
 ## Project Management
