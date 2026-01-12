@@ -1,4 +1,4 @@
-#include "Tracker/StatisticsTracker.hpp"
+#include "statistics_tracker.hpp"
 
 #include "gtest/gtest.h"
 #include <regex>
@@ -20,7 +20,7 @@ namespace
         StatisticsTracker statistics;
         for (int frame = 0; frame < 60; ++frame)
         {
-            statistics.update(sf::milliseconds(16));
+            statistics.Update(sf::milliseconds(16));
             EXPECT_TRUE(oss.str().empty());
         }
 
@@ -45,11 +45,11 @@ namespace
         );
 
         // One pattern for 1 second
-        statistics.update(sf::seconds(1));
+        statistics.Update(sf::seconds(1));
         EXPECT_TRUE(std::regex_search(oss.str(), pattern));
         
         // Two patterns for 2 seconds
-        statistics.update(sf::seconds(2));
+        statistics.Update(sf::seconds(2));
         std::string output = oss.str();
 
         auto begin = std::sregex_iterator(output.begin(), output.end(), pattern);
