@@ -1,0 +1,14 @@
+namespace Blokus.Data;
+
+
+table PolyominoMetadata
+{
+    id: int;
+}
+
+table PieceLibrary
+{
+    pieces: [PolyominoMetadata];
+}
+
+root_type PieceLibrary;
