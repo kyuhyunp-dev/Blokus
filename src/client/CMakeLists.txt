@@ -1,7 +1,9 @@
 # Define library to be shared with tests
 add_library(BlokusClientLib STATIC 
 game.cpp 
-statistics_tracker.cpp)
+statistics_tracker.cpp
+pregame.cpp
+)
 
 # Link dependencies
 target_link_libraries(BlokusClientLib PUBLIC
@@ -9,6 +11,8 @@ target_link_libraries(BlokusClientLib PUBLIC
     SFML::Window
     SFML::System
     spdlog::spdlog
+    BlokusSharedLib
+    PolyominoSchemaTarget
     project_configs
 )
 
@@ -19,7 +23,8 @@ target_include_directories(BlokusClientLib PUBLIC
 
 # Define ASSETS_PATH
 target_compile_definitions(BlokusClientLib PRIVATE 
-    ASSETS_PATH=\"${ASSETS_DIR}\")
+    ASSETS_PATH=\"${ASSETS_PATH}\"
+)
 
 # Define client executable
 add_executable(BlokusClient main.cpp)
@@ -27,6 +32,11 @@ add_executable(BlokusClient main.cpp)
 # Link dependencies
 target_link_libraries(BlokusClient PRIVATE
     BlokusClientLib
+)
+
+# Define PIECES_PATH
+target_compile_definitions(BlokusClient PRIVATE 
+    PIECES_PATH=\"${PIECES_PATH}\"
 )
 
 # Assets copy (Portability)

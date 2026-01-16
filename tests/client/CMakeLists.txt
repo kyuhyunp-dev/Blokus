@@ -1,18 +1,6 @@
-# Fetch GoogleTest if not already available
-include(FetchContent)
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG v1.15.2 # latest as of 2025
-    GIT_SHALLOW ON
-    SYSTEM
-)
-FetchContent_MakeAvailable(googletest)
-
 # Build the test executable
 add_executable(BlokusClientTests
     statistics_tracker_unittest.cc
-
     # add other test files here
 )
 
@@ -34,7 +22,6 @@ if(MSVC AND WIN32 AND BUILD_SHARED_LIBS)
 endif()
 
 # Discover and register tests automatically
-include(GoogleTest)
 gtest_discover_tests(BlokusClientTests
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )

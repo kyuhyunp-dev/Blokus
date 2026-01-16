@@ -6,3 +6,5 @@ out
 .vs
 .vscode
 .DS_Store
+assets/shared
+assets/shared/pieces.bin
