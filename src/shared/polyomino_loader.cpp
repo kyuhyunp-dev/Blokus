@@ -5,6 +5,7 @@
 #include <iostream>
 #include <vector>
 #include <flatbuffers/flatbuffers.h>
+#include <filesystem>
 
 
 namespace Blokus
