@@ -1,14 +1,38 @@
 namespace Blokus.Data;
 
 
-table PolyominoMetadata
+// A simple pair to act as a map entry
+table IdEntry 
 {
-    id: int;
+  id: int32 (key);  // The 'key' attribute allows for binary search LookupByKey
+  result: int32;
 }
 
-table PieceLibrary
+table IdEntries 
 {
-    pieces: [PolyominoMetadata];
+  id: int32 (key); // The 'key' attribute allows for binary search LookupByKey
+  results: [int32]; 
+}
+
+table PieceLibrary {
+  // Set: Any ID 
+  canonical_ids: [int32];
+
+  // Map: ID -> Rotated ID
+  rotations: [IdEntry];
+
+  // Map: ID -> Reflected ID
+  reflections: [IdEntry];
+
+  // Map: Transformed ID -> Canonical ID
+  transformations: [IdEntry]; 
+
+  // Map: Any ID -> edges
+  edges: [IdEntries];
+
+  // Map: Any ID -> Encoded corners
+  corners: [IdEntries];
+
 }
 
 root_type PieceLibrary;

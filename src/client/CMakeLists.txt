@@ -7,10 +7,6 @@ pregame.cpp
 
 # Link dependencies
 target_link_libraries(BlokusClientLib PUBLIC
-    SFML::Graphics 
-    SFML::Window
-    SFML::System
-    spdlog::spdlog
     BlokusSharedLib
     PolyominoSchemaTarget
     project_configs

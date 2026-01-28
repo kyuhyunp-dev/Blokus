@@ -11,16 +11,38 @@
 
 PreGame::PreGame(const std::string& polyomino_path)
 {
-    std::vector<char> buffer = Blokus::load_binary_file(polyomino_path);
-    auto piece_library = Blokus::Data::GetPieceLibrary(buffer.data());
+    Blokus::ValidateBinaryFile(polyomino_path);
 
-    // Access the data
-    auto pieces = piece_library->pieces(); 
-    std::cout << "Successfully loaded " << pieces->size() << " pieces!" << std::endl;
+    auto canonical_ids = Blokus::LoadCanonicalIds(polyomino_path);
+    auto rotations = Blokus::LoadRotations(polyomino_path);
+    auto reflections = Blokus::LoadReflections(polyomino_path);
+    auto transformations = Blokus::LoadTransformations(polyomino_path);
 
-    for (unsigned int i = 0; i < pieces->size(); ++i) 
+    std::cout << "=== Canonical IDs ===" << std::endl;
+    std::cout << "Total canonical pieces: " << canonical_ids.size() << std::endl;
+    for (int32_t id : canonical_ids)
     {
-        auto piece = pieces->Get(i);
-        std::cout << "Piece Index: " << i << " | ID: " << piece->id() << std::endl;
+        std::cout << "  Canonical ID: " << id << std::endl;
+    }
+
+    std::cout << "\n=== Rotations ===" << std::endl;
+    std::cout << "Total rotations: " << rotations.size() << std::endl;
+    for (const auto& [original_id, rotated_id] : rotations)
+    {
+        std::cout << "  ID " << original_id << " rotates to " << rotated_id << std::endl;
+    }
+
+    std::cout << "\n=== Reflections ===" << std::endl;
+    std::cout << "Total reflections: " << reflections.size() << std::endl;
+    for (const auto& [original_id, reflected_id] : reflections)
+    {
+        std::cout << "  ID " << original_id << " reflects to " << reflected_id << std::endl;
+    }
+
+    std::cout << "\n=== Transformations ===" << std::endl;
+    std::cout << "Total transformations: " << transformations.size() << std::endl;
+    for (const auto& [transformed_id, canonical_id] : transformations)
+    {
+        std::cout << "  ID " << transformed_id << " transforms to canonical " << canonical_id << std::endl;
     }
 }
