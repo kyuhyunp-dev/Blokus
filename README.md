@@ -36,7 +36,7 @@ sudo apt install \
 
 #### Create build directory
 ```
-mkdir bu
+mkdir build
 ```
 #### Configure
 ```
