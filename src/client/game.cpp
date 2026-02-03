@@ -16,7 +16,6 @@ Game::Game()
     , is_moving_right_(false)
     , is_moving_left_(false)
 {
-
     std::string texture_filename = std::string(ASSETS_PATH) + "/client/textures/tiles.png";
     if (!texture_.loadFromFile(texture_filename))
     {

@@ -33,6 +33,23 @@ namespace Blokus
     };
 
     using Polyomino = std::set<sf::Vector2i, Vector2iCompare>;
+    
+
+    struct PolyominoComparator {
+        bool operator()(const Polyomino& lhs, const Polyomino& rhs) const {
+            // Example: Sort by size first
+            if (lhs.size() != rhs.size()) {
+                return lhs.size() < rhs.size();
+            }
+            
+            // If sizes are equal, use the default lexicographical comparison
+            return std::lexicographical_compare(
+                lhs.begin(), lhs.end(),
+                rhs.begin(), rhs.end(),
+                Vector2iCompare() 
+            );
+        }
+    };
 }
 
 #endif

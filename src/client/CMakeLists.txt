@@ -2,7 +2,6 @@
 add_library(BlokusClientLib STATIC 
 game.cpp 
 statistics_tracker.cpp
-pregame.cpp
 )
 
 # Link dependencies

@@ -14,38 +14,58 @@ namespace Blokus
 void SaveToBinary(const std::string& filepath, 
     const Blokus::PolyominoDefinition& data) 
 {
-    if (filepath.empty()) 
-    {
-        throw std::runtime_error("File path is empty");
-    }
-
-    if (data.canonical_ids.empty())
+    if (data.id_by_polyomino.empty())
     {
         throw std::runtime_error("No pieces to save");
     }
 
     flatbuffers::FlatBufferBuilder builder(1024);
 
-    std::vector<int32_t> canonical_vec(data.canonical_ids.begin(), data.canonical_ids.end());
-    auto canonical_offset = builder.CreateVector(canonical_vec);
-
-    auto map_to_offset_vec = [&](const std::map<int32_t, int32_t>& source_map) {
-        std::vector<flatbuffers::Offset<Blokus::Data::IdEntry>> offsets;
-        offsets.reserve(source_map.size());
-        for (auto const& [id, res] : source_map) {
-            offsets.push_back(Blokus::Data::CreateIdEntry(builder, id, res));
+    // 1. Build polyominoes vector
+    std::vector<flatbuffers::Offset<Blokus::Data::Polyomino>> polyomino_offsets;
+    polyomino_offsets.reserve(kPolyominoCount);
+    
+    for (int id = 0; id < kPolyominoCount; ++id)
+    {
+        const Polyomino& piece = data.polyomino_by_id[id];
+        
+        if (piece.empty())
+        {
+            throw std::runtime_error("Empty piece");
         }
-        // Since std::map is sorted, this creates a searchable binary index
+
+        std::vector<Blokus::Data::Coordinate> coords;
+        coords.reserve(piece.size());
+        for (const auto block : piece)
+        {
+            coords.push_back(Blokus::Data::Coordinate{block.x, block.y});
+        }
+        
+        auto coords_offset = builder.CreateVectorOfStructs(coords);
+        auto piece_offset = Blokus::Data::CreatePolyomino(builder, id, coords_offset);
+        polyomino_offsets.push_back(piece_offset);
+    }
+
+    auto polyominoes_offset = builder.CreateVector(polyomino_offsets);
+
+    // 2. Build rotations, reflections, transformations
+    auto arr_to_offset_vec = [&](const std::array<int32_t, kPolyominoCount>& source_arr) {
+        std::vector<flatbuffers::Offset<Blokus::Data::IdEntry>> offsets;
+        offsets.reserve(source_arr.size());
+        for (int id = 0; id < kPolyominoCount; ++id) {
+            offsets.push_back(Blokus::Data::CreateIdEntry(builder, id, source_arr[id]));
+        }
+
         return builder.CreateVectorOfSortedTables(&offsets);
     };
     
-    auto rotations_offset = map_to_offset_vec(data.clockwise_rotated_ids);
-    auto reflections_offset = map_to_offset_vec(data.horizontally_reflected_ids);
-    auto transformations_offset = map_to_offset_vec(data.transformed_to_canonical);
+    auto rotations_offset = arr_to_offset_vec(data.clockwise_rotated_ids);
+    auto reflections_offset = arr_to_offset_vec(data.horizontally_reflected_ids);
+    auto transformations_offset = arr_to_offset_vec(data.transformed_to_canonical);
 
     // 3. Build the root PieceLibrary table
     Blokus::Data::PieceLibraryBuilder lib_builder(builder);
-    lib_builder.add_canonical_ids(canonical_offset);
+    lib_builder.add_polyominoes(polyominoes_offset);
     lib_builder.add_rotations(rotations_offset);
     lib_builder.add_reflections(reflections_offset);
     lib_builder.add_transformations(transformations_offset);
@@ -99,80 +119,57 @@ std::vector<char> LoadBinaryFile(const std::string& filepath)
     return buffer;
 } // LoadBinaryFile
 
-std::set<int32_t> LoadCanonicalIds(const std::string& filepath)
+PolyominoDefinition LoadPieceLibrary(const std::string& filepath) 
 {
+    // 1. Read the file into memory ONCE
     std::vector<char> buffer = LoadBinaryFile(filepath);
-    
     auto piece_lib = Blokus::Data::GetPieceLibrary(buffer.data());
     
-    std::set<int32_t> canonical_ids;
-    if (piece_lib->canonical_ids() != nullptr)
-    {
-        for (int i = 0; i < piece_lib->canonical_ids()->size(); ++i)
-        {
-            canonical_ids.insert(piece_lib->canonical_ids()->Get(i));
-        }
-    }
-    
-    return canonical_ids;
-} // LoadCanonicalIds
+    PolyominoDefinition data;
 
-std::map<int32_t, int32_t> LoadRotations(const std::string& filepath)
-{
-    std::vector<char> buffer = LoadBinaryFile(filepath);
-    
-    auto piece_lib = Blokus::Data::GetPieceLibrary(buffer.data());
-    
-    std::map<int32_t, int32_t> rotations;
-    if (piece_lib->rotations() != nullptr)
+    // 2. Load Polyomino Shapes
+    if (piece_lib->polyominoes()) 
     {
-        for (int i = 0; i < piece_lib->rotations()->size(); ++i)
+        for (auto poly_table : *piece_lib->polyominoes()) 
         {
-            auto entry = piece_lib->rotations()->Get(i);
-            rotations[entry->id()] = entry->result();
+            int id = poly_table->id();
+            if (id >= 0 && id < kPolyominoCount && poly_table->coordinates()) 
+            {
+                Polyomino poly;
+                for (auto coord : *poly_table->coordinates()) 
+                {
+                    poly.insert(sf::Vector2i{coord->x(), coord->y()});
+                }
+                data.polyomino_by_id[id] = poly;
+                data.id_by_polyomino[poly] = id; // Also populate the reverse map!
+            }
         }
     }
-    
-    return rotations;
-} // LoadRotations
 
-std::map<int32_t, int32_t> LoadReflections(const std::string& filepath)
-{
-    std::vector<char> buffer = LoadBinaryFile(filepath);
-    
-    auto piece_lib = Blokus::Data::GetPieceLibrary(buffer.data());
-    
-    std::map<int32_t, int32_t> reflections;
-    if (piece_lib->reflections() != nullptr)
-    {
-        for (int i = 0; i < piece_lib->reflections()->size(); ++i)
+    // 3. Helper to load the simple maps (arrays)
+    auto fill_array = [](const flatbuffers::Vector<flatbuffers::Offset<Blokus::Data::IdEntry>>* vec, 
+                         std::array<int32_t, kPolyominoCount>& target) 
+                         {
+        target.fill(-1);
+        if (vec) 
         {
-            auto entry = piece_lib->reflections()->Get(i);
-            reflections[entry->id()] = entry->result();
+            for (auto entry : *vec) 
+            {
+                if (entry->id() >= 0 && entry->id() < kPolyominoCount) 
+                {
+                    target[entry->id()] = entry->result();
+                }
+            }
         }
-    }
-    
-    return reflections;
-} // LoadReflections
+    };
 
-std::map<int32_t, int32_t> LoadTransformations(const std::string& filepath)
-{
-    std::vector<char> buffer = LoadBinaryFile(filepath);
-    
-    auto piece_lib = Blokus::Data::GetPieceLibrary(buffer.data());
-    
-    std::map<int32_t, int32_t> transformations;
-    if (piece_lib->transformations() != nullptr)
-    {
-        for (int i = 0; i < piece_lib->transformations()->size(); ++i)
-        {
-            auto entry = piece_lib->transformations()->Get(i);
-            transformations[entry->id()] = entry->result();
-        }
-    }
-    
-    return transformations;
-} // LoadTransformations
+    fill_array(piece_lib->rotations(), data.clockwise_rotated_ids);
+    fill_array(piece_lib->reflections(), data.horizontally_reflected_ids);
+    fill_array(piece_lib->transformations(), data.transformed_to_canonical);
+
+    return data; 
+    // Because buffer is destroyed here, and you copied data into 'data', this is safe.
+}
 } // namespace Blokus
 
 

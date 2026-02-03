@@ -9,6 +9,7 @@
 namespace Blokus
 {
 
+
 PolyominoGenerator::PolyominoGenerator()
 {
     // BFS to generate all polyominoes up to kMaxBlocks
@@ -16,10 +17,14 @@ PolyominoGenerator::PolyominoGenerator()
     source_canonical_pieces.push_back({sf::Vector2i{0, 0}});
 
     // Store monomino into piece_library_
-    piece_library_.canonical_ids.insert(1);
-    piece_library_.clockwise_rotated_ids[1] = 1;
-    piece_library_.horizontally_reflected_ids[1] = 1;
-    piece_library_.transformed_to_canonical[1] = 1;
+    piece_library_.id_by_polyomino[source_canonical_pieces.front()] = 0;
+    piece_library_.polyomino_by_id[0] = source_canonical_pieces.front();
+    piece_library_.clockwise_rotated_ids[0] = 0;
+    piece_library_.horizontally_reflected_ids[0] = 0;
+    for (int id = 0; id < 21; ++id)
+    {
+        piece_library_.transformed_to_canonical[id] = id;
+    }
 
     // Start BFS search
     size_t piece_size = 1;
@@ -53,7 +58,6 @@ PolyominoGenerator::PolyominoGenerator()
             }
         }
         
-        
         ++piece_size;
     }
 
@@ -62,51 +66,107 @@ PolyominoGenerator::PolyominoGenerator()
 void PolyominoGenerator::RegisterUniquePolyominoes(
     std::deque<Polyomino>& source_canonical_pieces, const Polyomino &piece)
 {
-    // Compute id of normalized piece
-    std::set<int> found_ids;
-    int original_id;
-    if (!RegisterNewPolyomino(piece, found_ids, original_id))
+    // Compute normalized form of the piece
+    Polyomino current = Normalize(piece);
+    if (piece_library_.id_by_polyomino.find(current) 
+        != piece_library_.id_by_polyomino.end())
+    {
+        return;
+    }
+    
+    // Compute rotated, reflected polyominoes
+    std::set<Polyomino, PolyominoComparator> found_polyominoes;
+    std::map<Polyomino, Polyomino, PolyominoComparator> rotated_polyomino;
+    std::map<Polyomino, Polyomino, PolyominoComparator> reflected_polyomino;
+    SearchTransformation(current, found_polyominoes, 
+        rotated_polyomino, reflected_polyomino);
+
+    if (found_polyominoes.empty()) 
     {
         return;
     }
 
-    // Compute rotated, reflected id
-    int reflected_id, rotated_id;
-    Polyomino reflected, rotated = piece;
-    for (int rotation = 0 ;rotation < 4; ++rotation)
-    {
-        reflected = ReflectHorizontally(rotated);
-        if (RegisterNewPolyomino(reflected, found_ids, reflected_id))
-        {
-            piece_library_.horizontally_reflected_ids[original_id] = reflected_id;
-        }
-
-        rotated = RotateClockwise(rotated);
-        if (RegisterNewPolyomino(rotated, found_ids, rotated_id))
-        {
-            piece_library_.clockwise_rotated_ids[original_id] = rotated_id;
-        }
-        
-        original_id = rotated_id;
-    }
-  
-    // Record other information
-    RecordIds(source_canonical_pieces, found_ids);
+    Record(source_canonical_pieces, found_polyominoes, rotated_polyomino, reflected_polyomino);
 } // RegisterUniquePolyominoes
 
-bool PolyominoGenerator::RegisterNewPolyomino(const Polyomino& piece, 
-    std::set<int>& found_ids, int& id)
-{ // returns true if piece was new
-    id = Normalize(piece);
-    if (piece_library_.transformed_to_canonical.find(id) 
-        != piece_library_.transformed_to_canonical.end())
-    { // piece has been recorded
-        return false;
+void PolyominoGenerator::SearchTransformation(const Polyomino& piece,
+    std::set<Polyomino, PolyominoComparator>& found_polyominoes,
+    std::map<Polyomino, Polyomino, PolyominoComparator> &rotated_polyomino,
+    std::map<Polyomino, Polyomino, PolyominoComparator> &reflected_polyomino) const
+{
+    std::vector<Polyomino> pieces {piece};
+
+    while (!pieces.empty())
+    {
+        Polyomino current = std::move(pieces.back());
+        found_polyominoes.insert(current);
+        pieces.pop_back();
+
+        Polyomino rotated = RotateClockwise(current);
+        rotated_polyomino[current] = rotated;
+        if (found_polyominoes.find(rotated) == found_polyominoes.end())
+        {
+            pieces.push_back(rotated);
+        }
+
+        Polyomino reflected = ReflectHorizontally(current);
+        reflected_polyomino[current] = reflected;
+        if (found_polyominoes.find(reflected) == found_polyominoes.end())
+        {
+            pieces.push_back(reflected);
+        }
+    }
+}
+
+void PolyominoGenerator::Record(std::deque<Polyomino>& source_canonical_pieces,
+    std::set<Polyomino, PolyominoComparator> &found_polyominoes,
+    const std::map<Polyomino, Polyomino, PolyominoComparator>& rotated_polyomino,
+    const std::map<Polyomino, Polyomino, PolyominoComparator>& reflected_polyomino)
+{
+    auto start = found_polyominoes.begin();
+
+    source_canonical_pieces.push_back(*start);
+    piece_library_.polyomino_by_id[canonical_pointer_] = *start;
+    piece_library_.id_by_polyomino[*start] = canonical_pointer_;
+
+    found_polyominoes.erase(start);
+
+    // Record transformed id
+    int transformation_begin = transformation_pointer_;
+    for (const Polyomino piece : found_polyominoes) 
+    {
+        piece_library_.polyomino_by_id[transformation_pointer_] = piece;
+        piece_library_.id_by_polyomino[piece] = transformation_pointer_;
+        piece_library_.transformed_to_canonical[transformation_pointer_] = canonical_pointer_;
+
+        ++transformation_pointer_;
     }
 
-    found_ids.insert(id);
-    return true;
+    RecordTransformations(canonical_pointer_, reflected_polyomino, rotated_polyomino);
+    for (int id = transformation_begin; id < transformation_pointer_; ++id)
+    {
+        RecordTransformations(id, reflected_polyomino, rotated_polyomino);
+    }
+
+    ++canonical_pointer_;
 }
+
+void PolyominoGenerator::RecordTransformations(int id, 
+    const std::map<Polyomino, Polyomino, PolyominoComparator>& reflected_polyomino,
+    const std::map<Polyomino, Polyomino, PolyominoComparator>& rotated_polyomino)
+{
+    Polyomino current = piece_library_.polyomino_by_id[id];
+    
+    Polyomino rotated = rotated_polyomino.at(current);
+    int rotated_id = piece_library_.id_by_polyomino[rotated];
+    piece_library_.clockwise_rotated_ids[id] = rotated_id;
+
+    Polyomino reflected = reflected_polyomino.at(current);
+    int reflected_id = piece_library_.id_by_polyomino[reflected];
+    piece_library_.horizontally_reflected_ids[id] = reflected_id;
+}
+
+
 
 Polyomino PolyominoGenerator::RotateClockwise(const Polyomino& piece) const
 {
@@ -116,7 +176,7 @@ Polyomino PolyominoGenerator::RotateClockwise(const Polyomino& piece) const
         rotated_piece.insert({ -block.y, block.x });
     }
 
-    return rotated_piece;
+    return Normalize(rotated_piece);
 }
 
 Polyomino PolyominoGenerator::ReflectHorizontally(const Polyomino& piece) const
@@ -127,26 +187,7 @@ Polyomino PolyominoGenerator::ReflectHorizontally(const Polyomino& piece) const
         reflected_piece.insert({ -block.x, block.y });
     }
 
-    return reflected_piece;
-}
-
-void PolyominoGenerator::RecordIds(
-    std::deque<Polyomino>& source_canonical_pieces,
-    const std::set<int>& found_ids)
-{
-    if (found_ids.empty())
-    {
-        return;
-    }
-
-    int canonical_id = *found_ids.begin();
-    source_canonical_pieces.push_back(Decode(canonical_id));
-    piece_library_.canonical_ids.insert(canonical_id);
-
-    for (int id: found_ids)
-    {    
-        piece_library_.transformed_to_canonical[id] = canonical_id;
-    }
+    return Normalize(reflected_piece);
 }
 
 sf::Vector2i PolyominoGenerator::GetOrigin(const Polyomino& piece) const
@@ -162,51 +203,26 @@ sf::Vector2i PolyominoGenerator::GetOrigin(const Polyomino& piece) const
     return origin;
 }
 
-int PolyominoGenerator::Normalize(const Polyomino& piece) const
-{ // Because Polyomino is sorted, linearly normalize
-    sf::Vector2i origin = GetOrigin(piece);
-
-    int id = 0;
-    int base = (kMaxBlocks * kMaxBlocks + 1); // (4, 5) creates 25
-    for (const sf::Vector2i block : piece) 
-    { // Encoding with offset 1
-        id *= base;
-        id += Encode(block - origin);
-    }
-
-    return id;
-}
-
-int PolyominoGenerator::Encode(const sf::Vector2i& position) const
-{ // Use Base-5 Encoding with offset 1
-    return position.x * kMaxBlocks + position.y + 1;
-} 
-
 bool PolyominoGenerator::IsNormalized(int id) const
 {
-    return !(piece_library_.transformed_to_canonical.count(id) == 0);
+    return id >= 0 && id < kPolyominoCount;
 }
 
-
-Polyomino PolyominoGenerator::Decode(int id) const
+bool PolyominoGenerator::IsCanonical(int id) const
 {
-    Polyomino piece;
-    int remaining_id = id;
+    return id >= 0 && id < kCanonicalCount;
+}
 
-    while (remaining_id > 0) 
+Polyomino PolyominoGenerator::Normalize(const Polyomino& piece) const
+{ // Returns the normalized (canonical) form of the piece
+    Polyomino normalized;
+    sf::Vector2i origin = GetOrigin(piece);
+    
+    for (const sf::Vector2i block : piece)
     {
-        int val = (remaining_id % (kMaxBlocks * kMaxBlocks + 1)) - 1; 
-        remaining_id /= (kMaxBlocks * kMaxBlocks + 1);
-
-        if (val >= 0) 
-        {
-            int x = val / kMaxBlocks;
-            int y = val % kMaxBlocks;
-
-            piece.insert({ x, y });
-        }
+        normalized.insert(block - origin);
     }
-
-    return piece;
+    
+    return normalized;
 }
 } // namespace Blokus
