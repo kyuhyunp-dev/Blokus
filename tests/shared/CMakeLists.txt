@@ -1,14 +1,15 @@
 # Build the test executable
 add_executable(BlokusSharedTests
     polyomino_loader_unittest.cc
+    polyomino_utils_unittest.cc
     # add other test files here
+
 )
 
 
 target_link_libraries(BlokusSharedTests
     PRIVATE
         BlokusSharedLib
-        PolyominoSchemaTarget
         GTest::gtest_main
         GTest::gmock_main
 )

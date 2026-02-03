@@ -1,14 +1,39 @@
 namespace Blokus.Data;
 
-
-table PolyominoMetadata
+// Coordinate pair for a block in a polyomino
+struct Coordinate 
 {
-    id: int;
+  x: int32;
+  y: int32;
 }
 
-table PieceLibrary
+// Represents a single polyomino (set of coordinates)
+table Polyomino 
 {
-    pieces: [PolyominoMetadata];
+  id: int32 (key);  // Unique identifier (0-90)
+  coordinates: [Coordinate];
+}
+
+// A simple pair to act as a map entry
+table IdEntry 
+{
+  id: int32 (key);  // The 'key' attribute allows for binary search LookupByKey
+  result: int32;
+}
+
+table PieceLibrary {
+  // All polyominoes indexed by ID (0-90)
+  polyominoes: [Polyomino];
+
+  // Map: ID -> Rotated ID
+  rotations: [IdEntry];
+
+  // Map: ID -> Reflected ID
+  reflections: [IdEntry];
+
+  // Map: Transformed ID -> Canonical ID
+  transformations: [IdEntry]; 
+
 }
 
 root_type PieceLibrary;

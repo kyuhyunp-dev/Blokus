@@ -5,17 +5,21 @@
 
 #include <string>
 #include <vector>
+#include <set>
+#include <map>
 
 namespace Blokus 
 {
     // Saves the raw definitions into the FlatBuffer binary format
-    void save_to_binary(const std::string& filepath, const std::vector<PolyominoDefinition>& pieces);
+    void SaveToBinary(const std::string& filepath, const Blokus::PolyominoDefinition& pieces);
 
-    // Reads the binary file and returns a buffer the game can use
-    // Using std::vector<char> ensures the memory stays alive
-    std::vector<char> load_binary_file(const std::string& filepath);
+    // Validates the binary file exists and can be read
+    void ValidateBinaryFile(const std::string& filepath);
 
-    // Additional parsing functions for corners, edges, ids, etc. can be added here
+    // Load entire piece library from binary file
+    PolyominoDefinition LoadPieceLibrary(const std::string& filepath);
+
+    std::vector<char> LoadBinaryFile(const std::string& filepath);
 }
 
 #endif // POLYOMINO_LOADER_HPP

@@ -2,15 +2,10 @@
 add_library(BlokusClientLib STATIC 
 game.cpp 
 statistics_tracker.cpp
-pregame.cpp
 )
 
 # Link dependencies
 target_link_libraries(BlokusClientLib PUBLIC
-    SFML::Graphics 
-    SFML::Window
-    SFML::System
-    spdlog::spdlog
     BlokusSharedLib
     PolyominoSchemaTarget
     project_configs

@@ -7,6 +7,10 @@ add_library(BlokusSharedLib STATIC
 
 # Link them so anyone using BlokusSharedLib also gets the headers
 target_link_libraries(BlokusSharedLib PUBLIC
+    SFML::Graphics 
+    SFML::Window
+    SFML::System
+    spdlog::spdlog
     PolyominoSchemaTarget
     flatbuffers::flatbuffers
     project_configs 

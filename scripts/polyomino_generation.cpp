@@ -13,10 +13,10 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    std::vector<Blokus::PolyominoDefinition> raw_data = Blokus::generate_polyomino_metadata();
+    Blokus::PolyominoDefinition raw_data = Blokus::PolyominoGenerator::GetData();
     std::string output_path = argv[1];
 
-    Blokus::save_to_binary(output_path, raw_data);
+    Blokus::SaveToBinary(output_path, raw_data);
     
     return 0;
 }
