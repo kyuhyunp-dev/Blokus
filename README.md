@@ -34,9 +34,12 @@ sudo apt install \
 
 ### Terminal
 
+#### Create build directory
+```
+mkdir bu
+```
 #### Configure
 ```
-mkdir build
 cd build
 cmake ..
 ```
