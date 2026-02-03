@@ -192,7 +192,7 @@ Polyomino PolyominoGenerator::ReflectHorizontally(const Polyomino& piece) const
 
 sf::Vector2i PolyominoGenerator::GetOrigin(const Polyomino& piece) const
 { // Find minimum x and y (origin)
-     sf::Vector2i origin ( {INT_MAX, INT_MAX} );
+     sf::Vector2i origin = *piece.begin();
 
     for (const sf::Vector2i block : piece)
     {
