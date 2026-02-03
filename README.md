@@ -46,7 +46,8 @@ cmake --build .
 ```
 #### Run Tests
 ```
-./bin/BlokusClientTests
+./bin/tests/BlokusClientTests
+./bin/tests/BlokusSharedTests
 ```
 #### Run Game
 ```
