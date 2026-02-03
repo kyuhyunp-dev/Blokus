@@ -21,12 +21,6 @@ table IdEntry
   result: int32;
 }
 
-table IdEntries 
-{
-  id: int32 (key); // The 'key' attribute allows for binary search LookupByKey
-  results: [int32]; 
-}
-
 table PieceLibrary {
   // All polyominoes indexed by ID (0-90)
   polyominoes: [Polyomino];

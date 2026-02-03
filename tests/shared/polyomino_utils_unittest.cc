@@ -152,6 +152,9 @@ namespace
         // 2. Test Reflection
         int reflected = library.horizontally_reflected_ids.at(square_id);
         EXPECT_EQ(reflected, square_id) << "Square reflected into a different shape!";
+
+        EXPECT_EQ(library.transformed_to_canonical.at(rotated), square_id);
+        EXPECT_EQ(library.transformed_to_canonical.at(reflected), square_id);
     }
 
     TEST(PolyominoGenerationTest, P_Pentomino) 
@@ -193,6 +196,8 @@ namespace
                     visited.insert(neighbor);
                     q.push(neighbor);
                 }
+
+                EXPECT_EQ(library.transformed_to_canonical.at(neighbor), start_id);
             }
         }
 
