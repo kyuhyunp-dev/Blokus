@@ -12,6 +12,9 @@ table Polyomino
 {
   id: int32 (key);  // Unique identifier (0-90)
   coordinates: [Coordinate];
+
+  edges: [Coordinate];
+  corners: [Coordinate];
 }
 
 // A simple pair to act as a map entry

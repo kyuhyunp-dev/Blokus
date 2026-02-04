@@ -28,21 +28,38 @@ void SaveToBinary(const std::string& filepath,
     for (int id = 0; id < kPolyominoCount; ++id)
     {
         const Polyomino& piece = data.polyomino_by_id[id];
+        const Blocks& blocks = piece.blocks;
         
-        if (piece.empty())
+        if (blocks.empty())
         {
             throw std::runtime_error("Empty piece");
         }
 
         std::vector<Blokus::Data::Coordinate> coords;
-        coords.reserve(piece.size());
-        for (const auto block : piece)
+        coords.reserve(blocks.size());
+        for (const auto block : blocks)
         {
             coords.push_back(Blokus::Data::Coordinate{block.x, block.y});
         }
+
+        std::vector<Blokus::Data::Coordinate> edges;
+        edges.reserve(piece.sensors.edges.size());
+        for (const auto block : piece.sensors.edges)
+        {
+            edges.push_back(Blokus::Data::Coordinate{block.x, block.y});
+        }
+
+        std::vector<Blokus::Data::Coordinate> corners;
+        corners.reserve(piece.sensors.corners.size());
+        for (const auto block : piece.sensors.corners)
+        {
+            corners.push_back(Blokus::Data::Coordinate{block.x, block.y});
+        }
         
         auto coords_offset = builder.CreateVectorOfStructs(coords);
-        auto piece_offset = Blokus::Data::CreatePolyomino(builder, id, coords_offset);
+        auto edges_offset = builder.CreateVectorOfStructs(edges);
+        auto corners_offset = builder.CreateVectorOfStructs(corners);
+        auto piece_offset = Blokus::Data::CreatePolyomino(builder, id, coords_offset, edges_offset, corners_offset);
         polyomino_offsets.push_back(piece_offset);
     }
 
@@ -138,10 +155,21 @@ PolyominoDefinition LoadPieceLibrary(const std::string& filepath)
                 Polyomino poly;
                 for (auto coord : *poly_table->coordinates()) 
                 {
-                    poly.insert(sf::Vector2i{coord->x(), coord->y()});
+                    poly.blocks.insert(sf::Vector2i{coord->x(), coord->y()});
                 }
+
+                for (auto coord : *poly_table->edges()) 
+                {
+                    poly.sensors.edges.insert(sf::Vector2i{coord->x(), coord->y()});
+                }
+
+                for (auto coord : *poly_table->corners()) 
+                {
+                    poly.sensors.corners.insert(sf::Vector2i{coord->x(), coord->y()});
+                }
+
                 data.polyomino_by_id[id] = poly;
-                data.id_by_polyomino[poly] = id; // Also populate the reverse map!
+                data.id_by_polyomino[poly.blocks] = id; // Also populate the reverse map!
             }
         }
     }
