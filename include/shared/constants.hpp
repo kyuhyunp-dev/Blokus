@@ -17,6 +17,10 @@ namespace Blokus
         sf::Vector2i{-1, 0}, sf::Vector2i{0, -1}
     };
 
+    inline constexpr std::array<sf::Vector2i, 4> kDiagonalOffsets = {
+        sf::Vector2i{1, 1}, sf::Vector2i{-1, 1},
+        sf::Vector2i{1, -1}, sf::Vector2i{-1, -1}
+    };
 
     struct Vector2iCompare 
     {
@@ -32,11 +36,10 @@ namespace Blokus
         }
     };
 
-    using Polyomino = std::set<sf::Vector2i, Vector2iCompare>;
-    
+    using Blocks = std::set<sf::Vector2i, Vector2iCompare>;
 
     struct PolyominoComparator {
-        bool operator()(const Polyomino& lhs, const Polyomino& rhs) const {
+        bool operator()(const Blocks& lhs, const Blocks& rhs) const {
             // Example: Sort by size first
             if (lhs.size() != rhs.size()) {
                 return lhs.size() < rhs.size();
@@ -50,6 +53,31 @@ namespace Blokus
             );
         }
     };
+
+    const static int kCanonicalCount = 21;
+    const static int kPolyominoCount = 91;
+    
+    struct Polyomino
+    {
+        Blocks blocks;
+
+        struct 
+        {
+            Blocks edges;
+            Blocks corners;
+
+        } sensors;
+
+        Polyomino(Blocks piece)
+            : blocks(std::move(piece))
+        {}
+
+        Polyomino()
+        {
+           blocks.insert({0, 0});
+        }
+    };
+    
 }
 
 #endif

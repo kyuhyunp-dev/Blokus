@@ -28,10 +28,15 @@ protected:
     PolyominoDefinition CreateMockDefinition() 
     {
         PolyominoDefinition def;
-        Polyomino monomino = { sf::Vector2i{0, 0} };
-        Polyomino domino = { sf::Vector2i{0, 0}, sf::Vector2i{0, 1} };
+        Blocks monomino = { sf::Vector2i{0, 0} };
 
-        def.polyomino_by_id[0] = monomino;
+        Polyomino piece (monomino);
+        piece.sensors.edges.insert({-1, 0});
+        piece.sensors.corners.insert({0, -1});
+
+        Blocks domino = { sf::Vector2i{0, 0}, sf::Vector2i{0, 1} };
+
+        def.polyomino_by_id[0] = piece;
         def.id_by_polyomino[monomino] = 0;
 
         for (int i = 1; i < kPolyominoCount ; ++i) 
@@ -84,14 +89,34 @@ TEST_F(BinaryIOTest, RoundTripDataIntegrity)
     PolyominoDefinition loaded = LoadPieceLibrary(valid_test_file);
 
     // Verify coordinates for a sample ID
-    EXPECT_EQ(loaded.polyomino_by_id[42], original.polyomino_by_id[42]);
+    EXPECT_EQ(loaded.polyomino_by_id[42].blocks, original.polyomino_by_id[42].blocks);
     
     // Verify rotation mapping (checking if the -1 fill logic was overwritten correctly)
     EXPECT_EQ(loaded.clockwise_rotated_ids[10], original.clockwise_rotated_ids[10]);
     
     // Verify reverse lookup map was populated
-    Polyomino monomino = { sf::Vector2i{0, 0} };
+    Blocks monomino = { sf::Vector2i{0, 0} };
     EXPECT_EQ(loaded.id_by_polyomino.at(monomino), 0); // Last ID assigned in mock
+}
+
+TEST_F(BinaryIOTest, SensorBinaryPersistence) {
+    PolyominoDefinition original = CreateMockDefinition();
+
+    // Save
+    ASSERT_NO_THROW(SaveToBinary(valid_test_file, original));
+    
+    // Load back
+    PolyominoDefinition loaded = LoadPieceLibrary(valid_test_file);
+    
+    // Check a sample piece (e.g., ID 10)
+    EXPECT_FALSE(loaded.polyomino_by_id[0].sensors.edges.empty());
+    EXPECT_EQ(loaded.polyomino_by_id[0].sensors.edges.size(), 1);
+    EXPECT_TRUE(loaded.polyomino_by_id[0].sensors.edges.find({-1, 0})
+                != loaded.polyomino_by_id[0].sensors.edges.end());
+    
+    EXPECT_EQ(loaded.polyomino_by_id[0].sensors.corners.size(), 1);
+    EXPECT_TRUE(loaded.polyomino_by_id[0].sensors.corners.find({0, -1})
+                != loaded.polyomino_by_id[0].sensors.corners.end());
 }
 
 } // namespace Blokus

@@ -13,18 +13,16 @@ using ::testing::HasSubstr;
 #include <queue>
 
 
-
 namespace 
 {
     TEST(PolyominoGenerationTest, Integrity) {
         // 1. Generate or load the library
-        Blokus::PolyominoGenerator generator;
-        const auto& library = generator.GetData();
+        Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::GetData();
 
         // 2. Verify Bidirectional Mapping
         for (int i = 0; i < Blokus::kPolyominoCount; ++i) {
             // Get the shape associated with this ID
-            const Blokus::Polyomino& piece = library.polyomino_by_id[i];
+            const Blokus::Blocks& piece = library.polyomino_by_id[i].blocks;
 
             // Ensure the piece isn't empty (sanity check for the generator)
             ASSERT_FALSE(piece.empty()) << "Piece at ID " << i << " is empty!";
@@ -41,7 +39,7 @@ namespace
             EXPECT_EQ(mapped_id, i) 
                 << "Mapping mismatch! ID " << i << " points to a shape, "
                 << "but that shape points back to ID " << mapped_id;
-        }
+        }        
     }
 
     TEST(PolyominoGenerationTest, Rotation)
@@ -51,7 +49,6 @@ namespace
         // We track globally visited IDs to ensure every single ID 
         // is part of a valid rotation set.
         std::vector<bool> visited(Blokus::kPolyominoCount, false);
-
 
         for (int i = 0; i < Blokus::kPolyominoCount; ++i) {
             if (visited[i]) 
@@ -84,8 +81,8 @@ namespace
     }
 
     TEST(PolyominoGenerationTest, Reflection) {
-        Blokus::PolyominoGenerator generator;
-        const auto& library = generator.GetData();
+        Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::GetData();
+
         
         // Globally track which IDs we've already verified
         std::vector<bool> visited(Blokus::kPolyominoCount, false);
@@ -111,8 +108,7 @@ namespace
     }
 
    TEST(PolyominoGenerationTest, CanonicalMappingIntegrity) {
-        Blokus::PolyominoGenerator generator;
-        const auto& library = generator.GetData();
+        Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::GetData();
 
         for (int i = 0; i < Blokus::kPolyominoCount; ++i) {
             int canonical_id = library.transformed_to_canonical[i];
@@ -134,12 +130,11 @@ namespace
 
     TEST(PolyominoGenerationTest, O_Tetromino) 
     {
-        Blokus::PolyominoGenerator generator;
-        auto &library = generator.GetData();
+        Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::GetData();
 
         // Create a 2x2 Square (O-Tetromino)
         // [(0,0), (1,0), (0,1), (1,1)]
-        Blokus::Polyomino square = {
+        Blokus::Blocks square = {
             {0, 0}, {1, 0},
             {0, 1}, {1, 1}
         };
@@ -160,12 +155,12 @@ namespace
 
     TEST(PolyominoGenerationTest, P_Pentomino) 
     {
-        Blokus::PolyominoGenerator generator;
-        const auto& library = generator.GetData();
+        Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::GetData();
+
 
         // 1. Find the ID for the P-Pentomino
         // [(0,0), (1,0), (0,1), (1,1), (0,2)]
-        Blokus::Polyomino p_shape = {{0, 0}, {1, 0}, {0, 1}, {1, 1}, {0, 2}};
+        Blokus::Blocks p_shape = {{0, 0}, {1, 0}, {0, 1}, {1, 1}, {0, 2}};
         ASSERT_TRUE(library.id_by_polyomino.count(p_shape)) << "P-Pentomino not found in library!";
         
         int start_id = library.id_by_polyomino.at(p_shape);
@@ -244,5 +239,134 @@ namespace
         {
             EXPECT_FALSE(generator.IsNormalized(i));
         }
+    }
+
+    TEST(PolyominoSensorTest, MonominoSensorCalculation) {
+        Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::GetData();
+
+        // Create a 1x1 piece at (0,0)
+        Blokus::Blocks monomino = { {0, 0} };
+        
+        // Assume you have a function that generates sensors from blocks
+        Blokus::Polyomino p = library.polyomino_by_id[library.id_by_polyomino.at(monomino)];
+
+        // Verify Edges (Cardinal directions)
+        EXPECT_EQ(p.sensors.edges.size(), 4);
+        EXPECT_TRUE(std::find(p.sensors.edges.begin(), p.sensors.edges.end(), sf::Vector2i(1, 0)) != p.sensors.edges.end());
+        EXPECT_TRUE(std::find(p.sensors.edges.begin(), p.sensors.edges.end(), sf::Vector2i(0, 1)) != p.sensors.edges.end());
+
+        // Verify Corners (Diagonal directions)
+        EXPECT_EQ(p.sensors.corners.size(), 4);
+        EXPECT_TRUE(std::find(p.sensors.corners.begin(), p.sensors.corners.end(), sf::Vector2i(1, 1)) != p.sensors.corners.end());
+    }
+
+    TEST(PolyominoSensorTest, RotationConsistency) {
+        Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::GetData();
+        // Use an L-shape (asymmetric)
+        Blokus::Blocks l_blocks = { {0,0}, {0,1}, {0,2}, {1,2} };
+        int id = library.id_by_polyomino.at(l_blocks);
+
+        int rotated_id = library.clockwise_rotated_ids[id];
+        Blokus::Polyomino rotated_object = library.polyomino_by_id.at(rotated_id);
+
+        // Manually calculated rotated edges
+        Blokus::Blocks expected_edges = { {-1, 0}, {-1, 1}, {0, -1}, {0, 2},
+                                {1, -1}, {1, 1}, {2, -1}, {2, 1}, {3, 0}};
+        EXPECT_EQ(rotated_object.sensors.edges, expected_edges);
+
+        // Manually calculated rotated corners
+        Blokus::Blocks expected_corners = { {-1, -1}, {-1, 2}, {1, 2}, 
+                                {3, -1}, {3, 1} };
+        EXPECT_EQ(rotated_object.sensors.corners, expected_corners);
+    }
+
+    TEST(PolyominoSensorTest, ReflectionConsistency) {
+        Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::GetData();
+        // Use an L-shape (asymmetric)
+        Blokus::Blocks l_blocks = { {0,0}, {0,1}, {0,2}, {1,2} };
+        int id = library.id_by_polyomino.at(l_blocks);
+
+        int reflected_id = library.horizontally_reflected_ids[id];
+        Blokus::Polyomino reflected_object = library.polyomino_by_id.at(reflected_id);
+
+        // Manually calculated rotated edges
+        Blokus::Blocks expected_edges = { {-1, 2}, {0, 0}, {0, 1}, {0, 3},
+                                {1, -1}, {1, 3}, {2, 0}, {2, 1}, {2, 2}};
+        EXPECT_EQ(reflected_object.sensors.edges, expected_edges);
+
+        // Manually calculated rotated corners
+        Blokus::Blocks expected_corners = { {-1, 1}, {-1, 3}, {0, -1}, 
+                                {2, -1}, {2, 3} };
+        EXPECT_EQ(reflected_object.sensors.corners, expected_corners);
+    }
+
+    TEST(PolyominoSensorTest, SensorExclusion) {
+        Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::GetData();
+
+        for (int i = 0; i < Blokus::kPolyominoCount; ++i) {
+            const auto& p = library.polyomino_by_id[i];
+            
+            // Ensure no Edge is inside the Blocks set
+            for (const auto& edge : p.sensors.edges) {
+                EXPECT_EQ(p.blocks.find(edge), p.blocks.end()) 
+                    << "ID " << i << " has an edge sensor overlapping a block at " << edge.x << "," << edge.y;
+            }
+
+            // Ensure no Corner is an Edge (Edges take precedence in Blokus rules)
+            for (const auto& corner : p.sensors.corners) {
+                auto it = std::find(p.blocks.begin(), p.blocks.end(), corner);
+                EXPECT_EQ(it, p.blocks.end());
+
+                it = std::find(p.sensors.edges.begin(), p.sensors.edges.end(), corner);
+                EXPECT_EQ(it, p.sensors.edges.end()) 
+                    << "ID " << i << " has a corner sensor overlapping an edge sensor at " << corner.x << "," << corner.y;
+            }
+        }
+    }
+
+    TEST(PolyominoSensorTest, FPentominoAdjacency) {
+        Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::GetData();
+        // F-Pentomino: A very 'crowded' piece
+        Blokus::Blocks f_blocks = { {1,0}, {2,0}, {0,1}, {1,1}, {1,2} };
+        int id = library.id_by_polyomino.at(f_blocks);
+        Blokus::Polyomino f_polyomino = library.polyomino_by_id[id];
+
+        // Test: (1,1) is the center block. 
+        // Its neighbors are (1,0), (1,2), (0,1), (2,1).
+        // Three of those are BLOCKS. Therefore, they cannot be SENSORS.
+        for (const auto& block : f_polyomino.blocks) {
+            auto edge_it = std::find(f_polyomino.sensors.edges.begin(), f_polyomino.sensors.edges.end(), block);
+            auto corner_it = std::find(f_polyomino.sensors.corners.begin(), f_polyomino.sensors.corners.end(), block);
+            
+            EXPECT_EQ(edge_it, f_polyomino.sensors.edges.end()) << "Block at " << block.x << "," << block.y << " is also an edge!";
+            EXPECT_EQ(corner_it, f_polyomino.sensors.corners.end()) << "Block at " << block.x << "," << block.y << " is also a corner!";
+        }
+    }
+
+    TEST(PolyominoSensorTest, SensorBoundingBox) {
+        Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::GetData();
+        Blokus::Blocks monomino = { {0,0} };
+        Blokus::Polyomino p = library.polyomino_by_id[library.id_by_polyomino[monomino]];
+
+        int min_x = 0, max_x = 0, min_y = 0, max_y = 0;
+        
+        // Check all sensors (edges and corners)
+        auto check_bounds = [&](const Blokus::Blocks& sensors) {
+            for(const auto& v : sensors) {
+                min_x = std::min(min_x, v.x);
+                max_x = std::max(max_x, v.x);
+                min_y = std::min(min_y, v.y);
+                max_y = std::max(max_y, v.y);
+            }
+        };
+
+        check_bounds(p.sensors.edges);
+        check_bounds(p.sensors.corners);
+
+        // For a monomino at (0,0), sensors should span from (-1,-1) to (1,1)
+        EXPECT_EQ(min_x, -1);
+        EXPECT_EQ(max_x, 1);
+        EXPECT_EQ(min_y, -1);
+        EXPECT_EQ(max_y, 1);
     }
 }
