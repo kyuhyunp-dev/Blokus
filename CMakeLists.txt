@@ -63,8 +63,6 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
 # ---- assets ----
-set(ASSETS_PATH "${CMAKE_SOURCE_DIR}/assets")
-set(PIECES_PATH "${CMAKE_SOURCE_DIR}/assets/shared/pieces.bin")
 
 # Generate the headers for pre-game polyominoes
 

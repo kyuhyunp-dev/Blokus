@@ -10,11 +10,11 @@ class StatisticsTracker
     public:
         StatisticsTracker();
 
-        void Update(sf::Time dt);
+        void update(sf::Time dt);
 
     private:
-        sf::Time update_time_;
-        std::size_t num_frames_;
+        sf::Time mUpdateTime;
+        std::size_t mNumFrames;
 };
 
 #endif

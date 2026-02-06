@@ -1,6 +1,6 @@
 # Build the test executable
 add_executable(BlokusClientTests
-    statistics_tracker_unittest.cc
+    StatisticsTrackerUnittest.cc
     # add other test files here
 )
 
@@ -13,7 +13,7 @@ target_link_libraries(BlokusClientTests
 )
 
 if(MSVC AND WIN32 AND BUILD_SHARED_LIBS)
-    add_custom_command(TARGET BlokusClientTests POST_BUILD
+    add_custom_command(TARget BlokusClientTests POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
         $<TARGET_RUNTIME_DLLS:BlokusClientTests>
         $<TARGET_FILE_DIR:BlokusClientTests>

@@ -1,4 +1,4 @@
-#include "statistics_tracker.hpp"
+#include "StatisticsTracker.hpp"
 
 #include "gtest/gtest.h"
 #include <regex>
@@ -14,18 +14,18 @@ namespace
         auto logger = std::make_shared<spdlog::logger>("test_logger", sink);
 
         // Swap the default logger
-        auto source_logger = spdlog::default_logger();
+        auto sourceLogger = spdlog::default_logger();
         spdlog::set_default_logger(logger);
 
         StatisticsTracker statistics;
         for (int frame = 0; frame < 60; ++frame)
         {
-            statistics.Update(sf::milliseconds(16));
+            statistics.update(sf::milliseconds(16));
             EXPECT_TRUE(oss.str().empty());
         }
 
         // Restore the old logger
-        spdlog::set_default_logger(source_logger);
+        spdlog::set_default_logger(sourceLogger);
     }
 
     TEST(UpdateTest, MoreThanSecond)
@@ -35,7 +35,7 @@ namespace
         auto logger = std::make_shared<spdlog::logger>("test_logger", sink);
 
         // Swap the default logger
-        auto source_logger = spdlog::default_logger();
+        auto sourceLogger = spdlog::default_logger();
         spdlog::set_default_logger(logger);
 
         StatisticsTracker statistics;
@@ -45,11 +45,11 @@ namespace
         );
 
         // One pattern for 1 second
-        statistics.Update(sf::seconds(1));
+        statistics.update(sf::seconds(1));
         EXPECT_TRUE(std::regex_search(oss.str(), pattern));
         
         // Two patterns for 2 seconds
-        statistics.Update(sf::seconds(2));
+        statistics.update(sf::seconds(2));
         std::string output = oss.str();
 
         auto begin = std::sregex_iterator(output.begin(), output.end(), pattern);
@@ -59,6 +59,6 @@ namespace
         EXPECT_EQ(count, 2);
 
         // Restore the old logger
-        spdlog::set_default_logger(source_logger);
+        spdlog::set_default_logger(sourceLogger);
     }
 }

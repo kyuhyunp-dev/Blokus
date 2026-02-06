@@ -1,7 +1,8 @@
 # Define library to be shared with tests
 add_library(BlokusClientLib STATIC 
-game.cpp 
-statistics_tracker.cpp
+Game.cpp 
+StatisticsTracker.cpp
+Resource/Path.cpp 
 )
 
 # Link dependencies
@@ -16,11 +17,6 @@ target_include_directories(BlokusClientLib PUBLIC
     "${CMAKE_SOURCE_DIR}/include/client"
 )
 
-# Define ASSETS_PATH
-target_compile_definitions(BlokusClientLib PRIVATE 
-    ASSETS_PATH=\"${ASSETS_PATH}\"
-)
-
 # Define client executable
 add_executable(BlokusClient main.cpp)
 
@@ -29,9 +25,8 @@ target_link_libraries(BlokusClient PRIVATE
     BlokusClientLib
 )
 
-# Define PIECES_PATH
+# Define PIECES_PATH and ASSETS_PATH
 target_compile_definitions(BlokusClient PRIVATE 
-    PIECES_PATH=\"${PIECES_PATH}\"
 )
 
 # Assets copy (Portability)
@@ -39,9 +34,9 @@ target_compile_definitions(BlokusClient PRIVATE
 add_custom_command(
     TARGET BlokusClient POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/assets/client"
-        "$<TARGET_FILE_DIR:BlokusClient>/assets/client"
-    COMMENT "Deploying client assets to build directory..."
+        "${CMAKE_SOURCE_DIR}/assets"
+        "$<TARGET_FILE_DIR:BlokusClient>/assets"
+    COMMENT "Deploying all assets to build directory..."
 )
 
 # Install
