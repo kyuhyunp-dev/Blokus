@@ -1,6 +1,7 @@
 # Build the test executable
 add_executable(BlokusClientTests
-    statistics_tracker_unittest.cc
+    StatisticsTrackerUnittest.cc
+    Resource/ResourceHolderUnittest.cc
     # add other test files here
 )
 

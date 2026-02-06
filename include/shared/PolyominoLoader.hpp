@@ -1,7 +1,7 @@
 #ifndef POLYOMINO_LOADER_HPP
 #define POLYOMINO_LOADER_HPP
 
-#include "shared/polyomino_util.hpp"
+#include "shared/PolyominoUtil.hpp"
 
 #include <string>
 #include <vector>
@@ -11,15 +11,15 @@
 namespace Blokus 
 {
     // Saves the raw definitions into the FlatBuffer binary format
-    void SaveToBinary(const std::string& filepath, const Blokus::PolyominoDefinition& pieces);
+    void saveToBinary(const std::string& filepath, const Blokus::PolyominoDefinition& pieces);
 
     // Validates the binary file exists and can be read
-    void ValidateBinaryFile(const std::string& filepath);
+    void validateBinaryFile(const std::string& filepath);
 
     // Load entire piece library from binary file
-    PolyominoDefinition LoadPieceLibrary(const std::string& filepath);
+    PolyominoDefinition loadPieceLibrary(const std::string& filepath);
 
-    std::vector<char> LoadBinaryFile(const std::string& filepath);
+    std::vector<char> loadBinaryFile(const std::string& filepath);
 }
 
 #endif // POLYOMINO_LOADER_HPP

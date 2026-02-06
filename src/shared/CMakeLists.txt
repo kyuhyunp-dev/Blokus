@@ -1,8 +1,8 @@
 
 # Define library to be shared with tests
 add_library(BlokusSharedLib STATIC 
-    polyomino_util.cpp
-    polyomino_loader.cpp
+    PolyominoUtil.cpp
+    PolyominoLoader.cpp
 )
 
 # Link them so anyone using BlokusSharedLib also gets the headers

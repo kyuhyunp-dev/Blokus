@@ -8,16 +8,16 @@
 
 namespace Blokus
 {
-    inline constexpr int kMaxBlocks = 5;
-    inline constexpr int kBoardSize = 10;
+    inline constexpr int MaxBlocks = 5;
+    inline constexpr int BoardSize = 10;
 
-    inline constexpr std::array<sf::Vector2i, 4> kCardinalOffsets = 
+    inline constexpr std::array<sf::Vector2i, 4> CardinalOffsets = 
     {
         sf::Vector2i{1, 0}, sf::Vector2i{0, 1}, 
         sf::Vector2i{-1, 0}, sf::Vector2i{0, -1}
     };
 
-    inline constexpr std::array<sf::Vector2i, 4> kDiagonalOffsets = {
+    inline constexpr std::array<sf::Vector2i, 4> DiagonalOffsets = {
         sf::Vector2i{1, 1}, sf::Vector2i{-1, 1},
         sf::Vector2i{1, -1}, sf::Vector2i{-1, -1}
     };
@@ -39,7 +39,8 @@ namespace Blokus
     using Blocks = std::set<sf::Vector2i, Vector2iCompare>;
 
     struct PolyominoComparator {
-        bool operator()(const Blocks& lhs, const Blocks& rhs) const {
+        bool operator()(const Blocks& lhs, const Blocks& rhs) const 
+        {
             // Example: Sort by size first
             if (lhs.size() != rhs.size()) {
                 return lhs.size() < rhs.size();
@@ -54,8 +55,8 @@ namespace Blokus
         }
     };
 
-    const static int kCanonicalCount = 21;
-    const static int kPolyominoCount = 91;
+    const static int CanonicalCount = 21;
+    const static int PolyominoCount= 91;
     
     struct Polyomino
     {
@@ -77,7 +78,6 @@ namespace Blokus
            blocks.insert({0, 0});
         }
     };
-    
 }
 
 #endif

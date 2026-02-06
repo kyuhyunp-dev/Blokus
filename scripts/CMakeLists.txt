@@ -2,7 +2,7 @@
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/scripts)
 
 # Define the executable 
-add_executable(generate_polyominoes polyomino_generation.cpp)
+add_executable(generate_polyominoes PolyominoGeneration.cpp)
 
 # Link the libraries
 target_link_libraries(generate_polyominoes PRIVATE 
