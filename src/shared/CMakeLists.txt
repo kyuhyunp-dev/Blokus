@@ -1,8 +1,23 @@
+# 1. Define the exact path where the header WILL be
+set(GEN_HEADER "${CMAKE_BINARY_DIR}/PolyominoSchemaTarget/polyomino_generated.h")
 
-# Define library to be shared with tests
-add_library(BlokusSharedLib STATIC 
+# 2. Tell CMake this is a generated file
+set_source_files_properties("${GEN_HEADER}" PROPERTIES GENERATED TRUE)
+
+# Set SHARED_SOURCES that depend on GEN_HEADER
+set(SHARED_SOURCES
     PolyominoUtil.cpp
     PolyominoLoader.cpp
+)
+
+set_source_files_properties(${SHARED_SOURCES} PROPERTIES 
+    OBJECT_DEPENDS "${GEN_HEADER}"
+)
+    
+# Define library to be shared with tests
+add_library(BlokusSharedLib STATIC 
+    ${GEN_HEADER}
+    ${SHARED_SOURCES}
 )
 
 # Link them so anyone using BlokusSharedLib also gets the headers

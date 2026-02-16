@@ -75,7 +75,6 @@ namespace Blokus
 
         Polyomino()
         {
-           blocks.insert({0, 0});
         }
     };
 }

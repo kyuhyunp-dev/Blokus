@@ -8,7 +8,6 @@ Resource/Path.cpp
 # Link dependencies
 target_link_libraries(BlokusClientLib PUBLIC
     BlokusSharedLib
-    PolyominoSchemaTarget
     project_configs
 )
 

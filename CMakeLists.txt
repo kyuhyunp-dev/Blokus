@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 3.28)
 project(Blokus LANGUAGES CXX)
 
+# Force Debug Type
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
+endif()
+
 # specify the C++ standard
 add_library(project_configs INTERFACE)
 target_compile_features(project_configs INTERFACE cxx_std_17)
@@ -76,7 +81,7 @@ flatbuffers_generate_headers(
 )
 
 target_include_directories(PolyominoSchemaTarget 
-    INTERFACE "${CMAKE_CURRENT_BINARY_DIR}"
+    INTERFACE "${FLATBUFFERS_GEN_DIR}"
 )
 
 # ---------------- Subdirectories ----------------
