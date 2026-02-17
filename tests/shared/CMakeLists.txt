@@ -1,5 +1,3 @@
-
-
 # Build the test executable
 add_executable(BlokusSharedTests
     PolyominoLoaderUnittest.cc

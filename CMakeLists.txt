@@ -81,7 +81,7 @@ flatbuffers_generate_headers(
 )
 
 target_include_directories(PolyominoSchemaTarget 
-    INTERFACE "${FLATBUFFERS_GEN_DIR}"
+    INTERFACE "${CMAKE_CURRENT_BINARY_DIR}"
 )
 
 # ---------------- Subdirectories ----------------
