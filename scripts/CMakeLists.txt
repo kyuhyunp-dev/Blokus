@@ -1,6 +1,9 @@
 # All executables defined in the scripts/ directory 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/scripts)
 
+# Set PIECES_PATH
+set(PIECES_PATH "${CMAKE_SOURCE_DIR}/assets/shared/pieces.bin")
+
 # Define the executable 
 add_executable(generate_polyominoes PolyominoGeneration.cpp)
 

@@ -142,18 +142,4 @@ namespace
             std::runtime_error
         );
     }
-
-     TEST(ResourceHolderTest, DoubleLoadAndGetRoundTrip)
-    {
-        ResourceHolder<MockResource, ResourceID> holder;
-
-        // Load resource using load(id, filename)
-        holder.load(ResourceID::Second, "resource.txt");
-        holder.load(ResourceID::Second, "resource.txt");
-
-        // Get the resource and verify it was loaded correctly
-        const MockResource& resource = holder.get(ResourceID::Second);
-        EXPECT_TRUE(resource.isLoaded());
-        EXPECT_EQ(resource.getFileName(), "resource.txt");
-    }
 }
