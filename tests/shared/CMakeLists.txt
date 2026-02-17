@@ -6,6 +6,16 @@ add_executable(BlokusSharedTests
 
 )
 
+# Define the path clearly
+set(PIECES_PATH "${CMAKE_SOURCE_DIR}/assets/shared/pieces.bin")
+
+# Add the definition to your test target
+target_compile_definitions(BlokusSharedTests PRIVATE 
+    PIECES_BIN_PATH="${PIECES_PATH}"
+)
+
+# Ensure the assets are built before the tests run
+add_dependencies(BlokusSharedTests generate_assets)
 
 target_link_libraries(BlokusSharedTests
     PRIVATE

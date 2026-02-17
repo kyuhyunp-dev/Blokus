@@ -116,4 +116,20 @@ TEST_F(BinaryIOTest, SensorBinaryPersistence) {
                 != loaded.polyominoById[0].sensors.corners.end());
 }
 
-} // namespace Blokus
+
+TEST(AssetValidation, PiecesBinExistsAndIsNotEmpty) {
+    // This path must match where your generate_polyominoes script saves the file
+    // Using a path relative to the project root or passed via a macro is best
+    std::string path = PIECES_BIN_PATH; 
+
+    // 1. Check if file exists
+    ASSERT_TRUE(std::filesystem::exists(path)) << "pieces.bin was not found at: " << path;
+
+    // 2. Check if it's a regular file
+    EXPECT_TRUE(std::filesystem::is_regular_file(path));
+
+    // 3. Check if it has content (FlatBuffers files shouldn't be 0 bytes)
+    EXPECT_GT(std::filesystem::file_size(path), 0) << "pieces.bin is empty!";
+}
+
+} // namespace Blokus 
