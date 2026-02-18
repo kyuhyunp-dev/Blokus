@@ -2,6 +2,7 @@
 add_executable(BlokusClientTests
     StatisticsTrackerUnittest.cc
     Resource/ResourceHolderUnittest.cc
+    Nodes/SceneNodeUnittest.cc
     # add other test files here
 )
 

@@ -2,7 +2,8 @@
 add_library(BlokusClientLib STATIC 
 Game.cpp 
 StatisticsTracker.cpp
-Resource/Path.cpp 
+Resource/Path.cpp
+Nodes/SceneNode.cpp 
 )
 
 # Link dependencies
