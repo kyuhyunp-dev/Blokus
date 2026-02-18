@@ -4,6 +4,7 @@ Game.cpp
 StatisticsTracker.cpp
 Resource/Path.cpp
 Nodes/SceneNode.cpp 
+Nodes/BlockNode.cpp
 )
 
 # Link dependencies

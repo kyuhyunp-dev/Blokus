@@ -1,9 +1,19 @@
 #include "Game.hpp"
 #include "Resource/Path.hpp"
+#include "shared/Team.hpp"
 
 #include <stdexcept>
 #include <iostream>
 
+sf::IntRect getRect(Team team) {
+    switch(team) {
+        case Team::Blue:   return sf::IntRect({0, 0}, {512, 512});
+        case Team::Yellow: return sf::IntRect({512, 0}, {512, 512});
+        case Team::Red:    return sf::IntRect({0, 512}, {512, 512});
+        case Team::Green:  return sf::IntRect({512, 512}, {512, 512});
+        default:           return sf::IntRect({0, 0}, {0, 0});
+    }
+}
 
 const float Game::PlayerSpeed = 100.f;
 const sf::Time Game::TimePerFrame = sf::seconds(1.f / 60.f);
@@ -13,14 +23,14 @@ Game::Game(FontHolder& fonts, TextureHolder& textures)
     , mTextures(textures)
     , mFonts(fonts)
     , mStatistics()
-    , mTiles(textures.get(Textures::ID::Tiles))
+    , mBlock(textures.get(Textures::ID::Tiles), getRect(Team::Blue))
     , mIsMovingUp(false)
     , mIsMovingDown(false)
     , mIsMovingRight(false)
     , mIsMovingLeft(false)
 {
-    mTiles.setPosition({ 100.f, 100.f });
-    mTiles.setScale({ 1.f / 20.f, 1.f / 20.f });
+    mBlock.setPosition({ 100.f, 100.f });
+    mBlock.setScale({ 1.f / 20.f, 1.f / 20.f });
 }
 
 void Game::run()
@@ -81,15 +91,15 @@ void Game::update(sf::Time elapsedTime)
     if (mIsMovingRight)
         movement.x += PlayerSpeed;
 
-    mTiles.move(movement * elapsedTime.asSeconds());
+    mBlock.move(movement * elapsedTime.asSeconds());
 }
 
 void Game::render()
 {
     mWindow.clear();
-    mWindow.draw(mTiles);
-    std::cout << mTiles.getPosition().x << ", "
-    << mTiles.getPosition().y << "\n";
+    mWindow.draw(mBlock);
+    std::cout << mBlock.getPosition().x << ", "
+    << mBlock.getPosition().y << "\n";
     mWindow.display();
 }
 
