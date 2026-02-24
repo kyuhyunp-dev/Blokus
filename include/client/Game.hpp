@@ -4,7 +4,7 @@
 #include "StatisticsTracker.hpp"
 #include "Resource/ResourceHolder.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
-#include "Nodes/BlockNode.hpp"
+#include "Nodes/PieceNode.hpp"
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -40,7 +40,7 @@ class Game
 
         sf::RenderWindow mWindow;
 
-        BlockNode mBlock;
+        PieceNode mPiece;
 
         TextureHolder &mTextures;
         FontHolder &mFonts;

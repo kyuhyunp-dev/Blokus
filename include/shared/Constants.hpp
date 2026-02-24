@@ -77,6 +77,9 @@ namespace Blokus
         {
         }
     };
+
+    const static float GridSize = 20.f; 
+    const static float TileSize = 512.f;
 }
 
 #endif

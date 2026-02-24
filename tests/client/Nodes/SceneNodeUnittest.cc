@@ -1,6 +1,5 @@
 #include <gtest/gtest.h>
 #include "Nodes/SceneNode.hpp" 
-#include "SFML/Graphics/RenderTexture.hpp"
 
 
 TEST(SceneNodeTest, ParentChildRelationship) {

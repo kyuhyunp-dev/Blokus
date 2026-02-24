@@ -3,6 +3,7 @@ add_executable(BlokusClientTests
     StatisticsTrackerUnittest.cc
     Resource/ResourceHolderUnittest.cc
     Nodes/SceneNodeUnittest.cc
+    Nodes/PieceNodeUnittest.cc
     # add other test files here
 )
 
@@ -13,6 +14,13 @@ target_link_libraries(BlokusClientTests
         GTest::gtest_main
         spdlog::spdlog
 )
+
+# Include directories
+target_include_directories(BlokusClientTests PUBLIC 
+    ${CMAKE_CURRENT_SOURCE_DIR}                # Your client source code
+    ${CMAKE_CURRENT_SOURCE_DIR}/Mock # The Mock folder
+)
+
 
 if(MSVC AND WIN32 AND BUILD_SHARED_LIBS)
     add_custom_command(TARGET BlokusClientTests POST_BUILD

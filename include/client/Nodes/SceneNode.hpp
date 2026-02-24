@@ -35,14 +35,19 @@ class SceneNode : public sf::Transformable, public  sf::Drawable
         
         SceneNode* getParent() const; 
 
+        void clearChildren();
+
     private:
         virtual void updateCurrent(sf::Time dt);
+        
         void updateChildren(sf::Time dt);
 
         void draw(sf::RenderTarget& target, 
             sf::RenderStates states) const;
+        
         virtual void drawCurrent(sf::RenderTarget& target,
             sf::RenderStates states) const;
+        
         void drawChildren(sf::RenderTarget& target,
             sf::RenderStates states) const;
 

@@ -5,6 +5,7 @@ StatisticsTracker.cpp
 Resource/Path.cpp
 Nodes/SceneNode.cpp 
 Nodes/BlockNode.cpp
+Nodes/PieceNode.cpp
 )
 
 # Link dependencies

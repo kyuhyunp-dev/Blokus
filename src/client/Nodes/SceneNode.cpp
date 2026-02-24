@@ -97,3 +97,8 @@ SceneNode* SceneNode::getParent() const
 { 
     return mParent; 
 }
+
+void SceneNode::clearChildren()
+{
+    mChildren.clear();
+}
