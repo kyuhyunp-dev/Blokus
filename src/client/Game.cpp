@@ -1,6 +1,7 @@
 #include "Game.hpp"
-#include "Resource/Path.hpp"
+#include "Path.hpp"
 #include "shared/Team.hpp"
+#include "Config.hpp"
 
 #include <stdexcept>
 #include <iostream>
@@ -11,18 +12,18 @@ const sf::Time Game::TimePerFrame = sf::seconds(1.f / 60.f);
 
 
 Game::Game(FontHolder& fonts, TextureHolder& textures)
-    : mWindow(sf::VideoMode({ 640, 480 }), "Blokus", sf::Style::Close)
+    : mWindow(sf::VideoMode({Config::ScreenWidth, Config::ScreenHeight}) , "Blokus")
+    , mMainView()
     , mTextures(textures)
     , mFonts(fonts)
     , mStatistics()
-    , mPiece(88, Team::Green, textures)
+    , mArena({14, 18, 17, 16, 15, 14, 13, 12, 11, 9, 10, 11, 12, 13, 14, 15, 16, 17}) 
     , mIsMovingUp(false)
     , mIsMovingDown(false)
     , mIsMovingRight(false)
     , mIsMovingLeft(false)
 {
-
-    mPiece.setPosition({ 100.f, 100.f });
+    updateView(mWindow.getSize());
 }
 
 void Game::run()
@@ -58,51 +59,49 @@ void Game::processEvents()
             return;
         }
 
-        if (const auto* keyPressed = 
-            event->getIf<sf::Event::KeyPressed>())
-        {
-            handlePlayerInput(keyPressed->code, true);
+        if (const auto* resized = 
+            event->getIf<sf::Event::Resized>()) {
+            updateView({resized->size});
         }
-        else if (const auto* keyReleased =
-            event->getIf<sf::Event::KeyReleased>())
-        {
-            handlePlayerInput(keyReleased->code, false);
-        }
+
     }
 }
 
 void Game::update(sf::Time elapsedTime)
 {
-    sf::Vector2f movement(0.f, 0.f);
-    if (mIsMovingUp)
-        movement.y -= PlayerSpeed;
-    if (mIsMovingDown)
-        movement.y += PlayerSpeed;
-    if (mIsMovingLeft)
-        movement.x -= PlayerSpeed;
-    if (mIsMovingRight)
-        movement.x += PlayerSpeed;
+    mArena.update(elapsedTime);
+}
 
-    mPiece.move(movement * elapsedTime.asSeconds());
+void Game::updateView(sf::Vector2u windowSize) {
+    float windowRatio = windowSize.x / static_cast<float>(windowSize.y);
+    float viewRatio = Config::VirtualRes.x / Config::VirtualRes.y;
+
+    sf::FloatRect viewport({0.f, 0.f}, {1.f, 1.f});
+
+    if (windowRatio > viewRatio) 
+    {
+        // Window is wider than 16:9 (add side bars)
+        viewport.size.x = viewRatio / windowRatio;
+    } 
+    else 
+    {
+        // Window is taller than 16:9 (add top/bottom bars)
+        viewport.size.y = windowRatio / viewRatio;
+    }
+
+    mMainView.setSize(Config::VirtualRes);
+    mMainView.setViewport(viewport);
+    // Center the camera on our virtual world
+    mMainView.setCenter(Config::VirtualRes / 2.f);
+    
 }
 
 void Game::render()
 {
-    mWindow.clear();
-    mWindow.draw(mPiece);
-    std::cout << mPiece.getPosition().x << ", "
-    << mPiece.getPosition().y << "\n";
+    mWindow.clear(sf::Color::Black);
+    mWindow.setView(mMainView);
+    mArena.draw(mWindow, sf::RenderStates::Default);
     mWindow.display();
 }
 
-void Game::handlePlayerInput(sf::Keyboard::Key key, bool isPressed)
-{
-    if (key == sf::Keyboard::Key::Up)
-        mIsMovingUp = isPressed;
-    else if (key == sf::Keyboard::Key::Down)
-        mIsMovingDown = isPressed;
-    else if (key == sf::Keyboard::Key::Left)
-        mIsMovingLeft = isPressed;
-    else if (key == sf::Keyboard::Key::Right)
-        mIsMovingRight = isPressed;
-}
+

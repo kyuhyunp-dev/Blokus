@@ -7,6 +7,9 @@ Path.cpp
 Nodes/SceneNode.cpp
 Nodes/BlockNode.cpp
 Nodes/PieceNode.cpp
+Nodes/TrayNode.cpp
+Nodes/BoardNode.cpp
+Arena.cpp
 )
 
 # Link dependencies

@@ -2,7 +2,7 @@
 
 #include "Resource/ResourceHolder.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
-#include "Resource/Path.hpp"
+#include "Path.hpp"
 #include <iostream>
 
 

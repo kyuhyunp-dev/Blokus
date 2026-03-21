@@ -1,4 +1,4 @@
-#include "Resource/Path.hpp"
+#include "Path.hpp"
 
 #include <filesystem>
 namespace fs = std::filesystem;
