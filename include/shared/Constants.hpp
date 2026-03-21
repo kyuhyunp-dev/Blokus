@@ -9,7 +9,7 @@
 namespace Blokus
 {
     inline constexpr int MaxBlocks = 5;
-    inline constexpr int BoardSize = 10;
+    inline constexpr int BoardSize = 12;
 
     inline constexpr std::array<sf::Vector2i, 4> CardinalOffsets = 
     {
@@ -55,8 +55,8 @@ namespace Blokus
         }
     };
 
-    const static int CanonicalCount = 21;
-    const static int PolyominoCount= 91;
+    const int CanonicalCount = 21;
+    const int PolyominoCount= 91;
     
     struct Polyomino
     {
@@ -77,6 +77,19 @@ namespace Blokus
         {
         }
     };
+
+    inline int getIndex(int x, int y) 
+    { 
+        return y * BoardSize + x; 
+    }
+
+    inline sf::Vector2i getCoord(int index) 
+    { 
+        return { index % BoardSize, index / BoardSize }; 
+    }
+
+    const int DeckSize = 18;
 }
+
 
 #endif

@@ -1,5 +1,6 @@
 #include "Game.hpp"
 #include "Resource/Path.hpp"
+#include "shared/Team.hpp"
 
 #include <stdexcept>
 #include <iostream>
@@ -8,19 +9,20 @@
 const float Game::PlayerSpeed = 100.f;
 const sf::Time Game::TimePerFrame = sf::seconds(1.f / 60.f);
 
+
 Game::Game(FontHolder& fonts, TextureHolder& textures)
     : mWindow(sf::VideoMode({ 640, 480 }), "Blokus", sf::Style::Close)
     , mTextures(textures)
     , mFonts(fonts)
     , mStatistics()
-    , mTiles(textures.get(Textures::ID::Tiles))
+    , mPiece(88, Team::Green, textures)
     , mIsMovingUp(false)
     , mIsMovingDown(false)
     , mIsMovingRight(false)
     , mIsMovingLeft(false)
 {
-    mTiles.setPosition({ 100.f, 100.f });
-    mTiles.setScale({ 1.f / 20.f, 1.f / 20.f });
+
+    mPiece.setPosition({ 100.f, 100.f });
 }
 
 void Game::run()
@@ -81,15 +83,15 @@ void Game::update(sf::Time elapsedTime)
     if (mIsMovingRight)
         movement.x += PlayerSpeed;
 
-    mTiles.move(movement * elapsedTime.asSeconds());
+    mPiece.move(movement * elapsedTime.asSeconds());
 }
 
 void Game::render()
 {
     mWindow.clear();
-    mWindow.draw(mTiles);
-    std::cout << mTiles.getPosition().x << ", "
-    << mTiles.getPosition().y << "\n";
+    mWindow.draw(mPiece);
+    std::cout << mPiece.getPosition().x << ", "
+    << mPiece.getPosition().y << "\n";
     mWindow.display();
 }
 

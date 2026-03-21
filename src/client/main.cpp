@@ -17,7 +17,7 @@ int main(int argc, char** argv)
 
     FontHolder fonts;
 	std::string fontFilename = getAssetPath("client/fonts/sansation.ttf");
-    fonts.open(Fonts::ID::Sansation, fontFilename);
+    fonts.load(Fonts::ID::Sansation, fontFilename);
 
     TextureHolder textures;
     std::string tileFilename = getAssetPath("client/textures/tiles.png");

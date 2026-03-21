@@ -1,8 +1,12 @@
 # Define library to be shared with tests
-add_library(BlokusClientLib STATIC 
-Game.cpp 
+add_library(BlokusClientLib STATIC
+Game.cpp
+Arena.cpp
 StatisticsTracker.cpp
-Resource/Path.cpp 
+Path.cpp
+Nodes/SceneNode.cpp
+Nodes/BlockNode.cpp
+Nodes/PieceNode.cpp
 )
 
 # Link dependencies
