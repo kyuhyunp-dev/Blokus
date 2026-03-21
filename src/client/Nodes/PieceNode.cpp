@@ -1,5 +1,6 @@
 #include "Nodes/PieceNode.hpp"
 #include "Nodes/BlockNode.hpp"
+#include "Config.hpp"
 
 #include "SFML/Graphics/Rect.hpp"
 
@@ -8,7 +9,7 @@
 
 
 sf::IntRect getRect(Team team) {
-    int tileSize = static_cast<int>(Blokus::TileSize);
+    int tileSize = static_cast<int>(Config::TileSize);
     sf::Vector2i size = {tileSize, tileSize};
 
     switch(team) 
@@ -29,6 +30,7 @@ sf::IntRect getRect(Team team) {
 PieceNode::PieceNode(int pieceId, const Team team, TextureHolder& textures)
     : mCurrentId(pieceId)
     , mTeam(team)
+    , mState(PieceState::Ready)
     , mTextures(textures)
 {
    updateLayout();
@@ -63,7 +65,18 @@ void PieceNode::updateLayout()
         auto block = std::make_unique<BlockNode>(
             mTextures.get(Textures::Tiles), getRect(mTeam));
         
-        block->setPosition({pos.x * Blokus::GridSize, pos.y * Blokus::GridSize});
+        block->setPosition({pos.x * Config::GridSize, pos.y * Config::GridSize});
         attachChild(std::move(block));
     } 
 }
+
+void PieceNode::setState(PieceState state)
+{
+    mState = state;
+}
+
+PieceState PieceNode::getState() const
+{
+    return mState;
+}
+

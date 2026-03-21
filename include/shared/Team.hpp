@@ -1,13 +1,16 @@
 #ifndef TEAM_HPP
 #define TEAM_HPP
 
-enum class Team : int
+enum Team : int
 {
-    None = 0,
+    None = -1,
     Red,
     Blue,
     Yellow,
-    Green
+    Green,
+    TeamCount
 };
+
+
 
 #endif

@@ -37,6 +37,8 @@ class SceneNode : public sf::Transformable, public  sf::Drawable
 
         void clearChildren();
 
+        virtual bool contains(sf::Vector2f worldPoint) const; 
+
     private:
         virtual void updateCurrent(sf::Time dt);
         

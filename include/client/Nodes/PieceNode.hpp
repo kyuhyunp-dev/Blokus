@@ -10,6 +10,13 @@
 #include "Nodes/SceneNode.hpp"
 
 
+enum class PieceState
+{
+    Ready,
+    Moving,
+    Placed
+};
+
 class PieceNode : public SceneNode 
 {
 public:
@@ -21,12 +28,17 @@ public:
 
     const Team getTeam() const;
 
+    void setState(PieceState state);
+
+    PieceState getState() const;
+
 private:
     void updateLayout();
 
 private:
     int mCurrentId;
     const Team mTeam;
+    PieceState mState;
     TextureHolder& mTextures;
 };
 

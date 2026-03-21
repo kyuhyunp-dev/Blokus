@@ -102,3 +102,14 @@ void SceneNode::clearChildren()
 {
     mChildren.clear();
 }
+
+bool SceneNode::contains(sf::Vector2f worldPoint) const 
+{
+    for (const auto& child : mChildren) 
+    {
+        if (child->contains(worldPoint)) 
+            return true;
+    }
+
+    return false;
+}
