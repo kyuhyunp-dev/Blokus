@@ -4,7 +4,7 @@
 #include "StatisticsTracker.hpp"
 #include "Resource/ResourceHolder.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
-#include "Nodes/PieceNode.hpp"
+#include "Arena.hpp"
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -24,23 +24,22 @@ class Game
         explicit Game(FontHolder& fonts, TextureHolder& textures);
         void run();
 
-        //
-        void updateStatistics(sf::Time elapsedTime);
-
     private:
         void processEvents();
         void update(sf::Time elapsedTime);
         void render();
 
-        void handlePlayerInput(sf::Keyboard::Key key, bool isPressed);
+        void updateView(sf::Vector2u windowSize);
+
 
     private:
         static const float PlayerSpeed;
         static const sf::Time TimePerFrame;
-
+        
         sf::RenderWindow mWindow;
+        sf::View mMainView;
 
-        PieceNode mPiece;
+        Arena mArena;
 
         TextureHolder &mTextures;
         FontHolder &mFonts;
