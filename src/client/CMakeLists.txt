@@ -10,6 +10,9 @@ Nodes/PieceNode.cpp
 Nodes/TrayNode.cpp
 Nodes/BoardNode.cpp
 Arena.cpp
+
+Command/Command.cpp
+Command/CommandQueue.cpp
 )
 
 # Link dependencies
