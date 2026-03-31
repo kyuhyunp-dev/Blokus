@@ -158,3 +158,21 @@ TEST(PieceNodeTest, CShapeContains)
     // Fifth Bock
     EXPECT_TRUE(cShape->contains({Config::GridSize + gridMid, Config::GridSize * 2 + gridMid}));
 }
+
+TEST(PieceNodeTest, ConstructorSetsOriginToCentroid) {
+    // 1. Setup Mock/Stub dependencies
+    MockTextureHolder testTextures;
+    testTextures.load(Textures::Tiles, "dummy_data");
+
+    // 2. Initialize Blue Domino (0, 0), (0, 1)
+    PieceNode piece(1, Team::Blue, testTextures);
+
+    // 3. Manually calculate expected centroid for validation
+    sf::Vector2f expectedCentroid = { Config::GridSize / 2.f, Config::GridSize };
+           
+    // 4. Assert
+    sf::Vector2f actualOrigin = piece.getCentroid();
+    
+    EXPECT_NEAR(actualOrigin.x, expectedCentroid.x, 0.001f);
+    EXPECT_NEAR(actualOrigin.y, expectedCentroid.y, 0.001f);
+} 

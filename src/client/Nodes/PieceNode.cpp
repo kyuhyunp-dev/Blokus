@@ -32,8 +32,10 @@ PieceNode::PieceNode(int pieceId, const Team team, TextureHolder& textures)
     , mTeam(team)
     , mState(PieceState::Ready)
     , mTextures(textures)
+    , mCentroid()
 {
    updateLayout();
+   setCentroid();
 }
 
 int PieceNode::getId() const
@@ -78,5 +80,28 @@ void PieceNode::setState(PieceState state)
 PieceState PieceNode::getState() const
 {
     return mState;
+}
+
+void PieceNode::setCentroid()
+{
+    const auto &library = Blokus::PolyominoGenerator::getData();
+    const auto &coordinates = library.polyominoById.at(mCurrentId).blocks;
+
+    mCentroid = { 0.f, 0.f };
+    for (const auto& pos : coordinates) 
+    {
+        mCentroid.x += pos.x * Config::GridSize + Config::GridSize / 2.f;
+        mCentroid.y += pos.y * Config::GridSize + Config::GridSize / 2.f;
+    } 
+
+    mCentroid = { 
+        mCentroid.x / coordinates.size() , 
+        mCentroid.y / coordinates.size() 
+    };
+}
+
+sf::Vector2f PieceNode::getCentroid() const
+{
+    return mCentroid;
 }
 
