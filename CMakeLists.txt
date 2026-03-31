@@ -19,7 +19,7 @@ include(FetchContent)
 FetchContent_Declare(SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
     GIT_TAG 3.0.1
-    GIT_SHALLOW ON
+    GIT_PROGRESS ON
     EXCLUDE_FROM_ALL
     SYSTEM)
 FetchContent_MakeAvailable(SFML)
@@ -28,7 +28,7 @@ FetchContent_MakeAvailable(SFML)
 FetchContent_Declare(spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
     GIT_TAG v1.14.1   # latest as of 2025
-    GIT_SHALLOW ON
+    GIT_PROGRESS ON
     EXCLUDE_FROM_ALL
     SYSTEM)
 FetchContent_MakeAvailable(spdlog)
@@ -36,8 +36,8 @@ FetchContent_MakeAvailable(spdlog)
 # Fetch flatbuffers
 FetchContent_Declare(flatbuffers
   GIT_REPOSITORY https://github.com/google/flatbuffers.git
-  GIT_TAG        v23.5.26
-  GIT_SHALLOW    ON       
+  GIT_TAG v23.5.26
+  GIT_PROGRESS ON       
   EXCLUDE_FROM_ALL            
   SYSTEM                          
 )

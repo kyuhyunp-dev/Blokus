@@ -32,14 +32,20 @@ public:
 
     PieceState getState() const;
 
+    sf::Vector2f getCentroid() const;
+
 private:
     void updateLayout();
+
+    void setCentroid();
 
 private:
     int mCurrentId;
     const Team mTeam;
     PieceState mState;
     TextureHolder& mTextures;
+
+    sf::Vector2f mCentroid;
 };
 
 #endif
