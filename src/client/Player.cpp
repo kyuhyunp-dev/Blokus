@@ -3,6 +3,7 @@
 #include "Command/CommandQueue.hpp"
 #include "Referee.hpp"
 #include "Nodes/Arena.hpp"
+#include "Nodes/PieceNode.hpp"
 #include "Query/TrayQuery.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -23,6 +24,16 @@ void Player::setQuery(TrayQuery* tray)
 
 void Player::handleEvent(const sf::Event& event, CommandQueue& commands)
 {
+    if (auto mouseMoved = event.getIf<sf::Event::MouseMoved>())
+    {
+        if (mHeldPieceId)
+        {
+            sf::Vector2i mousePos = mouseMoved->position;
+            sf::Vector2f worldPos = mWindow.mapPixelToCoords(mousePos);
+            pushMoveCommand(worldPos, commands);
+        }
+    }
+
     if (auto mousePressed = event.getIf<sf::Event::MouseButtonPressed>())
     {
         // If mouse touched a piece
@@ -39,8 +50,6 @@ void Player::handleEvent(const sf::Event& event, CommandQueue& commands)
                 mHeldPieceId = id; 
             }
         } 
-       
-        // If mouse doesn't touch any pieces
     }
 }
 
@@ -63,3 +72,15 @@ void Player::pushGrabCommand(int id, sf::Vector2f worldPos, CommandQueue& comman
     commands.push(grab);
 }
 
+void Player::pushMoveCommand(sf::Vector2f worldPos, CommandQueue& commands)
+{
+    Command move;
+    move.category = Category::ActivePiece;
+    move.action = derivedAction<PieceNode>(
+        [worldPos](PieceNode& piece, sf::Time) 
+    {
+        piece.setPosition(worldPos);
+    });
+
+    commands.push(move); 
+}

@@ -99,3 +99,31 @@ TEST_F(PlayerTest, DoubleGrab) {
     EXPECT_TRUE(commands.isEmpty());
     EXPECT_EQ(player->getHeldPieceId(), 7);
 } 
+
+TEST_F(PlayerTest, Move) {
+    sf::Vector2f targetPos(500.f, 600.f);
+    sf::Event moveEvent = sf::Event::MouseMoved{{500, 600}};
+
+    player->handleEvent(moveEvent, commands);
+    EXPECT_TRUE(commands.isEmpty());
+
+    // Click piece 7
+    mockTray.responseId = 7;   
+    
+    sf::Event::MouseButtonPressed mousePressed;
+    mousePressed.button = sf::Mouse::Button::Left;
+    mousePressed.position = {100, 100}; 
+
+    player->handleEvent(mousePressed, commands);
+    
+    EXPECT_FALSE(commands.isEmpty());
+    Command cmd = commands.pop();
+        
+    // Mouse Move
+    player->handleEvent(moveEvent, commands);
+
+    EXPECT_FALSE(commands.isEmpty());
+    cmd = commands.pop();
+    
+    EXPECT_EQ(cmd.category, Category::ActivePiece);
+}

@@ -37,6 +37,8 @@ class Player
     private:
         void pushGrabCommand(int id, sf::Vector2f worldPos, CommandQueue& commands);
 
+        void pushMoveCommand(sf::Vector2f worldPos, CommandQueue& commands);
+
     private:
         sf::RenderWindow& mWindow;
 
