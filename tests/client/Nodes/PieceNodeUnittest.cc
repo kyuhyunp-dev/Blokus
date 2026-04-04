@@ -83,21 +83,6 @@ TEST(PieceNodeTest, SetIdUpdatesBlocks)
     EXPECT_EQ(piece.getChildCount(), 2); // The test now proves the layout updated!
 }
 
-TEST(PieceNodeTest, State) 
-{
-    MockTextureHolder testTextures;
-    testTextures.load(Textures::Tiles, "dummy_data");
-
-    PieceNode piece(0, Team::Blue, testTextures);
-    EXPECT_EQ(piece.getState(), PieceState::Ready);
-
-    piece.setState(PieceState::Moving);
-    EXPECT_EQ(piece.getState(), PieceState::Moving);
-
-    piece.setState(PieceState::Placed);
-    EXPECT_EQ(piece.getState(), PieceState::Placed);
-}
-
 TEST(PieceNodeTest, MonominoContains) 
 {
     MockTextureHolder testTextures;

@@ -18,12 +18,8 @@ int main(int argc, char** argv)
     FontHolder fonts;
 	std::string fontFilename = getAssetPath("client/fonts/sansation.ttf");
     fonts.load(Fonts::ID::Sansation, fontFilename);
-
-    TextureHolder textures;
-    std::string tileFilename = getAssetPath("client/textures/tiles.png");
-    textures.load(Textures::ID::Tiles, tileFilename);
     
-    Game game(fonts, textures);
+    Game game(fonts);
     game.run();
 
     return 0;

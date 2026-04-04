@@ -1,0 +1,79 @@
+#include <gtest/gtest.h>
+#include "Nodes/Arena.hpp"
+#include "Nodes/PieceNode.hpp"
+#include "Nodes/TrayNode.hpp"
+#include "Command/CommandQueue.hpp"
+#include "Mock/MockTextureHolder.hpp"
+
+#include <SFML/Graphics/RenderTexture.hpp>
+
+ 
+class ArenaTest : public ::testing::Test 
+{
+protected:
+    void SetUp() override 
+    {
+        if (!target.resize({1024, 768})) {
+            throw std::runtime_error("Failed to create RenderTexture for testing");
+        }
+
+        mockTextures.load(Textures::ID::Tiles, "unused_path");
+
+        arena = std::make_unique<Arena>(target, mockTextures, deck, commands);
+        arena->buildScene();
+    }
+
+    // Mock/Real objects used in the test
+    MockTextureHolder mockTextures;
+    sf::RenderTexture target; // Headless or dummy for internal refs
+    const std::array<int, Blokus::DeckSize> deck = 
+    {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17}; 
+    CommandQueue commands;
+
+    std::unique_ptr<Arena> arena; 
+};
+
+TEST_F(ArenaTest, GrabPiece) {
+    GTEST_FLAG_SET(death_test_style, "threadsafe");
+
+    // 1. Arrange
+    int targetId = 5;
+    sf::Vector2f targetPos(150.f, 200.f);
+    
+    // Ensure the piece exists in the tray first
+    auto* tray = arena->getTrayNode();
+    auto* actionLayer = arena->getLayer(Arena::Action);
+
+    // 2. Act
+    arena->grabPiece(targetId, targetPos);
+
+    // 3. Assert: Position and Origin
+    // We find the piece in the Action Layer now 
+    ASSERT_EQ(actionLayer->getChildCount(), 1);
+    auto* grabbedPiece = static_cast<PieceNode*>(actionLayer->getChildren().back());
+    
+    EXPECT_EQ(grabbedPiece->getId(), targetId);
+    EXPECT_EQ(grabbedPiece->getPosition(), targetPos);
+    
+    // Verify Origin is set to Centroid
+    // (Assuming PieceNode has a getCentroid method)
+    EXPECT_EQ(grabbedPiece->getOrigin(), grabbedPiece->getCentroid());
+
+    ASSERT_DEATH({
+        arena->grabPiece(targetId, targetPos);
+    }, "Piece ID not found"); 
+
+    ASSERT_DEATH({
+        tray->withdrawPiece(targetId);
+    }, "Piece ID not found"); 
+}
+
+TEST_F(ArenaTest, GrabInvalidPiece) {
+    GTEST_FLAG_SET(death_test_style, "threadsafe");
+
+    int fakeId = 999; 
+    // This expects the process to terminate because of the assert()
+    ASSERT_DEATH({
+        arena->grabPiece(fakeId, {0,0});
+    }, "Invalid ID"); 
+}

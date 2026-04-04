@@ -1,3 +1,6 @@
+#ifndef CONFIG_HPP
+#define CONFIG_HPP
+
 #include <SFML/System/Vector2.hpp>
 #include "shared/Constants.hpp"
 
@@ -17,3 +20,5 @@ namespace Config {
 
     const float Padding = 100.f;
 }
+
+#endif

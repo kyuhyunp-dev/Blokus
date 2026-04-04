@@ -15,7 +15,6 @@ void TrayNode::addPiece(int slotId, PiecePtr piece)
     
     // Position the piece within the Tray's local space
     piece->setPosition(calculateSlotPosition(slotId));
-    piece->setState(PieceState::Ready);
 
     // Store a raw pointer for quick lookup (The "Ref")
     // This allows withdrawPiece(slotId) to know WHICH child to detach.
@@ -28,51 +27,23 @@ void TrayNode::addPiece(int slotId, PiecePtr piece)
 
 // The "Dumb" extraction: Just gives up ownership of the piece at slotId
 // The Player class decides when to call this based on getSlotManifest()
-TrayNode::PiecePtr TrayNode::withdrawPiece(int slotId)
+TrayNode::PiecePtr TrayNode::withdrawPiece(int pieceId)
 {
     // Check if the slot actually has a piece (isOccupied logic)
-    auto it = mSlots.find(slotId);
-    assert(it != mSlots.end()); 
+    auto it = std::find_if(mSlots.begin(), mSlots.end(), 
+    [pieceId](const auto& pair) {
+        return pair.second->getId() == pieceId;
+    });
+    assert(it != mSlots.end() && "Piece ID not found in Tray slots!"); 
 
     // Remove the entry from the map (the slot is now "not occupied")
     PieceNode* target = it->second;
+    target->setSlotId(it->first);
+
     mSlots.erase(it);
-
     auto detached = detachChild(*target);
+    assert(dynamic_cast<PieceNode*>(detached.get()) != nullptr);
     return PiecePtr(static_cast<PieceNode*>(detached.release()));
-}
-
-// Returns a snapshot of all slots for the Player/Controller to perform hit-tests
-std::vector<SlotInfo> TrayNode::getSlotManifest() const
-{
-    std::vector<SlotInfo> manifest;
-    manifest.reserve(Blokus::DeckSize);
-
-    for (int id = 0; id < Blokus::DeckSize; ++id) 
-    {
-        auto it = mSlots.find(id);
-        bool isOccupied = (it != mSlots.end());
-
-        std::optional<int> pieceId = std::nullopt;
-        std::function<bool(sf::Vector2f)> hitTest = [](sf::Vector2f) 
-        { 
-            return false; 
-        };
- 
-        if (isOccupied) {
-            PieceNode* piece = it->second;
-            pieceId = piece->getId();
-
-            hitTest = [piece](sf::Vector2f point) 
-            { 
-                return piece->contains(point); 
-            };
-        }
-        
-        manifest.push_back({ pieceId, hitTest });
-    }
-
-    return manifest;
 }
 
 void TrayNode::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const
@@ -98,4 +69,15 @@ sf::Vector2f TrayNode::calculateSlotPosition(int slotId) const
     float y = row * (mSlotHeight + mPadding);
 
     return { x, y };
+}
+
+std::optional<int> TrayNode::getPieceIdAt(sf::Vector2f worldPos) const 
+{
+    for (auto const& [slotId, piece] : mSlots) {
+        if (piece->contains(worldPos)) {
+            return piece->getId(); // We found a piece!
+        }
+    }
+
+    return std::nullopt;
 }

@@ -5,19 +5,15 @@
 #include "PieceNode.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
 #include "Config.hpp"
+#include "Query/TrayQuery.hpp"
 
 #include <map>
 #include <vector>
 #include <memory>
 
 
-// Data structure to expose slot info to the Player class
-struct SlotInfo {
-    std::optional<int> pieceId;
-    std::function<bool(sf::Vector2f)> hitTest; 
-};
-
-class TrayNode : public SceneNode {
+class TrayNode : public SceneNode, public TrayQuery
+{
 public:
 	typedef std::unique_ptr<PieceNode> PiecePtr;    
 
@@ -29,10 +25,9 @@ public:
 
     // The "Dumb" extraction: Just gives up ownership of the piece at slotId
     // The Player class decides when to call this based on getSlotManifest()
-    PiecePtr withdrawPiece(int slotId);
+    PiecePtr withdrawPiece(int pieceId);
 
-    // Returns a snapshot of all slots for the Player/Controller to perform hit-tests
-    std::vector<SlotInfo> getSlotManifest() const;
+    std::optional<int> getPieceIdAt(sf::Vector2f worldPos) const override;
 
 private:
     // SceneNode overrides

@@ -1,4 +1,6 @@
 #include "Nodes/SceneNode.hpp" 
+#include "Command/Command.hpp"
+
 #include <algorithm>
 #include <cassert>
 
@@ -92,6 +94,15 @@ size_t SceneNode::getChildCount() const
 { 
     return mChildren.size(); 
 }
+
+std::vector<SceneNode*> SceneNode::getChildren() const 
+{
+    std::vector<SceneNode*> children;
+    for (const auto& child : mChildren) {
+        children.push_back(child.get());
+    }
+    return children;
+}
         
 SceneNode* SceneNode::getParent() const 
 { 
@@ -112,4 +123,25 @@ bool SceneNode::contains(sf::Vector2f worldPoint) const
     }
 
     return false;
+}
+
+void SceneNode::onCommand(const Command& command, sf::Time dt)
+{
+    // 1. Check if this specific node belongs to the targeted category
+    // Using bitwise AND (&) allows one node to belong to multiple categories
+    if (command.category & getCategory())
+    {
+        command.action(*this, dt);
+    }
+
+    // 2. Recursively pass the command to all children
+    for (const auto& child : mChildren)
+    {
+        child->onCommand(command, dt);
+    }
+}
+
+unsigned int SceneNode::getCategory() const
+{
+    return Category::Scene;
 }

@@ -4,7 +4,9 @@
 #include "StatisticsTracker.hpp"
 #include "Resource/ResourceHolder.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
-#include "Arena.hpp"
+#include "Nodes/Arena.hpp"
+#include "Player.hpp"
+#include "Command/CommandQueue.hpp"
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -21,7 +23,7 @@ class Game
         Game(const Game&) = delete;
         Game& operator=(const Game&) = delete;
 
-        explicit Game(FontHolder& fonts, TextureHolder& textures);
+        explicit Game(FontHolder& fonts);
         void run();
 
     private:
@@ -30,7 +32,8 @@ class Game
         void render();
 
         void updateView(sf::Vector2u windowSize);
-
+        void setQuery();
+        void loadTextures();
 
     private:
         static const float PlayerSpeed;
@@ -40,16 +43,13 @@ class Game
         sf::View mMainView;
 
         Arena mArena;
+        Player mPlayer;
+        CommandQueue mCommandQueue;
 
-        TextureHolder &mTextures;
+        TextureHolder mTextures;
         FontHolder &mFonts;
 
         StatisticsTracker mStatistics;
-        
-        bool mIsMovingUp;
-        bool mIsMovingDown;
-        bool mIsMovingRight;
-        bool mIsMovingLeft;
 };
 
 #endif

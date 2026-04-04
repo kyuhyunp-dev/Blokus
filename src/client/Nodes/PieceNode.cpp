@@ -29,8 +29,8 @@ sf::IntRect getRect(Team team) {
 
 PieceNode::PieceNode(int pieceId, const Team team, TextureHolder& textures)
     : mCurrentId(pieceId)
+    , mSlotId(std::nullopt)
     , mTeam(team)
-    , mState(PieceState::Ready)
     , mTextures(textures)
     , mCentroid()
 {
@@ -72,16 +72,6 @@ void PieceNode::updateLayout()
     } 
 }
 
-void PieceNode::setState(PieceState state)
-{
-    mState = state;
-}
-
-PieceState PieceNode::getState() const
-{
-    return mState;
-}
-
 void PieceNode::setCentroid()
 {
     const auto &library = Blokus::PolyominoGenerator::getData();
@@ -103,5 +93,15 @@ void PieceNode::setCentroid()
 sf::Vector2f PieceNode::getCentroid() const
 {
     return mCentroid;
+}
+
+void PieceNode::setSlotId(int slotId) 
+{
+    mSlotId = slotId;
+}
+
+std::optional<int> PieceNode::getSlotId() const
+{
+    return mSlotId;
 }
 

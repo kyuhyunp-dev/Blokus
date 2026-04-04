@@ -11,6 +11,7 @@
 #include <vector>
 #include <memory>
 
+class Command;
 
 class SceneNode : public sf::Transformable, public  sf::Drawable
 {
@@ -32,12 +33,18 @@ class SceneNode : public sf::Transformable, public  sf::Drawable
 
         // Helper for your Unit Tests
         size_t getChildCount() const;
+
+        std::vector<SceneNode*> getChildren() const;
         
         SceneNode* getParent() const; 
 
         void clearChildren();
 
-        virtual bool contains(sf::Vector2f worldPoint) const; 
+        virtual bool contains(sf::Vector2f worldPoint) const;
+        
+        void onCommand(const Command& command, sf::Time dt);
+
+        virtual unsigned int getCategory() const;
 
     private:
         virtual void updateCurrent(sf::Time dt);

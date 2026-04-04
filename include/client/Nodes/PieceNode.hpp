@@ -28,11 +28,11 @@ public:
 
     const Team getTeam() const;
 
-    void setState(PieceState state);
-
-    PieceState getState() const;
-
     sf::Vector2f getCentroid() const;
+
+    void setSlotId(int slotId);
+
+    std::optional<int> getSlotId() const;
 
 private:
     void updateLayout();
@@ -41,8 +41,9 @@ private:
 
 private:
     int mCurrentId;
+    std::optional<int> mSlotId;
+
     const Team mTeam;
-    PieceState mState;
     TextureHolder& mTextures;
 
     sf::Vector2f mCentroid;
