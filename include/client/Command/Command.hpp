@@ -18,7 +18,6 @@ struct Command
 
     ActionFunc action;
     unsigned int category = Category::None; // Filters which nodes listen
-    Player::Action actionType = Player::Action::ActionCount; // For logging/debugging
 };
 
 template <typename GameObject, typename Function>

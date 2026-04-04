@@ -4,8 +4,9 @@ add_executable(BlokusClientTests
     Resource/ResourceHolderUnittest.cc
     Nodes/SceneNodeUnittest.cc
     Nodes/PieceNodeUnittest.cc
+    Nodes/ArenaUnittest.cc
     Command/CommandQueueUnittest.cc
-
+    PlayerUnittest.cc
     # add other test files here
 )
 

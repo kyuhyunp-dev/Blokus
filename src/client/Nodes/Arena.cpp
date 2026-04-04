@@ -1,39 +1,27 @@
-#include "Arena.hpp"
+#include "Nodes/Arena.hpp"
 #include "Nodes/BoardNode.hpp"
 #include "Nodes/TrayNode.hpp"
-#include "Nodes/InteractionNode.hpp"
 #include "shared/Team.hpp"
 #include "Path.hpp"
+#include "Command/CommandQueue.hpp"
+
+#include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Window/Mouse.hpp>
 
 #include <memory>
 
 
-Arena::Arena(std::array<int, Blokus::DeckSize> deck)
-    : mTextures()
+Arena::Arena(sf::RenderTarget& target, TextureHolder& textures, std::array<int, Blokus::DeckSize> deck, CommandQueue& commands)
+    : mTarget(target)
+    , mTextures(textures)
     , mSceneLayers()
-    , mSceneGraph()
     , mBoard(nullptr)
     , mTray(nullptr)
+    , mCommands(commands)
     , mActiveTeam(Team::Red)
     , mTeam(Team::Red)
     , mDeck(deck)
 {
-    loadTextures();
-    buildScene();
-}
-
-// The "Engine" - Processes the commands sent by the Player
-void Arena::update(sf::Time dt)
-{
-    // CommandQueue processing will be implemented in next PR
-    // For now, this just updates the scene hierarchy
-    mSceneGraph.update(dt);
-}
-
-void Arena::loadTextures()
-{
-    std::string tileFile = getAssetPath("client/textures/tiles.png");
-    mTextures.load(Textures::ID::Tiles, tileFile);
 }
 
 void Arena::buildScene()
@@ -44,7 +32,7 @@ void Arena::buildScene()
         auto layer = std::make_unique<SceneNode>();
         mSceneLayers[i] = layer.get();
 
-        mSceneGraph.attachChild(std::move(layer));
+        SceneNode::attachChild(std::move(layer));
     }
 
     auto board = std::make_unique<BoardNode>(mTextures);
@@ -70,7 +58,33 @@ void Arena::buildScene()
     }
 }
 
-void Arena::draw(sf::RenderTarget& target, sf::RenderStates states) const
+unsigned int Arena::getCategory() const
 {
-    target.draw(mSceneGraph, states);
+    return Category::Arena;
 }
+
+void Arena::grabPiece(int id, sf::Vector2f worldPos) 
+{
+    assert(id >= 0 && id < Blokus::PolyominoCount && "Invalid ID");
+    //  Pull from Tray (The Tray identifies it by ID now, not position)
+    auto piece = mTray->withdrawPiece(id);
+    
+    // Transformation & Handoff
+    piece->setOrigin(piece->getCentroid());
+
+    piece->setPosition(worldPos); 
+     
+    mSceneLayers[Action]->attachChild(std::move(piece));
+}
+
+TrayNode* Arena::getTrayNode() const
+{
+    return mTray;
+}
+
+SceneNode* Arena::getLayer(Layer layer) const 
+{ 
+    return mSceneLayers[layer]; 
+}
+
+

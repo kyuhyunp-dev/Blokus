@@ -2,6 +2,7 @@
 #include "Path.hpp"
 #include "shared/Team.hpp"
 #include "Config.hpp"
+#include "Nodes/TrayNode.hpp"
 
 #include <stdexcept>
 #include <iostream>
@@ -10,20 +11,24 @@
 const float Game::PlayerSpeed = 100.f;
 const sf::Time Game::TimePerFrame = sf::seconds(1.f / 60.f);
 
+// Precondition: must be unique
+const std::array<int, Blokus::DeckSize> deck = 
+{0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17}; 
 
-Game::Game(FontHolder& fonts, TextureHolder& textures)
+
+Game::Game(FontHolder& fonts)
     : mWindow(sf::VideoMode({Config::ScreenWidth, Config::ScreenHeight}) , "Blokus")
     , mMainView()
-    , mTextures(textures)
+    , mTextures()
     , mFonts(fonts)
     , mStatistics()
-    , mArena({14, 18, 17, 16, 15, 14, 13, 12, 11, 9, 10, 11, 12, 13, 14, 15, 16, 17}) 
-    , mIsMovingUp(false)
-    , mIsMovingDown(false)
-    , mIsMovingRight(false)
-    , mIsMovingLeft(false)
+    , mArena(mWindow, mTextures, deck, mCommandQueue) 
+    , mPlayer(mWindow)
 {
     updateView(mWindow.getSize());
+    loadTextures();
+    mArena.buildScene();
+    setQuery();     
 }
 
 void Game::run()
@@ -64,11 +69,18 @@ void Game::processEvents()
             updateView({resized->size});
         }
 
+        mPlayer.handleEvent(event.value(), mCommandQueue);
     }
 }
 
 void Game::update(sf::Time elapsedTime)
 {
+    while (!mCommandQueue.isEmpty())
+    {
+        // Arena receives the command and tells all its children (Tray, Board, ActiveNode)
+        mArena.onCommand(mCommandQueue.pop(), elapsedTime);
+    }
+
     mArena.update(elapsedTime);
 }
 
@@ -100,8 +112,19 @@ void Game::render()
 {
     mWindow.clear(sf::Color::Black);
     mWindow.setView(mMainView);
-    mArena.draw(mWindow, sf::RenderStates::Default);
+    mWindow.draw(mArena);   
     mWindow.display();
 }
 
+void Game::setQuery()
+{
+    assert(dynamic_cast<TrayQuery*>(mArena.getTrayNode()) != nullptr);
+    TrayQuery* trayPtr = static_cast<TrayQuery*>(mArena.getTrayNode());
+    mPlayer.setQuery(trayPtr);
+}
 
+void Game::loadTextures()
+{
+    std::string tileFile = getAssetPath("client/textures/tiles.png");
+    mTextures.load(Textures::ID::Tiles, tileFile); 
+}
