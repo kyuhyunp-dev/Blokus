@@ -8,6 +8,7 @@
 #include "Resource/ResourceHolder.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
 #include "Nodes/SceneNode.hpp"
+#include "Command/Category.hpp"
 
 
 enum class PieceState
@@ -34,6 +35,10 @@ public:
 
     std::optional<int> getSlotId() const;
 
+    void setCategoryType(Category::Type category);
+
+    unsigned int getCategory() const;
+
 private:
     void updateLayout();
 
@@ -44,6 +49,7 @@ private:
     std::optional<int> mSlotId;
 
     const Team mTeam;
+    Category::Type mCategory;
     TextureHolder& mTextures;
 
     sf::Vector2f mCentroid;
