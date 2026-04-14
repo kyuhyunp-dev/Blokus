@@ -56,6 +56,32 @@ cmake --build .
 ```
 ./bin/BlokusClient
 ```
+
+#### Debug Unit Test
+- Run Unit test on lldb
+```
+lldb ./bin/tests/BlokusClientTests
+```
+
+- Set Breakpoint Example
+```
+(lldb) b Player.cpp:45
+```
+
+`n` (next line)
+
+`s` (step into function)
+
+`p mHeldPiece` (print the value of a variable)
+
+`c` (continue to next breakpoint)
+
+- Backtrace Example
+```
+(lldb) run
+(lldb) bt
+```
+
 ### Visual Studio
 `Ctrl+S` to configure
 
