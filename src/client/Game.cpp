@@ -3,6 +3,7 @@
 #include "shared/Team.hpp"
 #include "Config.hpp"
 #include "Nodes/TrayNode.hpp"
+#include "Nodes/BoardNode.hpp"
 
 #include <stdexcept>
 #include <iostream>
@@ -120,7 +121,11 @@ void Game::setQuery()
 {
     assert(dynamic_cast<TrayQuery*>(mArena.getTrayNode()) != nullptr);
     TrayQuery* trayPtr = static_cast<TrayQuery*>(mArena.getTrayNode());
-    mPlayer.setQuery(trayPtr);
+
+    assert(dynamic_cast<BoardQuery*>(mArena.getBoardNode()) != nullptr);
+    BoardQuery* boardPtr = static_cast<BoardQuery*>(mArena.getBoardNode());
+
+    mPlayer.setQuery(trayPtr, boardPtr);
 }
 
 void Game::loadTextures()

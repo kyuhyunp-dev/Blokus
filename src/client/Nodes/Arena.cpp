@@ -82,6 +82,11 @@ TrayNode* Arena::getTrayNode() const
     return mTray;
 }
 
+BoardNode* Arena::getBoardNode() const
+{
+    return mBoard;
+}
+
 SceneNode* Arena::getLayer(Layer layer) const 
 { 
     return mSceneLayers[layer]; 

@@ -12,6 +12,8 @@ namespace sf
 class Referee;
 class CommandQueue;
 class TrayQuery;
+class BoardQuery;
+class PieceNode;
 
 class Player
 {
@@ -28,23 +30,24 @@ class Player
     public:
         Player(sf::RenderWindow& window);
         
-        void setQuery(TrayQuery* tray);
+        void setQuery(TrayQuery* tray, BoardQuery* board);
 
         void handleEvent(const sf::Event& event, CommandQueue& commands);
 
         std::optional<int> getHeldPieceId() const;
 
     private:
-        void pushGrabCommand(int id, sf::Vector2f worldPos, CommandQueue& commands);
+        void pushGrabCommand(sf::Vector2f worldPos, CommandQueue& commands);
 
         void pushMoveCommand(sf::Vector2f worldPos, CommandQueue& commands);
 
     private:
         sf::RenderWindow& mWindow;
 
-        TrayQuery* mTray;
-      
-        std::optional<int> mHeldPieceId; // used as a state
+        TrayQuery* mTrayPtr;
+        BoardQuery* mBoardPtr;
+        PieceNode* mHeldPiecePtr; 
+
         std::map<sf::Keyboard::Key, Transformation> mKeyBinding;
 };
 

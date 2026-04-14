@@ -2,30 +2,44 @@
 #include <SFML/Graphics.hpp>
 #include "Player.hpp"
 #include "Command/CommandQueue.hpp"
-#include "Mock/MockTrayQuery.hpp"
+#include "Mock/Query/MockTrayQuery.hpp"
+#include "Mock/Query/MockBoardQuery.hpp"
 
 
 class PlayerTest : public ::testing::Test {
 protected:
+    PlayerTest() 
+        : mockTextures()           // Initialize textures first
+        , mockTray(mockTextures)   // Pass reference to mockTray
+        , mockBoard()              // Default construct board
+        , player(nullptr)          // Set to null until SetUp
+    {
+    }
+
     void SetUp() override
     {
         window.create(sf::VideoMode({800, 600}), "Test Window");
         // RenderWindow can be initialized headlessly in SFML for most logic
         // MockTrayQuery is passed to the player (via a setter or constructor)
         player = std::make_unique<Player>(window);
-        player->setQuery(&mockTray);
+        player->setQuery(&mockTray, &mockBoard);
+        
+        mockTextures.load(Textures::Tiles, "unused_path");
     }
 
+    MockTextureHolder mockTextures;
     sf::RenderWindow window;
     MockTrayQuery mockTray;
+    MockBoardQuery mockBoard;
     CommandQueue commands;
     std::unique_ptr<Player> player;
 };
 
 TEST_F(PlayerTest, ValidGrab) {
     // 1. Arrange
-    mockTray.responseId = 7; // Pretend Piece #7 is at the click location
-    
+    int responseId = 7;
+    mockTray.setPiece(responseId);
+
     // Create a fake MouseButtonPressed event
     sf::Event::MouseButtonPressed mousePressed;
     mousePressed.button = sf::Mouse::Button::Left;
@@ -36,7 +50,7 @@ TEST_F(PlayerTest, ValidGrab) {
 
     // 3. Assert
     EXPECT_FALSE(commands.isEmpty());
-    EXPECT_EQ(player->getHeldPieceId(), mockTray.responseId);
+    EXPECT_EQ(player->getHeldPieceId(), responseId);
 
     int size = 0;
     while (!commands.isEmpty()) 
@@ -51,8 +65,9 @@ TEST_F(PlayerTest, ValidGrab) {
 
 TEST_F(PlayerTest, RightClickGrab) {
     // 1. Arrange
-    mockTray.responseId = 7; // Pretend Piece #7 is at the click location
-    
+    int responseId = 7; 
+    mockTray.setPiece(responseId);
+
     // Create a fake MouseButtonPressed event
     sf::Event::MouseButtonPressed mousePressed;
     mousePressed.button = sf::Mouse::Button::Right;
@@ -68,7 +83,8 @@ TEST_F(PlayerTest, RightClickGrab) {
 
 TEST_F(PlayerTest, DoubleGrab) {
     // 1. Arrange: Player is already holding a piece
-    mockTray.responseId = 7;   
+    int responseId = 7; 
+    mockTray.setPiece(responseId); 
     
     sf::Event::MouseButtonPressed mousePressed;
     mousePressed.button = sf::Mouse::Button::Left;
@@ -94,7 +110,9 @@ TEST_F(PlayerTest, DoubleGrab) {
     EXPECT_EQ(player->getHeldPieceId(), 7);
     
     // 3. Assert
-    mockTray.responseId = 8;
+    responseId = 8;
+    mockTray.setPiece(responseId);
+
     player->handleEvent(mousePressed, commands);
     EXPECT_TRUE(commands.isEmpty());
     EXPECT_EQ(player->getHeldPieceId(), 7);
@@ -108,7 +126,8 @@ TEST_F(PlayerTest, Move) {
     EXPECT_TRUE(commands.isEmpty());
 
     // Click piece 7
-    mockTray.responseId = 7;   
+    int responseId = 7; 
+    mockTray.setPiece(responseId); 
     
     sf::Event::MouseButtonPressed mousePressed;
     mousePressed.button = sf::Mouse::Button::Left;

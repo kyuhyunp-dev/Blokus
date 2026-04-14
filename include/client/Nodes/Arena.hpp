@@ -39,6 +39,8 @@ public:
 
     TrayNode* getTrayNode() const;
 
+    BoardNode* getBoardNode() const; 
+
     SceneNode* getLayer(Layer layer) const;
 
 private:

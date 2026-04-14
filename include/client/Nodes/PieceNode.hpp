@@ -38,6 +38,7 @@ public:
     void setCategoryType(Category::Type category);
 
     unsigned int getCategory() const;
+    
 
 private:
     void updateLayout();

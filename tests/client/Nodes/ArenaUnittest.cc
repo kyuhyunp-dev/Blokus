@@ -3,7 +3,7 @@
 #include "Nodes/PieceNode.hpp"
 #include "Nodes/TrayNode.hpp"
 #include "Command/CommandQueue.hpp"
-#include "Mock/MockTextureHolder.hpp"
+#include "Mock/Resource/MockTextureHolder.hpp"
 
 #include <SFML/Graphics/RenderTexture.hpp>
 

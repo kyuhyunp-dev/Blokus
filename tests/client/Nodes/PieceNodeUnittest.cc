@@ -1,4 +1,4 @@
-#include "MockTextureHolder.hpp"
+#include "Mock/Resource/MockTextureHolder.hpp"
 
 #include <gtest/gtest.h>
 #include "Nodes/PieceNode.hpp" 
@@ -93,7 +93,7 @@ TEST(PieceNodeTest, MonominoContains)
     monomino->setPosition({0.f, 0.f});
     EXPECT_EQ(monomino->getChildCount(), 1);
     
-    EXPECT_FALSE(monomino->contains({-1, 0}));
+    EXPECT_FALSE(monomino-> contains({-1, 0}));
     EXPECT_FALSE(monomino->contains({0, -1}));
     EXPECT_FALSE(monomino->contains({Config::GridSize, 0}));
     EXPECT_FALSE(monomino->contains({0, Config::GridSize}));
