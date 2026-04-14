@@ -36,14 +36,16 @@ sf::FloatRect BoardNode::getGlobalBounds() const
     return getTransform().transformRect(mBackground.getGlobalBounds());
 }
 
-bool BoardNode::placePiece(std::unique_ptr<PieceNode> piece, int gridX, int gridY)
-{ // TODO
-    return checkPlacement(*piece, gridX, gridY);
-}
+sf::Vector2i BoardNode::getMinSnappedGrid(sf::Vector2f worldPos, sf::Vector2f minOffset) const
+{
+    sf::Vector2f boardLocalPos = getInverseTransform().transformPoint(worldPos);
+    sf::Vector2f localTopLeft = boardLocalPos - minOffset;
 
-bool BoardNode::checkPlacement(const PieceNode& piece, int gridX, int gridY) const
-{ // TODO
-    return false;
+    sf::Vector2i minSnappedGrid;
+    minSnappedGrid.x = static_cast<int>(std::round(localTopLeft.x / Config::GridSize));
+    minSnappedGrid.y = static_cast<int>(std::round(localTopLeft.y / Config::GridSize));
+
+    return minSnappedGrid;
 }
 
 void BoardNode::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const

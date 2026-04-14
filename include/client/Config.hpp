@@ -15,7 +15,7 @@ namespace Config {
     };
 
     // --- Board Geometry (12x12) ---
-    const float GridSize = 35.f; 
+    const float GridSize = 40.f; 
     const float TileSize = 512.f;
 
     const float Padding = 100.f;

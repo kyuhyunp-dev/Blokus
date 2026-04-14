@@ -71,13 +71,13 @@ sf::Vector2f TrayNode::calculateSlotPosition(int slotId) const
     return { x, y };
 }
 
-std::optional<int> TrayNode::getPieceIdAt(sf::Vector2f worldPos) const 
+PieceNode* TrayNode::getPieceAt(sf::Vector2f worldPos) const 
 {
     for (auto const& [slotId, piece] : mSlots) {
         if (piece->contains(worldPos)) {
-            return piece->getId(); // We found a piece!
+            return piece; // We found a piece!
         }
     }
 
-    return std::nullopt;
+    return nullptr;
 }

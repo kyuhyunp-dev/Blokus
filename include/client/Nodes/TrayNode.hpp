@@ -27,7 +27,7 @@ public:
     // The Player class decides when to call this based on getSlotManifest()
     PiecePtr withdrawPiece(int pieceId);
 
-    std::optional<int> getPieceIdAt(sf::Vector2f worldPos) const override;
+    PieceNode* getPieceAt(sf::Vector2f worldPos) const override;
 
 private:
     // SceneNode overrides

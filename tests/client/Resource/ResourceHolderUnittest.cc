@@ -1,5 +1,5 @@
 #include "Resource/ResourceHolder.hpp"
-#include "MockResource.hpp"
+#include "Mock/Resource/MockResource.hpp"
 
 #include "gtest/gtest.h"
 #include <memory>

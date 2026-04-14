@@ -8,7 +8,7 @@ class TrayQuery
 {
 public:
     virtual ~TrayQuery() = default;
-    virtual std::optional<int> getPieceIdAt(sf::Vector2f worldPos) const = 0;
+    virtual PieceNode* getPieceAt(sf::Vector2f worldPos) const = 0;
 };
 
 #endif
