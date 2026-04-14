@@ -1,6 +1,7 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
+#include "shared/Team.hpp"
 #include "SFML/Window/Event.hpp"
 #include <map>
 
@@ -32,9 +33,13 @@ class Player
         
         void setQuery(TrayQuery* tray, BoardQuery* board);
 
+        void setTeam(Team team);
+        
         void handleEvent(const sf::Event& event, CommandQueue& commands);
 
         std::optional<int> getHeldPieceId() const;
+
+        Team getTeam() const;
 
     private:
         void pushGrabCommand(sf::Vector2f worldPos, CommandQueue& commands);
@@ -43,6 +48,8 @@ class Player
 
     private:
         sf::RenderWindow& mWindow;
+
+        Team mTeam = Team::None; 
 
         TrayQuery* mTrayPtr;
         BoardQuery* mBoardPtr;

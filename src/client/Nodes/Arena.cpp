@@ -11,7 +11,7 @@
 #include <memory>
 
 
-Arena::Arena(sf::RenderTarget& target, TextureHolder& textures, std::array<int, Blokus::DeckSize> deck, CommandQueue& commands)
+Arena::Arena(sf::RenderTarget& target, TextureHolder& textures, std::array<int, Blokus::DeckSize> deck, CommandQueue& commands, Team team)
     : mTarget(target)
     , mTextures(textures)
     , mSceneLayers()
@@ -19,7 +19,7 @@ Arena::Arena(sf::RenderTarget& target, TextureHolder& textures, std::array<int, 
     , mTray(nullptr)
     , mCommands(commands)
     , mActiveTeam(Team::Red)
-    , mTeam(Team::Red)
+    , mTeam(team)
     , mDeck(deck)
 {
 }

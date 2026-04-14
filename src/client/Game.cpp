@@ -6,7 +6,6 @@
 #include "Nodes/BoardNode.hpp"
 
 #include <stdexcept>
-#include <iostream>
 
 
 const float Game::PlayerSpeed = 100.f;
@@ -23,13 +22,15 @@ Game::Game(FontHolder& fonts)
     , mTextures()
     , mFonts(fonts)
     , mStatistics()
-    , mArena(mWindow, mTextures, deck, mCommandQueue) 
+    , mArena(mWindow, mTextures, deck, mCommandQueue, Team::Red) 
     , mPlayer(mWindow)
 {
     updateView(mWindow.getSize());
     loadTextures();
     mArena.buildScene();
-    setQuery();     
+    setQuery();    
+
+    mPlayer.setTeam(Team::Red);
 }
 
 void Game::run()

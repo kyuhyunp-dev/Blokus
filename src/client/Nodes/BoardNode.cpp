@@ -5,7 +5,7 @@
 
 
 BoardNode::BoardNode(TextureHolder& textures)
-: mBoardLines(sf::PrimitiveType::Lines, (Blokus::BoardSize + 1) * 4)
+    : mBoardLines(sf::PrimitiveType::Lines, (Blokus::BoardSize + 1) * 4)
 { // Should use private functions to organize code FirstMove, grid, background, score etc.
     float boardSize = Blokus::BoardSize * Config::GridSize;
     
@@ -48,6 +48,17 @@ sf::Vector2i BoardNode::getMinSnappedGrid(sf::Vector2f worldPos, sf::Vector2f mi
     return minSnappedGrid;
 }
 
+unsigned int BoardNode::getCategory() const
+{
+    return Category::Board;
+}
+
+void BoardNode::updateShadow(int pieceId, sf::Vector2i minSnappedGrid, sf::Color color)
+{
+    mShadow = { pieceId, minSnappedGrid, color };
+}
+
+
 void BoardNode::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const
 {
     // Draw background
@@ -56,7 +67,34 @@ void BoardNode::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) c
     // Draw grid lines
     target.draw(mBoardLines, states);
 
-    // Shadow piece is drawn by Arena's Interaction layer, not here
-    // This keeps shared visuals (Board, Tray) separate from player-specific (InteractionNode)
+    if (mShadow) 
+    {
+        drawShadow(target, states);
+    }
+}   
+
+void BoardNode::drawShadow(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    const auto &library = Blokus::PolyominoGenerator::getData();
+    const auto &coordinates = library.polyominoById.at(mShadow->pieceId).blocks;
+
+    sf::RectangleShape rect(sf::Vector2f(Config::GridSize, Config::GridSize));
+    rect.setFillColor(mShadow->color);
+
+    for (const auto& offset : coordinates)
+    {
+        sf::Vector2i gridPos = mShadow->minCoord + offset;
+        if (gridPos.x >= 0 && gridPos.x < Blokus::BoardSize &&
+            gridPos.y >= 0 && gridPos.y < Blokus::BoardSize)
+        {
+            float px = gridPos.x * Config::GridSize;
+            float py = gridPos.y * Config::GridSize;
+            
+            rect.setPosition({px, py});
+            target.draw(rect, states); 
+        }
+    }
 }
+
+
 

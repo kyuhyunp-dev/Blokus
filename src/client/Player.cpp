@@ -1,9 +1,11 @@
 #include "Player.hpp"
 
+#include "Config.hpp"
 #include "Command/CommandQueue.hpp"
 #include "Referee.hpp"
 #include "Nodes/Arena.hpp"
 #include "Nodes/PieceNode.hpp"
+#include "Nodes/BoardNode.hpp"
 #include "Query/TrayQuery.hpp"
 #include "Query/BoardQuery.hpp"
 
@@ -26,6 +28,11 @@ void Player::setQuery(TrayQuery* trayPtr, BoardQuery* boardPtr)
 
     assert(boardPtr != nullptr);
     mBoardPtr = boardPtr;
+}
+
+void Player::setTeam(Team team)
+{
+    mTeam = team;
 }
 
 void Player::handleEvent(const sf::Event& event, CommandQueue& commands)
@@ -68,6 +75,10 @@ std::optional<int> Player::getHeldPieceId() const
     return std::nullopt;
 }
 
+Team Player::getTeam() const
+{
+    return mTeam;
+}
 
 void Player::pushGrabCommand(sf::Vector2f worldPos, CommandQueue& commands)
 {
@@ -96,9 +107,16 @@ void Player::pushMoveCommand(sf::Vector2f worldPos, CommandQueue& commands)
 
     assert(mHeldPiecePtr);
     sf::Vector2i minSnappedGrid = mBoardPtr->getMinSnappedGrid(worldPos, mHeldPiecePtr->getCentroid());
-    if (minSnappedGrid.x >= 0 && minSnappedGrid.x < Blokus::BoardSize &&
-        minSnappedGrid.y >= 0 && minSnappedGrid.y < Blokus::BoardSize) 
-    {
-        std::cout << minSnappedGrid.x << ", " << minSnappedGrid.y << "\n";
-    }
+    
+    int pieceId = mHeldPiecePtr->getId();
+    sf::Color color = Config::getShadowColor(mTeam);
+
+    Command shadow;
+    shadow.category = Category::Board;
+    shadow.action = derivedAction<BoardNode>([pieceId, minSnappedGrid, color](BoardNode& board, sf::Time) {
+        board.updateShadow(pieceId, minSnappedGrid, color);
+    });
+    commands.push(shadow);    
 }
+
+
