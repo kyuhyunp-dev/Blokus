@@ -4,6 +4,8 @@
 #include "Command/CommandQueue.hpp"
 #include "Mock/Query/MockTrayQuery.hpp"
 #include "Mock/Query/MockBoardQuery.hpp"
+#include "Mock/Nodes/MockBoardNode.hpp"
+#include "Config.hpp"
 
 
 class PlayerTest : public ::testing::Test {
@@ -34,6 +36,7 @@ protected:
     CommandQueue commands;
     std::unique_ptr<Player> player;
 };
+
 
 TEST_F(PlayerTest, ValidGrab) {
     // 1. Arrange
@@ -119,7 +122,6 @@ TEST_F(PlayerTest, DoubleGrab) {
 } 
 
 TEST_F(PlayerTest, Move) {
-    sf::Vector2f targetPos(500.f, 600.f);
     sf::Event moveEvent = sf::Event::MouseMoved{{500, 600}};
 
     player->handleEvent(moveEvent, commands);
@@ -135,14 +137,69 @@ TEST_F(PlayerTest, Move) {
 
     player->handleEvent(mousePressed, commands);
     
-    EXPECT_FALSE(commands.isEmpty());
-    Command cmd = commands.pop();
+    int size = 0;
+    while (!commands.isEmpty()) 
+    {
+        Command command = commands.pop(); 
+        EXPECT_EQ(command.category, Category::Arena);
+        ++size;
+    }
+    EXPECT_EQ(size, 1); 
         
     // Mouse Move
+    Team color = Team::Red;
+    sf::Vector2i grid = {300, 300};
+
+    player->setTeam(color);
+    mockBoard.setMinSnappedGrid(grid);
+    moveEvent = sf::Event::MouseMoved{{300, 300}};
     player->handleEvent(moveEvent, commands);
 
-    EXPECT_FALSE(commands.isEmpty());
-    cmd = commands.pop();
-    
-    EXPECT_EQ(cmd.category, Category::ActivePiece);
-}
+    size = 0;
+    while (!commands.isEmpty()) 
+    {
+        Command command = commands.pop(); 
+        EXPECT_EQ(command.category, Category::ActivePiece);
+
+        command = commands.pop(); 
+        EXPECT_EQ(command.category, Category::Board);
+
+        MockBoardNode spyBoard(mockTextures);
+        command.action(spyBoard, sf::Time::Zero);
+
+        EXPECT_EQ(spyBoard.lastPieceId, responseId);
+        EXPECT_EQ(spyBoard.lastCoord, grid);
+        EXPECT_EQ(spyBoard.lastColor, Config::getShadowColor(color));
+
+        ++size;
+    }
+    EXPECT_EQ(size, 1);
+
+    color = Team::Blue;
+    grid = {400, 400};
+
+    player->setTeam(color);
+    mockBoard.setMinSnappedGrid(grid);
+    moveEvent = sf::Event::MouseMoved{{300, 300}};
+    player->handleEvent(moveEvent, commands);
+
+    size = 0;
+    while (!commands.isEmpty()) 
+    {
+        Command command = commands.pop(); 
+        EXPECT_EQ(command.category, Category::ActivePiece);
+
+        command = commands.pop(); 
+        EXPECT_EQ(command.category, Category::Board);
+        
+        MockBoardNode spyBoard(mockTextures);
+        command.action(spyBoard, sf::Time::Zero);
+
+        EXPECT_EQ(spyBoard.lastPieceId, responseId);
+        EXPECT_EQ(spyBoard.lastCoord, grid);
+        EXPECT_EQ(spyBoard.lastColor, Config::getShadowColor(color));
+
+        ++size;
+    }
+    EXPECT_EQ(size, 1);
+} 

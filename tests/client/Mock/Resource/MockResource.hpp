@@ -1,3 +1,6 @@
+#ifndef MOCK_RESOURCE_HPP
+#define MOCK_RESOURCE_HPP
+
 #include <string>
 
 
@@ -45,3 +48,5 @@ enum class ResourceID
 {
     First = 0 
 };
+
+#endif

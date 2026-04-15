@@ -19,7 +19,7 @@ protected:
 
         mockTextures.load(Textures::ID::Tiles, "unused_path");
 
-        arena = std::make_unique<Arena>(target, mockTextures, deck, commands);
+        arena = std::make_unique<Arena>(target, mockTextures, deck, commands, Team::Blue);
         arena->buildScene();
     }
 

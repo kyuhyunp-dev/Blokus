@@ -1,3 +1,6 @@
+#ifndef MOCK_TEXTUREHOLDER_HPP
+#define MOCK_TEXTUREHOLDER_HPP
+
 #include "Resource/ResourceHolder.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
 
@@ -14,3 +17,5 @@ public:
         insertResource(id, std::move(dummy));
     }
 };
+
+#endif

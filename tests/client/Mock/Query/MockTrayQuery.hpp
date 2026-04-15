@@ -1,3 +1,6 @@
+#ifndef MOCK_TRAY_QUERY_HPP
+#define MOCK_TRAY_QUERY_HPP
+
 #include "Query/TrayQuery.hpp"
 #include "Mock/Resource/MockTextureHolder.hpp"
 #include "shared/Team.hpp"
@@ -32,3 +35,5 @@ private:
     MockTextureHolder& mTextures;
     std::vector<std::unique_ptr<PieceNode>> mPieceVault; 
 };
+
+#endif

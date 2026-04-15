@@ -29,7 +29,7 @@ public:
     };
 
 public:
-    Arena(sf::RenderTarget& window, TextureHolder& textures, std::array<int, Blokus::DeckSize> deck, CommandQueue &commands);
+    Arena(sf::RenderTarget& window, TextureHolder& textures, std::array<int, Blokus::DeckSize> deck, CommandQueue &commands, Team team);
 
     void buildScene();
 
