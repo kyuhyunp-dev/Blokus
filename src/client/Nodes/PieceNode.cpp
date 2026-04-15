@@ -106,13 +106,3 @@ std::optional<int> PieceNode::getSlotId() const
 {
     return mSlotId;
 }
-
-void PieceNode::setCategoryType(Category::Type category)
-{
-    mCategory = category;
-}
-
-unsigned int PieceNode::getCategory() const
-{
-    return mCategory;
-}

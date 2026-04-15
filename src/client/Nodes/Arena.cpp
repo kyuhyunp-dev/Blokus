@@ -73,7 +73,6 @@ void Arena::grabPiece(int id, sf::Vector2f worldPos)
     piece->setOrigin(piece->getCentroid());
     piece->setPosition(worldPos); 
     
-    piece->setCategoryType(Category::ActivePiece);
     mSceneLayers[Action]->attachChild(std::move(piece));
 }
 

@@ -55,8 +55,6 @@ TEST_F(ArenaTest, GrabPiece) {
     EXPECT_EQ(grabbedPiece->getId(), targetId);
     EXPECT_EQ(grabbedPiece->getPosition(), targetPos);
 
-    EXPECT_EQ(grabbedPiece->getCategory(), Category::ActivePiece);
-    
     // Verify Origin is set to Centroid
     // (Assuming PieceNode has a getCentroid method)
     EXPECT_EQ(grabbedPiece->getOrigin(), grabbedPiece->getCentroid());
