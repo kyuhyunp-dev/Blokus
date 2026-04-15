@@ -48,6 +48,8 @@ void PieceNode::setId(int pieceId)
     mCurrentId = pieceId;
 
     updateLayout();
+    setCentroid();
+    setOrigin(mCentroid);
 }
 
 const Team PieceNode::getTeam() const
