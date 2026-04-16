@@ -19,16 +19,6 @@ class PieceNode;
 class Player
 {
     public:
-        enum Transformation
-        {
-            RotateCW,
-            RotateCCW,
-            FlipH,
-            FlipV,
-            TransformationCount
-        };
-
-    public:
         Player(sf::RenderWindow& window);
         
         void setQuery(TrayQuery* tray, BoardQuery* board);
@@ -42,9 +32,23 @@ class Player
         Team getTeam() const;
 
     private:
-        void pushGrabCommand(sf::Vector2f worldPos, CommandQueue& commands);
+        enum Transformation
+        {
+            RotateCW,
+            RotateCCW,
+            ReflectH,
+            ReflectV,
+            TransformationCount
+        };
 
-        void pushMoveCommand(sf::Vector2f worldPos, CommandQueue& commands);
+    private:
+        void pushGrabCommand(sf::Vector2f worldPos, CommandQueue& commands) const;
+
+        void pushShadowCommand(sf::Vector2f worldPos, CommandQueue& command) const;
+        
+        int getTransformedId(int currentId, Transformation transform) const;
+
+        void initialzeKeys();
 
     private:
         sf::RenderWindow& mWindow;

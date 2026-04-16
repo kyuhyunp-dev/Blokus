@@ -5,6 +5,7 @@
 #include "Mock/Query/MockTrayQuery.hpp"
 #include "Mock/Query/MockBoardQuery.hpp"
 #include "Mock/Nodes/MockBoardNode.hpp"
+#include "shared/PolyominoUtil.hpp"
 #include "Config.hpp"
 
 
@@ -60,6 +61,9 @@ TEST_F(PlayerTest, ValidGrab) {
     {
         Command command = commands.pop(); 
         EXPECT_EQ(command.category, Category::Arena);
+
+        command = commands.pop(); 
+        EXPECT_EQ(command.category, Category::Board);
         ++size;
     }
 
@@ -102,22 +106,39 @@ TEST_F(PlayerTest, DoubleGrab) {
     {
         Command command = commands.pop(); 
         EXPECT_EQ(command.category, Category::Arena);
+
+        command = commands.pop(); 
+        EXPECT_EQ(command.category, Category::Board);
         ++size;
     }
 
     EXPECT_EQ(size, 1);
 
     // 2. Act: Click again
+    size = 0;
     player->handleEvent(mousePressed, commands);
-    EXPECT_TRUE(commands.isEmpty());
+    while (!commands.isEmpty()) 
+    {
+        Command command = commands.pop(); 
+        EXPECT_EQ(command.category, Category::Board);
+        ++size;
+    }
+    EXPECT_EQ(size, 1);
     EXPECT_EQ(player->getHeldPieceId(), 7);
     
     // 3. Assert
     responseId = 8;
     mockTray.setPiece(responseId);
 
+    size = 0;
     player->handleEvent(mousePressed, commands);
-    EXPECT_TRUE(commands.isEmpty());
+    while (!commands.isEmpty()) 
+    {
+        Command command = commands.pop(); 
+        EXPECT_EQ(command.category, Category::Board);
+        ++size;
+    } 
+    EXPECT_EQ(size, 1);
     EXPECT_EQ(player->getHeldPieceId(), 7);
 } 
 
@@ -142,6 +163,9 @@ TEST_F(PlayerTest, Move) {
     {
         Command command = commands.pop(); 
         EXPECT_EQ(command.category, Category::Arena);
+
+        command = commands.pop(); 
+        EXPECT_EQ(command.category, Category::Board);
         ++size;
     }
     EXPECT_EQ(size, 1); 
@@ -159,9 +183,6 @@ TEST_F(PlayerTest, Move) {
     while (!commands.isEmpty()) 
     {
         Command command = commands.pop(); 
-        EXPECT_EQ(command.category, Category::ActivePiece);
-
-        command = commands.pop(); 
         EXPECT_EQ(command.category, Category::Board);
 
         MockBoardNode spyBoard(mockTextures);
@@ -187,9 +208,6 @@ TEST_F(PlayerTest, Move) {
     while (!commands.isEmpty()) 
     {
         Command command = commands.pop(); 
-        EXPECT_EQ(command.category, Category::ActivePiece);
-
-        command = commands.pop(); 
         EXPECT_EQ(command.category, Category::Board);
         
         MockBoardNode spyBoard(mockTextures);
@@ -203,3 +221,47 @@ TEST_F(PlayerTest, Move) {
     }
     EXPECT_EQ(size, 1);
 } 
+
+TEST_F(PlayerTest, Transform) {
+    Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::getData();
+
+    int initialId = 19; 
+    mockTray.setPiece(initialId);
+    
+    // Simulate a grab (Left click)
+    sf::Event::MouseButtonPressed pressEvent;
+    pressEvent.button = sf::Mouse::Button::Left;
+    pressEvent.position = {100, 100};
+    player->handleEvent(pressEvent, commands);
+
+    // Rotate CW
+    sf::Event cwEvent = sf::Event::KeyPressed{sf::Keyboard::Key::R};
+    player->handleEvent(cwEvent, commands);
+
+    int cwId = library.clockwiseRotatedIds[initialId];
+    ASSERT_TRUE(player->getHeldPieceId().has_value());
+    EXPECT_EQ(player->getHeldPieceId().value(), cwId); 
+
+    // Rotate CCW
+    sf::Event ccwEvent = sf::Event::KeyPressed{sf::Keyboard::Key::C};
+    player->handleEvent(ccwEvent, commands);
+
+    ASSERT_TRUE(player->getHeldPieceId().has_value());
+    EXPECT_EQ(player->getHeldPieceId().value(), initialId); 
+
+    // Horizontal Reflection
+    int hId = library.horizontallyReflectedIds[initialId];
+    sf::Event hEvent = sf::Event::KeyPressed{sf::Keyboard::Key::H};
+    player->handleEvent(hEvent, commands);
+
+    ASSERT_TRUE(player->getHeldPieceId().has_value());
+    EXPECT_EQ(player->getHeldPieceId().value(), hId); 
+
+    // Vertical Reflection
+    int vId = library.clockwiseRotatedIds[cwId];
+    sf::Event vEvent = sf::Event::KeyPressed{sf::Keyboard::Key::V};
+    player->handleEvent(vEvent, commands);
+
+    ASSERT_TRUE(player->getHeldPieceId().has_value());
+    EXPECT_EQ(player->getHeldPieceId().value(), vId); 
+}

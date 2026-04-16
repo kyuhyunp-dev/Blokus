@@ -19,6 +19,7 @@ Player::Player(sf::RenderWindow& window)
     , mBoardPtr(nullptr)
     , mHeldPiecePtr(nullptr) 
 {
+    initialzeKeys();
 }
 
 void Player::setQuery(TrayQuery* trayPtr, BoardQuery* boardPtr)
@@ -43,18 +44,15 @@ void Player::handleEvent(const sf::Event& event, CommandQueue& commands)
         {
             sf::Vector2i mousePos = mouseMoved->position;
             sf::Vector2f worldPos = mWindow.mapPixelToCoords(mousePos);
-            pushMoveCommand(worldPos, commands);
-        }
+            mHeldPiecePtr->setPosition(worldPos);
+        } 
     }
 
     if (auto mousePressed = event.getIf<sf::Event::MouseButtonPressed>())
     {
-        // If mouse touched a piece
         if (mousePressed->button == sf::Mouse::Button::Left 
-            && !mHeldPiecePtr) //mReferee.canGrab ->optional PiecePtr
+            && !mHeldPiecePtr) 
         {
-            // 1. Ask Referee: "Is there a piece at this mouse coordinate?"
-            // Referee returns the Piece ID if found, otherwise nullopt.
             sf::Vector2i mousePos = mousePressed->position;
             sf::Vector2f worldPos = mWindow.mapPixelToCoords(mousePos);            
             if (auto piecePtr = mTrayPtr->getPieceAt(worldPos))
@@ -63,6 +61,24 @@ void Player::handleEvent(const sf::Event& event, CommandQueue& commands)
                 pushGrabCommand(worldPos, commands);
             }
         } 
+    }
+
+    if (auto keyPressed = event.getIf<sf::Event::KeyPressed>()) 
+    { // Use function to set the id immediately to change shadow's id
+        auto it = mKeyBinding.find(keyPressed->code);
+        if (it != mKeyBinding.end() && mHeldPiecePtr) 
+        {
+            int pieceId = mHeldPiecePtr->getId(); 
+            mHeldPiecePtr->setId(getTransformedId(pieceId, it->second));
+        }
+    }
+
+    if (mHeldPiecePtr)
+    { // Check shadow 60 times every second
+        sf::Vector2i mousePos = sf::Mouse::getPosition(mWindow);
+        sf::Vector2f worldPos = mWindow.mapPixelToCoords(mousePos);
+        
+        pushShadowCommand(worldPos, commands);
     }
 }
 
@@ -80,7 +96,7 @@ Team Player::getTeam() const
     return mTeam;
 }
 
-void Player::pushGrabCommand(sf::Vector2f worldPos, CommandQueue& commands)
+void Player::pushGrabCommand(sf::Vector2f worldPos, CommandQueue& commands) const
 {
     Command grab;
     grab.category = Category::Arena;
@@ -93,18 +109,8 @@ void Player::pushGrabCommand(sf::Vector2f worldPos, CommandQueue& commands)
     commands.push(grab);
 }
 
-void Player::pushMoveCommand(sf::Vector2f worldPos, CommandQueue& commands)
+void Player::pushShadowCommand(sf::Vector2f worldPos, CommandQueue& commands) const
 {
-    Command move;
-    move.category = Category::ActivePiece;
-    move.action = derivedAction<PieceNode>(
-        [worldPos](PieceNode& piece, sf::Time) 
-    {
-        piece.setPosition(worldPos);
-    });
-
-    commands.push(move); 
-
     assert(mHeldPiecePtr);
     sf::Vector2i minSnappedGrid = mBoardPtr->getMinSnappedGrid(worldPos, mHeldPiecePtr->getCentroid());
     
@@ -117,6 +123,63 @@ void Player::pushMoveCommand(sf::Vector2f worldPos, CommandQueue& commands)
         board.updateShadow(pieceId, minSnappedGrid, color);
     });
     commands.push(shadow);    
+}
+
+void Player::initialzeKeys()
+{
+    mKeyBinding[sf::Keyboard::Key::R] = RotateCW;
+    mKeyBinding[sf::Keyboard::Key::C] = RotateCCW;
+    mKeyBinding[sf::Keyboard::Key::H] = ReflectH;
+    mKeyBinding[sf::Keyboard::Key::V] = ReflectV;
+}
+
+int Player::getTransformedId(int currentId, Transformation transform) const
+{
+    assert(currentId >= 0 && currentId < Blokus::PolyominoCount);
+    const auto& library = Blokus::PolyominoGenerator::getData();
+
+    switch(transform) 
+    {
+        case Transformation::RotateCW: 
+        {
+            return library.clockwiseRotatedIds.at(currentId);
+        }
+
+        case Transformation::RotateCCW: 
+        {
+            // Rotate CCW = Rotate CW three times
+            int id = currentId;
+            for (int i = 0; i < 3; ++i)
+            {
+                id = library.clockwiseRotatedIds.at(id);
+            }
+            
+            return id;
+        }
+
+        case Transformation::ReflectH: 
+        {
+            return library.horizontallyReflectedIds.at(currentId);
+        }
+
+        case Transformation::ReflectV:
+        {
+            // Vertical Flip = Horizontal Flip -> Rotate CW -> Rotate CW
+            int id = library.horizontallyReflectedIds.at(currentId);
+            
+            for (int i = 0; i < 2; ++i)
+            {
+                id = library.clockwiseRotatedIds.at(id);
+            }
+
+            return id; 
+        }
+
+        default:
+        {
+            assert(false && "Invalid Transformation!");
+        }
+    }
 }
 
 

@@ -48,6 +48,8 @@ void PieceNode::setId(int pieceId)
     mCurrentId = pieceId;
 
     updateLayout();
+    setCentroid();
+    setOrigin(mCentroid);
 }
 
 const Team PieceNode::getTeam() const
@@ -103,14 +105,4 @@ void PieceNode::setSlotId(int slotId)
 std::optional<int> PieceNode::getSlotId() const
 {
     return mSlotId;
-}
-
-void PieceNode::setCategoryType(Category::Type category)
-{
-    mCategory = category;
-}
-
-unsigned int PieceNode::getCategory() const
-{
-    return mCategory;
 }
