@@ -242,6 +242,7 @@ TEST_F(PlayerTest, Transform) {
     ASSERT_TRUE(player->getHeldPieceId().has_value());
     EXPECT_EQ(player->getHeldPieceId().value(), cwId); 
 
+    // Rotate CCW
     sf::Event ccwEvent = sf::Event::KeyPressed{sf::Keyboard::Key::C};
     player->handleEvent(ccwEvent, commands);
 
