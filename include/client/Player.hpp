@@ -2,6 +2,7 @@
 #define PLAYER_HPP
 
 #include "shared/Team.hpp"
+#include "shared/Referee.hpp"
 #include "SFML/Window/Event.hpp"
 #include <map>
 
@@ -10,7 +11,6 @@ namespace sf
     class RenderWindow;
 }
 
-class Referee;
 class CommandQueue;
 class TrayQuery;
 class BoardQuery;
@@ -52,6 +52,7 @@ class Player
 
     private:
         sf::RenderWindow& mWindow;
+        Referee mReferee;
 
         Team mTeam = Team::None; 
 

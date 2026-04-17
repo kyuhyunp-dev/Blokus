@@ -2,6 +2,7 @@
 add_executable(BlokusSharedTests
     PolyominoLoaderUnittest.cc
     PolyominoUtilsUnittest.cc
+    RefereeUnittest.cc
     # add other test files here
 
 )
