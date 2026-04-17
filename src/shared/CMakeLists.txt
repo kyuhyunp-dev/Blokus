@@ -8,6 +8,7 @@ set_source_files_properties("${GEN_HEADER}" PROPERTIES GENERATED TRUE)
 set(SHARED_SOURCES
     PolyominoUtil.cpp
     PolyominoLoader.cpp
+    Referee.cpp
 )
 
 set_source_files_properties(${SHARED_SOURCES} PROPERTIES 
