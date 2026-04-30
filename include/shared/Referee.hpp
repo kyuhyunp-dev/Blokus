@@ -5,6 +5,8 @@
 #include "shared/Constants.hpp"
 #include "shared/PolyominoUtil.hpp"
 
+#include <vector>
+
 
 class Referee 
 {   

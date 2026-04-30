@@ -5,6 +5,8 @@
 #include "shared/Referee.hpp"
 #include "SFML/Window/Event.hpp"
 #include <map>
+#include <optional>
+
 
 namespace sf
 {

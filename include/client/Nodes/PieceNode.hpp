@@ -11,6 +11,8 @@
 #include "Command/Category.hpp"
 #include "Utility.hpp"
 
+#include <optional>
+
 
 enum class PieceState
 {
