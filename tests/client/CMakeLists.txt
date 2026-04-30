@@ -12,10 +12,12 @@ add_executable(BlokusClientTests
     # add other test files here
 )
 
-target_compile_definitions(BlokusClientTests
-    PRIVATE
-        GTEST_LINKED_AS_SHARED_LIBRARY=1
-)
+if(BUILD_SHARED_LIBS)
+    target_compile_definitions(BlokusClientTests
+        PRIVATE
+            GTEST_LINKED_AS_SHARED_LIBRARY=1
+    )
+endif() 
 
 target_link_libraries(BlokusClientTests
     PRIVATE
