@@ -87,8 +87,8 @@ namespace
 
     TEST(ResourceHolderDeathTest, AssertsOnMissingResource) 
     {
-        testing::FLAGS_gtest_death_test_style = "threadsafe";
-        
+        GTEST_FLAG_SET(death_test_style, "threadsafe");
+
         ResourceHolder<sf::Texture, ResourceID> textures;
         
         // We expect the program to 'die' when we call get() for a missing ID

@@ -211,6 +211,7 @@ int Player::getTransformedId(int currentId, Transformation transform) const
         default:
         {
             assert(false && "Invalid Transformation!");
+            return -1;
         }
     }
 }

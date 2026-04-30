@@ -12,10 +12,15 @@ add_executable(BlokusClientTests
     # add other test files here
 )
 
+target_compile_definitions(BlokusClientTests
+    PRIVATE
+        GTEST_LINKED_AS_SHARED_LIBRARY=1
+)
 
 target_link_libraries(BlokusClientTests
     PRIVATE
         BlokusClientLib
+        GTest::gmock      
         GTest::gmock_main        
         spdlog::spdlog
 )
@@ -26,6 +31,7 @@ target_include_directories(BlokusClientTests PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/Mock # The Mock folder
 )
 
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 
 if(MSVC AND WIN32 AND BUILD_SHARED_LIBS)
     add_custom_command(TARGET BlokusClientTests POST_BUILD

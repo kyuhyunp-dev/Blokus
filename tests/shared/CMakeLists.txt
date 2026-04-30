@@ -22,6 +22,7 @@ target_link_libraries(BlokusSharedTests
     PRIVATE
         BlokusSharedLib
         GTest::gtest_main
+        GTest::gmock      
         GTest::gmock_main
 )
 
