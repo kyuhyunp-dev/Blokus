@@ -7,6 +7,9 @@
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Rect.hpp"
 
+#include <cassert>
+
+
 namespace Utility
 {
     inline sf::Color getShadowColor(Team team) 
@@ -42,6 +45,7 @@ namespace Utility
             default:
             {
                 assert(false && "Invalid Team!");
+                break;
             }
         }
 

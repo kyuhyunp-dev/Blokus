@@ -7,6 +7,7 @@
 #include "Nodes/Arena.hpp"
 #include "Player.hpp"
 #include "Command/CommandQueue.hpp"
+#include "shared/Referee.hpp"
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>

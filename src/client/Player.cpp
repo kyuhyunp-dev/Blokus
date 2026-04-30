@@ -16,7 +16,8 @@ Player::Player(sf::RenderWindow& window, Referee& referee)
     , mReferee(referee)
     , mTrayPtr(nullptr)
     , mBoardPtr(nullptr)
-    , mHeldPiecePtr(nullptr) 
+    , mHeldPiecePtr(nullptr)
+    , mCurrentMousePos(0, 0)
 {
     initialzeKeys();
 }
