@@ -4,7 +4,7 @@
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "Config.hpp"
-#include <iostream>
+#include <cmath>
 
 
 BoardNode::BoardNode()
@@ -13,7 +13,7 @@ BoardNode::BoardNode()
     float boardSize = Blokus::BoardSize * Config::GridSize;
     
     // 1. Setup Background
-    mBackground.setSize({boardSize, boardSize});
+    mBackground.setSize({boardSize, boardSize});    
     mBackground.setFillColor(sf::Color::White); 
 
     sf::Color lineCol(100, 100, 100);
