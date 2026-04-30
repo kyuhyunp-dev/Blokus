@@ -1,8 +1,6 @@
 #include "Player.hpp"
 
-#include "Config.hpp"
 #include "Command/CommandQueue.hpp"
-#include "Referee.hpp"
 #include "Nodes/Arena.hpp"
 #include "Nodes/PieceNode.hpp"
 #include "Nodes/BoardNode.hpp"
@@ -13,8 +11,9 @@
 #include <iostream>
 
 
-Player::Player(sf::RenderWindow& window)
+Player::Player(sf::RenderWindow& window, Referee& referee)
     : mWindow(window)
+    , mReferee(referee)
     , mTrayPtr(nullptr)
     , mBoardPtr(nullptr)
     , mHeldPiecePtr(nullptr) 
@@ -38,29 +37,39 @@ void Player::setTeam(Team team)
 
 void Player::handleEvent(const sf::Event& event, CommandQueue& commands)
 {
-    if (auto mouseMoved = event.getIf<sf::Event::MouseMoved>())
-    {
-        if (mHeldPiecePtr)
-        {
-            sf::Vector2i mousePos = mouseMoved->position;
-            sf::Vector2f worldPos = mWindow.mapPixelToCoords(mousePos);
-            mHeldPiecePtr->setPosition(worldPos);
-        } 
-    }
-
     if (auto mousePressed = event.getIf<sf::Event::MouseButtonPressed>())
     {
-        if (mousePressed->button == sf::Mouse::Button::Left 
-            && !mHeldPiecePtr) 
+        if (mousePressed->button == sf::Mouse::Button::Left)
         {
             sf::Vector2i mousePos = mousePressed->position;
-            sf::Vector2f worldPos = mWindow.mapPixelToCoords(mousePos);            
-            if (auto piecePtr = mTrayPtr->getPieceAt(worldPos))
+            sf::Vector2f worldPos = mWindow.mapPixelToCoords(mousePos);   
+            
+            if (mHeldPiecePtr)
             {
-                mHeldPiecePtr = piecePtr; 
-                pushGrabCommand(worldPos, commands);
+                int pieceId = mHeldPiecePtr->getId();
+                sf::Vector2i minSnappedGrid = mBoardPtr->getMinSnappedGrid(worldPos, mHeldPiecePtr->getCentroid());
+                if (mReferee.isValid(pieceId, minSnappedGrid, mTeam))
+                {
+                    mReferee.place(pieceId, minSnappedGrid, mTeam);
+                    pushPlaceCommand(minSnappedGrid, commands);
+                    mHeldPiecePtr = nullptr; 
+                }
+                else 
+                {
+                    // pushReturnCommand()
+                }
+
+                //mHeldPiecePtr = nullptr;
             }
-        } 
+            else 
+            {          
+                if (auto piecePtr = mTrayPtr->getPieceAt(worldPos))
+                {
+                    mHeldPiecePtr = piecePtr; 
+                    pushGrabCommand(worldPos, commands);
+                }
+            } 
+        }
     }
 
     if (auto keyPressed = event.getIf<sf::Event::KeyPressed>()) 
@@ -74,9 +83,16 @@ void Player::handleEvent(const sf::Event& event, CommandQueue& commands)
     }
 
     if (mHeldPiecePtr)
-    { // Check shadow 60 times every second
-        sf::Vector2i mousePos = sf::Mouse::getPosition(mWindow);
-        sf::Vector2f worldPos = mWindow.mapPixelToCoords(mousePos);
+    { 
+       if (auto mouseMoved = event.getIf<sf::Event::MouseMoved>())
+        {
+            mCurrentMousePos = mouseMoved->position;
+            sf::Vector2f worldPos = mWindow.mapPixelToCoords(mCurrentMousePos);
+            mHeldPiecePtr->setPosition(worldPos);
+        } 
+        
+        // Check shadow 60 times every second
+        sf::Vector2f worldPos = mWindow.mapPixelToCoords(mCurrentMousePos);
         
         pushShadowCommand(worldPos, commands);
     }
@@ -115,14 +131,30 @@ void Player::pushShadowCommand(sf::Vector2f worldPos, CommandQueue& commands) co
     sf::Vector2i minSnappedGrid = mBoardPtr->getMinSnappedGrid(worldPos, mHeldPiecePtr->getCentroid());
     
     int pieceId = mHeldPiecePtr->getId();
-    sf::Color color = Config::getShadowColor(mTeam);
+    sf::Color color = (mReferee.isValid(pieceId, minSnappedGrid, mTeam) ? 
+        Utility::getShadowColor(mTeam) : Utility::getShadowColor(Team::None));
 
-    Command shadow;
+    Command shadow; 
     shadow.category = Category::Board;
-    shadow.action = derivedAction<BoardNode>([pieceId, minSnappedGrid, color](BoardNode& board, sf::Time) {
+    shadow.action = derivedAction<BoardNode>(
+        [pieceId, minSnappedGrid, color](BoardNode& board, sf::Time) {
         board.updateShadow(pieceId, minSnappedGrid, color);
     });
+
     commands.push(shadow);    
+}
+
+void Player::pushPlaceCommand(sf::Vector2i minSnappedGrid, CommandQueue& commands) const 
+{
+    Command place;
+    place.category = Category::Arena;
+    place.action = derivedAction<Arena>(
+        [minSnappedGrid](Arena& arena, sf::Time) 
+    {
+        arena.placePiece(minSnappedGrid);
+    });
+
+    commands.push(place);
 }
 
 void Player::initialzeKeys()

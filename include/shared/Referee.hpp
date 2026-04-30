@@ -11,7 +11,11 @@ class Referee
 public:
     Referee();
 
-    bool isValid(int pieceId, sf::Vector2i minOffset, Team team) const;
+    virtual ~Referee() = default;
+
+    virtual void place(int pieceId, sf::Vector2i minOffset, Team team);
+
+    virtual bool isValid(int pieceId, sf::Vector2i minOffset, Team team) const;
 
 private:
     bool canFit(const std::vector<sf::Vector2i>& blocks) const;
@@ -36,7 +40,7 @@ private:
     std::array<bool, TeamCount> mIsFirstMove;
     std::array<sf::Vector2i, TeamCount> mStartPos;
     std::array<int, TeamCount> mScores;
-    std::array<Team, Blokus::BoardSize * Blokus::BoardSize> mBoard;
+    std::array<Team, Blokus::CellCount> mBoard;
 };
 
 

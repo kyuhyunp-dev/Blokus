@@ -19,7 +19,7 @@ class PieceNode;
 class Player
 {
     public:
-        Player(sf::RenderWindow& window);
+        Player(sf::RenderWindow& window, Referee& referee);
         
         void setQuery(TrayQuery* tray, BoardQuery* board);
 
@@ -46,19 +46,23 @@ class Player
 
         void pushShadowCommand(sf::Vector2f worldPos, CommandQueue& command) const;
         
+        void pushPlaceCommand(sf::Vector2i minSnappedGrid, CommandQueue& commands) const;
+
         int getTransformedId(int currentId, Transformation transform) const;
 
         void initialzeKeys();
 
     private:
         sf::RenderWindow& mWindow;
-        Referee mReferee;
+        Referee& mReferee;
 
         Team mTeam = Team::None; 
 
         TrayQuery* mTrayPtr;
         BoardQuery* mBoardPtr;
         PieceNode* mHeldPiecePtr; 
+
+        sf::Vector2i mCurrentMousePos;
 
         std::map<sf::Keyboard::Key, Transformation> mKeyBinding;
 };

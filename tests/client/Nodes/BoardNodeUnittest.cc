@@ -11,8 +11,8 @@ class BoardNodeTest : public ::testing::Test
 {
 protected:
     BoardNodeTest() 
-        : textures()           // Initialize textures first
-        , boardNode(textures)              // Default construct board
+        : textures()         
+        , boardNode()            
     {
     }
 

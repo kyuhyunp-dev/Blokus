@@ -9,6 +9,7 @@
 #include "Resource/ResourceIdentifiers.hpp"
 #include "Nodes/SceneNode.hpp"
 #include "Command/Category.hpp"
+#include "Utility.hpp"
 
 
 enum class PieceState

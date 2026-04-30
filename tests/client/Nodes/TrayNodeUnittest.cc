@@ -52,8 +52,10 @@ TEST(TrayNodeTest, WithdrawalAndHitTest)
 
 TEST(TrayNodeTest, WithdrawInvalidIdCrashes) 
 {
+    GTEST_FLAG_SET(death_test_style, "threadsafe");
+    
     MockTextureHolder testTextures;
     TrayNode tray(testTextures);
     // Requesting an ID that was never added
-    EXPECT_DEATH(tray.withdrawPiece(99), "Piece ID not found in Tray slots!");
+    ASSERT_DEATH(tray.withdrawPiece(99), "Piece ID not found in Tray slots!");
 }

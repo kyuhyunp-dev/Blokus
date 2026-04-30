@@ -42,6 +42,7 @@ class Game
         sf::RenderWindow mWindow;
         sf::View mMainView;
 
+        Referee mReferee;
         Arena mArena;
         Player mPlayer;
         CommandQueue mCommandQueue;

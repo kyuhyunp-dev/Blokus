@@ -1,10 +1,13 @@
 #include "Nodes/BoardNode.hpp"
+#include "Nodes/BlockNode.hpp"
+
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
 #include "Config.hpp"
+#include <iostream>
 
 
-BoardNode::BoardNode(TextureHolder& textures)
+BoardNode::BoardNode()
     : mBoardLines(sf::PrimitiveType::Lines, (Blokus::BoardSize + 1) * 4)
 { // Should use private functions to organize code FirstMove, grid, background, score etc.
     float boardSize = Blokus::BoardSize * Config::GridSize;
@@ -58,15 +61,26 @@ void BoardNode::updateShadow(int pieceId, sf::Vector2i minSnappedGrid, sf::Color
     mShadow = { pieceId, minSnappedGrid, color };
 }
 
+void BoardNode::addPiece(std::unique_ptr<PieceNode> piece, sf::Vector2i gridPos) {
+    // 1. Calculate the local position relative to the BoardNode
+    sf::Vector2f localPos = { 
+        gridPos.x * Config::GridSize, 
+        gridPos.y * Config::GridSize 
+    };
+    
+    // 2. Set the position relative to THIS node (BoardNode)
+    piece->setPosition(localPos);
+    
+    // 3. Attach
+    attachChild(std::move(piece));
+}
 
 void BoardNode::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    // Draw background
     target.draw(mBackground, states);
 
-    // Draw grid lines
     target.draw(mBoardLines, states);
-
+     
     if (mShadow) 
     {
         drawShadow(target, states);

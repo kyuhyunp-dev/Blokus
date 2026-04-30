@@ -11,12 +11,14 @@
 #include <memory>
 
 
-Arena::Arena(sf::RenderTarget& target, TextureHolder& textures, std::array<int, Blokus::DeckSize> deck, CommandQueue& commands, Team team)
+Arena::Arena(sf::RenderTarget& target, TextureHolder& textures, 
+    std::array<int, Blokus::DeckSize> deck, 
+    CommandQueue& commands, Team team)
     : mTarget(target)
     , mTextures(textures)
     , mSceneLayers()
-    , mBoard(nullptr)
-    , mTray(nullptr)
+    , mBoardPtr(nullptr)
+    , mTrayPtr(nullptr)
     , mCommands(commands)
     , mActiveTeam(Team::Red)
     , mTeam(team)
@@ -35,16 +37,16 @@ void Arena::buildScene()
         SceneNode::attachChild(std::move(layer));
     }
 
-    auto board = std::make_unique<BoardNode>(mTextures);
-    mBoard = board.get();
+    auto board = std::make_unique<BoardNode>();
+    mBoardPtr = board.get();
     board->setPosition({ Config::Padding, Config::Padding });  
     mSceneLayers[World]->attachChild(std::move(board));
 
-    auto boardBounds = mBoard->getGlobalBounds();
+    auto boardBounds = mBoardPtr->getGlobalBounds();
 
     auto tray = std::make_unique<TrayNode>(mTextures);
-    mTray = tray.get();
-    mTray->setPosition({ 
+    mTrayPtr = tray.get();
+    mTrayPtr->setPosition({ 
         boardBounds.position.x + boardBounds.size.x + Config::Padding, // 10px gap
         boardBounds.position.y 
     });    
@@ -54,7 +56,7 @@ void Arena::buildScene()
     for (int slotId = 0; slotId < Blokus::DeckSize; ++slotId) {
         int pieceId = mDeck[slotId];
         auto piece = std::make_unique<PieceNode>(pieceId, mTeam, mTextures);
-        mTray->addPiece(slotId, std::move(piece));
+        mTrayPtr->addPiece(slotId, std::move(piece));
     }
 }
 
@@ -67,23 +69,39 @@ void Arena::grabPiece(int id, sf::Vector2f worldPos)
 {
     assert(id >= 0 && id < Blokus::PolyominoCount && "Invalid ID");
     //  Pull from Tray (The Tray identifies it by ID now, not position)
-    auto piece = mTray->withdrawPiece(id);
+    auto piece = mTrayPtr->withdrawPiece(id);
     
     // Transformation & Handoff
     piece->setOrigin(piece->getCentroid());
     piece->setPosition(worldPos); 
     
+    mActivePiecePtr = piece.get();
     mSceneLayers[Action]->attachChild(std::move(piece));
 }
 
-TrayNode* Arena::getTrayNode() const
+void Arena::placePiece(sf::Vector2i gridCoord)
 {
-    return mTray;
+    assert(mActivePiecePtr);
+    auto node = mSceneLayers[Action]->detachChild(*mActivePiecePtr); 
+    SceneNode* nodePtr = node.release();
+
+    assert(dynamic_cast<PieceNode*>(nodePtr));
+    std::unique_ptr<PieceNode> piece(static_cast<PieceNode*>(nodePtr));
+
+    piece->setOrigin({0, 0});
+    mBoardPtr->addPiece(std::move(piece), gridCoord);
+
+    mActivePiecePtr = nullptr;
 }
 
-BoardNode* Arena::getBoardNode() const
+TrayNode* Arena::getTrayNodePtr() const
 {
-    return mBoard;
+    return mTrayPtr;
+}
+
+BoardNode* Arena::getBoardNodePtr() const
+{
+    return mBoardPtr;
 }
 
 SceneNode* Arena::getLayer(Layer layer) const 

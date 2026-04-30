@@ -16,7 +16,7 @@ add_executable(BlokusClientTests
 target_link_libraries(BlokusClientTests
     PRIVATE
         BlokusClientLib
-        GTest::gtest_main
+        GTest::gmock_main        
         spdlog::spdlog
 )
 
