@@ -22,8 +22,9 @@ Game::Game(FontHolder& fonts)
     , mTextures()
     , mFonts(fonts)
     , mStatistics()
+    , mReferee()
     , mArena(mWindow, mTextures, deck, mCommandQueue, Team::Red) 
-    , mPlayer(mWindow)
+    , mPlayer(mWindow, mReferee)
 {
     updateView(mWindow.getSize());
     loadTextures();
@@ -120,11 +121,11 @@ void Game::render()
 
 void Game::setQuery()
 {
-    assert(dynamic_cast<TrayQuery*>(mArena.getTrayNode()) != nullptr);
-    TrayQuery* trayPtr = static_cast<TrayQuery*>(mArena.getTrayNode());
+    assert(dynamic_cast<TrayQuery*>(mArena.getTrayNodePtr()) != nullptr);
+    TrayQuery* trayPtr = static_cast<TrayQuery*>(mArena.getTrayNodePtr());
 
-    assert(dynamic_cast<BoardQuery*>(mArena.getBoardNode()) != nullptr);
-    BoardQuery* boardPtr = static_cast<BoardQuery*>(mArena.getBoardNode());
+    assert(dynamic_cast<BoardQuery*>(mArena.getBoardNodePtr()) != nullptr);
+    BoardQuery* boardPtr = static_cast<BoardQuery*>(mArena.getBoardNodePtr());
 
     mPlayer.setQuery(trayPtr, boardPtr);
 }

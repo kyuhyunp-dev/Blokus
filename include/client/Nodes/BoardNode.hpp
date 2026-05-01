@@ -1,3 +1,6 @@
+#ifndef BOARDNODE_HPP
+#define BOARDNODE_HPP
+
 #include "PieceNode.hpp"
 
 #include "Resource/ResourceIdentifiers.hpp"
@@ -6,12 +9,13 @@
 #include "Query/BoardQuery.hpp"
 
 #include "SFML/Graphics/RectangleShape.hpp"
+#include "SFML/Graphics/Sprite.hpp"
 
 
 class BoardNode : public SceneNode , public BoardQuery
 {
 public:
-    BoardNode(TextureHolder& textures);
+    BoardNode();
 
     sf::FloatRect getGlobalBounds() const;
 
@@ -21,9 +25,11 @@ public:
 
     virtual void updateShadow(int pieceId, sf::Vector2i minSnappedGrid, sf::Color color);
 
+    void addPiece(std::unique_ptr<PieceNode> piece, sf::Vector2i gridPos);
+ 
 private:
     virtual void drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const override;
-
+    
     void drawShadow(sf::RenderTarget& target, sf::RenderStates states) const;
 
 private:
@@ -34,9 +40,11 @@ private:
         sf::Color color;
     };
 
+private:
     sf::RectangleShape mBackground;
     sf::VertexArray mBoardLines;
 
-    std::array<Team, Blokus::BoardSize * Blokus::BoardSize> mBoard;
     std::optional<Shadow> mShadow;
 };
+
+#endif

@@ -6,8 +6,8 @@ set_source_files_properties("${GEN_HEADER}" PROPERTIES GENERATED TRUE)
 
 # Set SHARED_SOURCES that depend on GEN_HEADER
 set(SHARED_SOURCES
-    PolyominoUtil.cpp
     PolyominoLoader.cpp
+    PolyominoUtil.cpp
     Referee.cpp
 )
 

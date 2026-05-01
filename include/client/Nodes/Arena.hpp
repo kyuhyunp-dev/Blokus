@@ -7,11 +7,11 @@
 #include "shared/Team.hpp"
 #include "shared/Constants.hpp"
 
- 
+class Referee;
 class CommandQueue;
 class BoardNode;
 class TrayNode;
-class ActiveNode;
+
 
 namespace sf
 {
@@ -29,7 +29,9 @@ public:
     };
 
 public:
-    Arena(sf::RenderTarget& window, TextureHolder& textures, std::array<int, Blokus::DeckSize> deck, CommandQueue &commands, Team team);
+    Arena(sf::RenderTarget& window, TextureHolder& textures, 
+        std::array<int, Blokus::DeckSize> deck, 
+        CommandQueue &commands, Team team);
 
     void buildScene();
 
@@ -37,9 +39,11 @@ public:
 
     void grabPiece(int id, sf::Vector2f worldPos);
 
-    TrayNode* getTrayNode() const;
+    virtual void placePiece(sf::Vector2i gridCoord);
 
-    BoardNode* getBoardNode() const; 
+    TrayNode* getTrayNodePtr() const;
+
+    BoardNode* getBoardNodePtr() const; 
 
     SceneNode* getLayer(Layer layer) const;
 
@@ -51,8 +55,9 @@ private:
     CommandQueue& mCommands;
 
     // The Visual Layers (Added as children in constructor)
-    BoardNode* mBoard;
-    TrayNode* mTray;
+    BoardNode* mBoardPtr;
+    TrayNode* mTrayPtr;
+    SceneNode* mActivePiecePtr;
 
     Team mActiveTeam;
     const Team mTeam;

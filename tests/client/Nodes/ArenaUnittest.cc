@@ -1,7 +1,9 @@
 #include <gtest/gtest.h>
 #include "Nodes/Arena.hpp"
 #include "Nodes/PieceNode.hpp"
-#include "Nodes/TrayNode.hpp"
+#include "Nodes/TrayNode.hpp" 
+#include "Nodes/BoardNode.hpp"
+#include "shared/Referee.hpp"
 #include "Command/CommandQueue.hpp"
 #include "Mock/Resource/MockTextureHolder.hpp"
 
@@ -29,8 +31,8 @@ protected:
     const std::array<int, Blokus::DeckSize> deck = 
     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17}; 
     CommandQueue commands;
-
     std::unique_ptr<Arena> arena; 
+
 };
 
 TEST_F(ArenaTest, GrabPiece) {
@@ -41,7 +43,7 @@ TEST_F(ArenaTest, GrabPiece) {
     sf::Vector2f targetPos(150.f, 200.f);
     
     // Ensure the piece exists in the tray first
-    auto* tray = arena->getTrayNode();
+    auto* tray = arena->getTrayNodePtr();
     auto* actionLayer = arena->getLayer(Arena::Action);
 
     // 2. Act
@@ -76,4 +78,35 @@ TEST_F(ArenaTest, GrabInvalidPiece) {
     ASSERT_DEATH({
         arena->grabPiece(fakeId, {0,0});
     }, "Invalid ID"); 
+}
+
+TEST_F(ArenaTest, PlacePiece) {
+    int targetId = 5;
+    arena->grabPiece(targetId, {150.f, 200.f}); 
+
+    auto* actionLayer = arena->getLayer(Arena::Action);
+    ASSERT_EQ(actionLayer->getChildCount(), 1);
+
+    sf::Vector2i targetGrid(3, 3);
+
+    arena->placePiece(targetGrid);
+    EXPECT_EQ(actionLayer->getChildCount(), 0);
+
+    auto* board = arena->getBoardNodePtr();
+    ASSERT_GT(board->getChildCount(), 0); 
+    
+    auto* placedPiece = static_cast<PieceNode*>(board->getChildren().back());
+    EXPECT_EQ(placedPiece->getId(), targetId);
+    EXPECT_EQ(placedPiece->getOrigin(), sf::Vector2f(0.f, 0.f)); 
+}
+
+TEST_F(ArenaTest, PlacePieceWithoutActivePiece) {
+    GTEST_FLAG_SET(death_test_style, "threadsafe");
+
+    // We intentionally DO NOT call grabPiece() here. 
+    sf::Vector2i targetGrid(3, 3);
+
+    ASSERT_DEATH({
+        arena->placePiece(targetGrid);
+    }, ""); 
 }

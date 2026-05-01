@@ -7,6 +7,7 @@
 #include "Nodes/Arena.hpp"
 #include "Player.hpp"
 #include "Command/CommandQueue.hpp"
+#include "shared/Referee.hpp"
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -42,6 +43,7 @@ class Game
         sf::RenderWindow mWindow;
         sf::View mMainView;
 
+        Referee mReferee;
         Arena mArena;
         Player mPlayer;
         CommandQueue mCommandQueue;

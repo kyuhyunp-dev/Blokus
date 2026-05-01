@@ -2,6 +2,8 @@
 
 #include <SFML/Graphics/RectangleShape.hpp>
 
+#include <algorithm>
+
 
 TrayNode::TrayNode(TextureHolder& textures)
     : mTextures(textures)

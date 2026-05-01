@@ -5,44 +5,47 @@
 #include "Mock/Query/MockTrayQuery.hpp"
 #include "Mock/Query/MockBoardQuery.hpp"
 #include "Mock/Nodes/MockBoardNode.hpp"
+#include "Mock/Nodes/MockArena.hpp"
+#include "Mock/MockReferee.hpp"
 #include "shared/PolyominoUtil.hpp"
-#include "Config.hpp"
+#include "Utility.hpp"
 
 
 class PlayerTest : public ::testing::Test {
 protected:
     PlayerTest() 
-        : mockTextures()           // Initialize textures first
-        , mockTray(mockTextures)   // Pass reference to mockTray
-        , mockBoard()              // Default construct board
-        , player(nullptr)          // Set to null until SetUp
+        : mTextures()           // Initialize textures first
+        , mTray(mTextures)   // Pass reference to mockTray
+        , mBoard()              // Default construct board
+        , mPlayer(nullptr)          // Set to null until SetUp
     {
     }
 
     void SetUp() override
     {
-        window.create(sf::VideoMode({800, 600}), "Test Window");
+        mWindow.create(sf::VideoMode({800, 600}), "Test Window");
         // RenderWindow can be initialized headlessly in SFML for most logic
         // MockTrayQuery is passed to the player (via a setter or constructor)
-        player = std::make_unique<Player>(window);
-        player->setQuery(&mockTray, &mockBoard);
+        mPlayer = std::make_unique<Player>(mWindow, mReferee);
+        mPlayer->setQuery(&mTray, &mBoard);
         
-        mockTextures.load(Textures::Tiles, "unused_path");
+        mTextures.load(Textures::Tiles, "unused_path");
     }
 
-    MockTextureHolder mockTextures;
-    sf::RenderWindow window;
-    MockTrayQuery mockTray;
-    MockBoardQuery mockBoard;
-    CommandQueue commands;
-    std::unique_ptr<Player> player;
+    MockTextureHolder mTextures;
+    sf::RenderWindow mWindow;
+    MockTrayQuery mTray;
+    MockBoardQuery mBoard;
+    CommandQueue mCommands;
+    std::unique_ptr<Player> mPlayer;
+    testing::NiceMock<MockReferee> mReferee;
 };
 
 
 TEST_F(PlayerTest, ValidGrab) {
     // 1. Arrange
     int responseId = 7;
-    mockTray.setPiece(responseId);
+    mTray.setPiece(responseId);
 
     // Create a fake MouseButtonPressed event
     sf::Event::MouseButtonPressed mousePressed;
@@ -50,19 +53,19 @@ TEST_F(PlayerTest, ValidGrab) {
     mousePressed.position = {100, 100};  
 
     // 2. Act
-    player->handleEvent(mousePressed, commands);
+    mPlayer->handleEvent(mousePressed, mCommands);
 
     // 3. Assert
-    EXPECT_FALSE(commands.isEmpty());
-    EXPECT_EQ(player->getHeldPieceId(), responseId);
+    EXPECT_FALSE(mCommands.isEmpty());
+    EXPECT_EQ(mPlayer->getHeldPieceId(), responseId);
 
     int size = 0;
-    while (!commands.isEmpty()) 
+    while (!mCommands.isEmpty()) 
     {
-        Command command = commands.pop(); 
+        Command command = mCommands.pop(); 
         EXPECT_EQ(command.category, Category::Arena);
 
-        command = commands.pop(); 
+        command = mCommands.pop(); 
         EXPECT_EQ(command.category, Category::Board);
         ++size;
     }
@@ -73,7 +76,7 @@ TEST_F(PlayerTest, ValidGrab) {
 TEST_F(PlayerTest, RightClickGrab) {
     // 1. Arrange
     int responseId = 7; 
-    mockTray.setPiece(responseId);
+    mTray.setPiece(responseId);
 
     // Create a fake MouseButtonPressed event
     sf::Event::MouseButtonPressed mousePressed;
@@ -81,90 +84,92 @@ TEST_F(PlayerTest, RightClickGrab) {
     mousePressed.position = {100, 100};
 
     // 2. Act
-    player->handleEvent(mousePressed, commands);
+    mPlayer->handleEvent(mousePressed, mCommands);
 
     // 3. Assert
-    EXPECT_TRUE(commands.isEmpty());
-    EXPECT_EQ(player->getHeldPieceId(), std::nullopt);
+    EXPECT_TRUE(mCommands.isEmpty());
+    EXPECT_EQ(mPlayer->getHeldPieceId(), std::nullopt);
 }
 
 TEST_F(PlayerTest, DoubleGrab) {
     // 1. Arrange: Player is already holding a piece
     int responseId = 7; 
-    mockTray.setPiece(responseId); 
+    mTray.setPiece(responseId); 
     
     sf::Event::MouseButtonPressed mousePressed;
     mousePressed.button = sf::Mouse::Button::Left;
     mousePressed.position = {100, 100};    
-
-    player->handleEvent(mousePressed, commands); // First click
-    EXPECT_FALSE(commands.isEmpty());
-    EXPECT_EQ(player->getHeldPieceId(), 7);
+         
+    mPlayer->handleEvent(mousePressed, mCommands); // First click
+    EXPECT_FALSE(mCommands.isEmpty());
+    EXPECT_EQ(mPlayer->getHeldPieceId(), 7);
     
     int size = 0;
-    while (!commands.isEmpty()) 
+    while (!mCommands.isEmpty()) 
     {
-        Command command = commands.pop(); 
+        Command command = mCommands.pop(); 
         EXPECT_EQ(command.category, Category::Arena);
 
-        command = commands.pop(); 
+        command = mCommands.pop(); 
         EXPECT_EQ(command.category, Category::Board);
         ++size;
     }
 
-    EXPECT_EQ(size, 1);
+    EXPECT_EQ(size, 1); 
 
+    ON_CALL(mReferee, isValid(responseId, testing::_, testing::_))
+    .WillByDefault(testing::Return(false));
     // 2. Act: Click again
     size = 0;
-    player->handleEvent(mousePressed, commands);
-    while (!commands.isEmpty()) 
+    mPlayer->handleEvent(mousePressed, mCommands);
+    while (!mCommands.isEmpty()) 
     {
-        Command command = commands.pop(); 
+        Command command = mCommands.pop(); 
         EXPECT_EQ(command.category, Category::Board);
         ++size;
     }
     EXPECT_EQ(size, 1);
-    EXPECT_EQ(player->getHeldPieceId(), 7);
+    EXPECT_EQ(mPlayer->getHeldPieceId(), 7);
     
     // 3. Assert
     responseId = 8;
-    mockTray.setPiece(responseId);
+    mTray.setPiece(responseId);
 
     size = 0;
-    player->handleEvent(mousePressed, commands);
-    while (!commands.isEmpty()) 
+    mPlayer->handleEvent(mousePressed, mCommands);
+    while (!mCommands.isEmpty()) 
     {
-        Command command = commands.pop(); 
+        Command command = mCommands.pop(); 
         EXPECT_EQ(command.category, Category::Board);
         ++size;
     } 
     EXPECT_EQ(size, 1);
-    EXPECT_EQ(player->getHeldPieceId(), 7);
+    EXPECT_EQ(mPlayer->getHeldPieceId(), 7);
 } 
 
 TEST_F(PlayerTest, Move) {
     sf::Event moveEvent = sf::Event::MouseMoved{{500, 600}};
 
-    player->handleEvent(moveEvent, commands);
-    EXPECT_TRUE(commands.isEmpty());
+    mPlayer->handleEvent(moveEvent, mCommands);
+    EXPECT_TRUE(mCommands.isEmpty());
 
     // Click piece 7
     int responseId = 7; 
-    mockTray.setPiece(responseId); 
+    mTray.setPiece(responseId); 
     
     sf::Event::MouseButtonPressed mousePressed;
     mousePressed.button = sf::Mouse::Button::Left;
     mousePressed.position = {100, 100}; 
 
-    player->handleEvent(mousePressed, commands);
+    mPlayer->handleEvent(mousePressed, mCommands);
     
     int size = 0;
-    while (!commands.isEmpty()) 
+    while (!mCommands.isEmpty()) 
     {
-        Command command = commands.pop(); 
+        Command command = mCommands.pop(); 
         EXPECT_EQ(command.category, Category::Arena);
 
-        command = commands.pop(); 
+        command = mCommands.pop(); 
         EXPECT_EQ(command.category, Category::Board);
         ++size;
     }
@@ -174,48 +179,54 @@ TEST_F(PlayerTest, Move) {
     Team color = Team::Red;
     sf::Vector2i grid = {300, 300};
 
-    player->setTeam(color);
-    mockBoard.setMinSnappedGrid(grid);
+    ON_CALL(mReferee, isValid(responseId, grid, color))
+    .WillByDefault(testing::Return(true));
+
+    mPlayer->setTeam(color);
+    mBoard.setMinSnappedGrid(grid);
     moveEvent = sf::Event::MouseMoved{{300, 300}};
-    player->handleEvent(moveEvent, commands);
+    mPlayer->handleEvent(moveEvent, mCommands);
 
     size = 0;
-    while (!commands.isEmpty()) 
+    while (!mCommands.isEmpty()) 
     {
-        Command command = commands.pop(); 
+        Command command = mCommands.pop(); 
         EXPECT_EQ(command.category, Category::Board);
 
-        MockBoardNode spyBoard(mockTextures);
+        MockBoardNode spyBoard;
         command.action(spyBoard, sf::Time::Zero);
 
         EXPECT_EQ(spyBoard.lastPieceId, responseId);
         EXPECT_EQ(spyBoard.lastCoord, grid);
-        EXPECT_EQ(spyBoard.lastColor, Config::getShadowColor(color));
+        EXPECT_EQ(spyBoard.lastColor, Utility::getShadowColor(color));
 
         ++size;
     }
     EXPECT_EQ(size, 1);
 
     color = Team::Blue;
-    grid = {400, 400};
+    grid = {400, 400};     
 
-    player->setTeam(color);
-    mockBoard.setMinSnappedGrid(grid);
+    ON_CALL(mReferee, isValid(responseId, grid, color))
+    .WillByDefault(testing::Return(true));
+
+    mPlayer->setTeam(color);
+    mBoard.setMinSnappedGrid(grid);
     moveEvent = sf::Event::MouseMoved{{300, 300}};
-    player->handleEvent(moveEvent, commands);
+    mPlayer->handleEvent(moveEvent, mCommands);
 
     size = 0;
-    while (!commands.isEmpty()) 
+    while (!mCommands.isEmpty()) 
     {
-        Command command = commands.pop(); 
+        Command command = mCommands.pop(); 
         EXPECT_EQ(command.category, Category::Board);
         
-        MockBoardNode spyBoard(mockTextures);
+        MockBoardNode spyBoard;
         command.action(spyBoard, sf::Time::Zero);
 
         EXPECT_EQ(spyBoard.lastPieceId, responseId);
         EXPECT_EQ(spyBoard.lastCoord, grid);
-        EXPECT_EQ(spyBoard.lastColor, Config::getShadowColor(color));
+        EXPECT_EQ(spyBoard.lastColor, Utility::getShadowColor(color));
 
         ++size;
     }
@@ -226,42 +237,93 @@ TEST_F(PlayerTest, Transform) {
     Blokus::PolyominoDefinition library = Blokus::PolyominoGenerator::getData();
 
     int initialId = 19; 
-    mockTray.setPiece(initialId);
+    mTray.setPiece(initialId);
     
     // Simulate a grab (Left click)
     sf::Event::MouseButtonPressed pressEvent;
     pressEvent.button = sf::Mouse::Button::Left;
     pressEvent.position = {100, 100};
-    player->handleEvent(pressEvent, commands);
+    mPlayer->handleEvent(pressEvent, mCommands);
 
     // Rotate CW
     sf::Event cwEvent = sf::Event::KeyPressed{sf::Keyboard::Key::R};
-    player->handleEvent(cwEvent, commands);
+    mPlayer->handleEvent(cwEvent, mCommands);
 
     int cwId = library.clockwiseRotatedIds[initialId];
-    ASSERT_TRUE(player->getHeldPieceId().has_value());
-    EXPECT_EQ(player->getHeldPieceId().value(), cwId); 
+    ASSERT_TRUE(mPlayer->getHeldPieceId().has_value());
+    EXPECT_EQ(mPlayer->getHeldPieceId().value(), cwId); 
 
     // Rotate CCW
     sf::Event ccwEvent = sf::Event::KeyPressed{sf::Keyboard::Key::C};
-    player->handleEvent(ccwEvent, commands);
+    mPlayer->handleEvent(ccwEvent, mCommands);
 
-    ASSERT_TRUE(player->getHeldPieceId().has_value());
-    EXPECT_EQ(player->getHeldPieceId().value(), initialId); 
+    ASSERT_TRUE(mPlayer->getHeldPieceId().has_value());
+    EXPECT_EQ(mPlayer->getHeldPieceId().value(), initialId); 
 
     // Horizontal Reflection
     int hId = library.horizontallyReflectedIds[initialId];
     sf::Event hEvent = sf::Event::KeyPressed{sf::Keyboard::Key::H};
-    player->handleEvent(hEvent, commands);
+    mPlayer->handleEvent(hEvent, mCommands);
 
-    ASSERT_TRUE(player->getHeldPieceId().has_value());
-    EXPECT_EQ(player->getHeldPieceId().value(), hId); 
+    ASSERT_TRUE(mPlayer->getHeldPieceId().has_value());
+    EXPECT_EQ(mPlayer->getHeldPieceId().value(), hId); 
 
     // Vertical Reflection
     int vId = library.clockwiseRotatedIds[cwId];
     sf::Event vEvent = sf::Event::KeyPressed{sf::Keyboard::Key::V};
-    player->handleEvent(vEvent, commands);
+    mPlayer->handleEvent(vEvent, mCommands);
 
-    ASSERT_TRUE(player->getHeldPieceId().has_value());
-    EXPECT_EQ(player->getHeldPieceId().value(), vId); 
+    ASSERT_TRUE(mPlayer->getHeldPieceId().has_value());
+    EXPECT_EQ(mPlayer->getHeldPieceId().value(), vId); 
+}
+
+TEST_F(PlayerTest, ValidPlacement) {
+    int pieceId = 7;
+    Team currentTeam = Team::Red;
+    sf::Vector2i expectedGrid = {300, 300};
+
+    mPlayer->setTeam(currentTeam);
+    mTray.setPiece(pieceId);
+    mBoard.setMinSnappedGrid(expectedGrid);
+
+    EXPECT_CALL(mReferee, isValid(pieceId, expectedGrid, currentTeam))
+        .WillRepeatedly(testing::Return(true));
+
+    EXPECT_CALL(mReferee, place(pieceId, expectedGrid, currentTeam))
+        .Times(1);
+
+    sf::Event::MouseButtonPressed grabClick;
+    grabClick.button = sf::Mouse::Button::Left;
+    grabClick.position = {100, 100};
+    mPlayer->handleEvent(grabClick, mCommands);
+
+    ASSERT_TRUE(mPlayer->getHeldPieceId().has_value());
+    while (!mCommands.isEmpty()) {
+        mCommands.pop();
+    }
+
+    sf::Event::MouseButtonPressed placeClick;
+    placeClick.button = sf::Mouse::Button::Left;
+    placeClick.position = {400, 400}; 
+    mPlayer->handleEvent(placeClick, mCommands);
+
+    EXPECT_FALSE(mPlayer->getHeldPieceId().has_value());
+
+    int size = 0;
+    while (!mCommands.isEmpty()) 
+    {
+        Command command = mCommands.pop(); 
+        
+        EXPECT_EQ(command.category, Category::Arena);
+        ++size;
+
+        MockArena spyArena(mWindow, mTextures, {}, mCommands, currentTeam);
+
+        command.action(spyArena, sf::Time::Zero);
+
+        EXPECT_TRUE(spyArena.placePieceCalled);
+        EXPECT_EQ(spyArena.lastPlacedGrid, expectedGrid);
+    }
+
+    EXPECT_EQ(size, 1);
 }

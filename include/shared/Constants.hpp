@@ -10,6 +10,7 @@ namespace Blokus
 {
     inline constexpr int MaxBlocks = 5;
     inline constexpr int BoardSize = 12;
+    inline constexpr int CellCount = BoardSize * BoardSize; 
 
     inline constexpr std::array<sf::Vector2i, 4> CardinalOffsets = 
     {

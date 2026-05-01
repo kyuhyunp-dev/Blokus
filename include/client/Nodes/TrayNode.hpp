@@ -15,7 +15,7 @@
 class TrayNode : public SceneNode, public TrayQuery
 {
 public:
-	typedef std::unique_ptr<PieceNode> PiecePtr;    
+	using PiecePtr = std::unique_ptr<PieceNode>;    
 
     public:
     TrayNode(TextureHolder& textures);

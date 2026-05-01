@@ -8,9 +8,10 @@
 class MockBoardNode : public BoardNode 
 {
 public:
-    MockBoardNode(MockTextureHolder& textures)
-        : BoardNode(textures) 
-    {}
+    MockBoardNode()
+        : BoardNode() 
+    {
+    }
 
     void updateShadow(int pieceId, sf::Vector2i coord, sf::Color color) override 
     {
@@ -19,7 +20,7 @@ public:
         lastColor = color;
     }
 
-public:
+public: 
     int lastPieceId;
     sf::Vector2i lastCoord;
     sf::Color lastColor;
