@@ -27,6 +27,7 @@ protected:
         // RenderWindow can be initialized headlessly in SFML for most logic
         // MockTrayQuery is passed to the player (via a setter or constructor)
         mPlayer = std::make_unique<Player>(mWindow, mReferee);
+        mPlayer->setTeam(Team::Blue);
         mPlayer->setQuery(&mTray, &mBoard);
         
         mTextures.load(Textures::Tiles, "unused_path");
@@ -47,15 +48,12 @@ TEST_F(PlayerTest, ValidGrab) {
     int responseId = 7;
     mTray.setPiece(responseId);
 
-    // Create a fake MouseButtonPressed event
     sf::Event::MouseButtonPressed mousePressed;
     mousePressed.button = sf::Mouse::Button::Left;
     mousePressed.position = {100, 100};  
 
-    // 2. Act
     mPlayer->handleEvent(mousePressed, mCommands);
 
-    // 3. Assert
     EXPECT_FALSE(mCommands.isEmpty());
     EXPECT_EQ(mPlayer->getHeldPieceId(), responseId);
 
@@ -91,8 +89,7 @@ TEST_F(PlayerTest, RightClickGrab) {
     EXPECT_EQ(mPlayer->getHeldPieceId(), std::nullopt);
 }
 
-TEST_F(PlayerTest, DoubleGrab) {
-    // 1. Arrange: Player is already holding a piece
+TEST_F(PlayerTest, InvalidPlacement) {
     int responseId = 7; 
     mTray.setPiece(responseId); 
     
@@ -100,7 +97,8 @@ TEST_F(PlayerTest, DoubleGrab) {
     mousePressed.button = sf::Mouse::Button::Left;
     mousePressed.position = {100, 100};    
          
-    mPlayer->handleEvent(mousePressed, mCommands); // First click
+    // First Click
+    mPlayer->handleEvent(mousePressed, mCommands); 
     EXPECT_FALSE(mCommands.isEmpty());
     EXPECT_EQ(mPlayer->getHeldPieceId(), 7);
     
@@ -119,32 +117,47 @@ TEST_F(PlayerTest, DoubleGrab) {
 
     ON_CALL(mReferee, isValid(responseId, testing::_, testing::_))
     .WillByDefault(testing::Return(false));
-    // 2. Act: Click again
-    size = 0;
+    
+    int arenaCount = 0;
+    int boardCount = 0;
     mPlayer->handleEvent(mousePressed, mCommands);
     while (!mCommands.isEmpty()) 
     {
         Command command = mCommands.pop(); 
-        EXPECT_EQ(command.category, Category::Board);
-        ++size;
+        
+        if (command.category == Category::Arena) 
+        {
+            ++arenaCount;
+            MockArena spyArena(mWindow, mTextures, mCommands, mPlayer->getTeam());
+            EXPECT_FALSE(spyArena.returnPieceCalled);
+
+            command.action(spyArena, sf::Time::Zero);  
+
+            EXPECT_TRUE(spyArena.returnPieceCalled);
+        }
+        else if (command.category == Category::Board)
+        {
+            ++boardCount;
+
+            MockBoardNode spyBoard;
+            EXPECT_FALSE(spyBoard.clearShadowCalled);
+
+            command.action(spyBoard, sf::Time::Zero);
+            EXPECT_TRUE(spyBoard.clearShadowCalled);
+        } 
+
     }
-    EXPECT_EQ(size, 1);
-    EXPECT_EQ(mPlayer->getHeldPieceId(), 7);
+    EXPECT_EQ(arenaCount, 1);
+    EXPECT_EQ(boardCount, 1);
+    EXPECT_EQ(mPlayer->getHeldPieceId(), std::nullopt);
     
-    // 3. Assert
+    // 3. Grab again
     responseId = 8;
     mTray.setPiece(responseId);
 
-    size = 0;
+    arenaCount = 0;
     mPlayer->handleEvent(mousePressed, mCommands);
-    while (!mCommands.isEmpty()) 
-    {
-        Command command = mCommands.pop(); 
-        EXPECT_EQ(command.category, Category::Board);
-        ++size;
-    } 
-    EXPECT_EQ(size, 1);
-    EXPECT_EQ(mPlayer->getHeldPieceId(), 7);
+    EXPECT_EQ(mPlayer->getHeldPieceId(), 8);
 } 
 
 TEST_F(PlayerTest, Move) {
@@ -309,21 +322,35 @@ TEST_F(PlayerTest, ValidPlacement) {
 
     EXPECT_FALSE(mPlayer->getHeldPieceId().has_value());
 
-    int size = 0;
+    int arenaCount = 0;
+    int boardCount = 0;
     while (!mCommands.isEmpty()) 
     {
         Command command = mCommands.pop(); 
-        
-        EXPECT_EQ(command.category, Category::Arena);
-        ++size;
+       
+        if (command.category == Category::Arena) 
+        {
+            ++arenaCount;
+            MockArena spyArena(mWindow, mTextures, mCommands, currentTeam);
 
-        MockArena spyArena(mWindow, mTextures, {}, mCommands, currentTeam);
+            command.action(spyArena, sf::Time::Zero);
 
-        command.action(spyArena, sf::Time::Zero);
+            EXPECT_TRUE(spyArena.placePieceCalled);
+            EXPECT_EQ(spyArena.lastPlacedGrid, expectedGrid);
+        }
 
-        EXPECT_TRUE(spyArena.placePieceCalled);
-        EXPECT_EQ(spyArena.lastPlacedGrid, expectedGrid);
+        else if (command.category == Category::Board)
+        {
+            ++boardCount;
+
+            MockBoardNode spyBoard;
+            EXPECT_FALSE(spyBoard.clearShadowCalled);
+
+            command.action(spyBoard, sf::Time::Zero);
+            EXPECT_TRUE(spyBoard.clearShadowCalled);
+        }
     }
 
-    EXPECT_EQ(size, 1);
+    EXPECT_EQ(arenaCount, 1);
+    EXPECT_EQ(boardCount, 1);
 }

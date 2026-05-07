@@ -10,20 +10,28 @@ class MockBoardNode : public BoardNode
 public:
     MockBoardNode()
         : BoardNode() 
+        , clearShadowCalled(false)
     {
     }
 
     void updateShadow(int pieceId, sf::Vector2i coord, sf::Color color) override 
     {
+        clearShadowCalled = false;
         lastPieceId = pieceId;
         lastCoord = coord;
         lastColor = color;
+    }
+
+    void clearShadow() override
+    {
+        clearShadowCalled = true;
     }
 
 public: 
     int lastPieceId;
     sf::Vector2i lastCoord;
     sf::Color lastColor;
+    bool clearShadowCalled;
 }; 
 
 #endif

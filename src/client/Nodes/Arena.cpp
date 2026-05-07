@@ -94,6 +94,24 @@ void Arena::placePiece(sf::Vector2i gridCoord)
     mActivePiecePtr = nullptr;
 }
 
+void Arena::returnPiece()
+{
+    assert(mActivePiecePtr);
+    auto node = mSceneLayers[Action]->detachChild(*mActivePiecePtr); 
+    SceneNode* nodePtr = node.release();
+    
+    assert(dynamic_cast<SceneNode*>(nodePtr));
+    std::unique_ptr<PieceNode> piece(static_cast<PieceNode*>(nodePtr));
+
+    auto slotId = piece->getSlotId();
+    assert(slotId.has_value() && "Piece does not have a slot ID to return to!");
+
+    piece->setOrigin({0.f, 0.f});
+    mTrayPtr->addPiece(slotId.value(), std::move(piece));
+    
+    mActivePiecePtr = nullptr;
+}
+
 TrayNode* Arena::getTrayNodePtr() const
 {
     return mTrayPtr;

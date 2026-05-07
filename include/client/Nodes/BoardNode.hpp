@@ -14,6 +14,8 @@
 
 class BoardNode : public SceneNode , public BoardQuery
 {
+    friend class BoardNodeTest; 
+
 public:
     BoardNode();
 
@@ -24,6 +26,8 @@ public:
     unsigned int getCategory() const override;
 
     virtual void updateShadow(int pieceId, sf::Vector2i minSnappedGrid, sf::Color color);
+
+    virtual void clearShadow();
 
     void addPiece(std::unique_ptr<PieceNode> piece, sf::Vector2i gridPos);
  

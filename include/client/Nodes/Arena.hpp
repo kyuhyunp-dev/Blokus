@@ -41,6 +41,8 @@ public:
 
     virtual void placePiece(sf::Vector2i gridCoord);
 
+    virtual void returnPiece();
+
     TrayNode* getTrayNodePtr() const;
 
     BoardNode* getBoardNodePtr() const; 

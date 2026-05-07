@@ -2,22 +2,34 @@
 #define MOCK_ARENA_HPP
 
 #include "Nodes/Arena.hpp"
+#include <memory>
+
 
 class MockArena : public Arena 
 {
 public:
-    // Inherit the constructor from Arena
-    using Arena::Arena; 
+   MockArena(sf::RenderTarget& target, MockTextureHolder& textures, 
+              CommandQueue& commands, Team team)
+        : Arena(target, textures, 
+            {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17}, 
+            commands, team) 
+    {
+    }
 
     // Spy variables to track what the Command does
     bool placePieceCalled = false;
+    bool returnPieceCalled = false;
     sf::Vector2i lastPlacedGrid = {-1, -1};
 
-    // Override the function to intercept the call
     void placePiece(sf::Vector2i gridCoord) override 
     {
         placePieceCalled = true;
         lastPlacedGrid = gridCoord;
+    }
+
+    void returnPiece() override 
+    {
+        returnPieceCalled = true;
     }
 };
 
