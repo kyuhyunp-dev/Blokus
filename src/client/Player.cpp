@@ -42,8 +42,8 @@ void Player::handleEvent(const sf::Event& event, CommandQueue& commands)
     {
         if (mousePressed->button == sf::Mouse::Button::Left)
         {
-            sf::Vector2i mousePos = mousePressed->position;
-            sf::Vector2f worldPos = mWindow.mapPixelToCoords(mousePos);   
+            mCurrentMousePos = mousePressed->position;            
+            sf::Vector2f worldPos = mWindow.mapPixelToCoords(mCurrentMousePos);   
             
             if (mHeldPiecePtr)
             {
@@ -53,14 +53,15 @@ void Player::handleEvent(const sf::Event& event, CommandQueue& commands)
                 {
                     mReferee.place(pieceId, minSnappedGrid, mTeam);
                     pushPlaceCommand(minSnappedGrid, commands);
-                    mHeldPiecePtr = nullptr; 
                 }
                 else 
                 {
-                    // pushReturnCommand()
+                    mHeldPiecePtr->setId(getCanonicalId(mHeldPiecePtr->getId()));
+                    pushReturnCommand(commands); 
                 }
-
-                //mHeldPiecePtr = nullptr;
+                
+                pushClearShadowCommand(commands);              
+                mHeldPiecePtr = nullptr;
             }
             else 
             {          
@@ -158,6 +159,32 @@ void Player::pushPlaceCommand(sf::Vector2i minSnappedGrid, CommandQueue& command
     commands.push(place);
 }
 
+void Player::pushReturnCommand(CommandQueue& commands) const
+{
+    Command returnCmd;
+    returnCmd.category = Category::Arena;
+    returnCmd.action = derivedAction<Arena>(
+        [](Arena& arena, sf::Time) 
+    {
+        arena.returnPiece();
+    });
+
+    commands.push(returnCmd);
+}
+
+void Player::pushClearShadowCommand(CommandQueue& commands) const
+{
+    Command clearShadow;
+    clearShadow.category = Category::Board;
+    clearShadow.action = derivedAction<BoardNode>(
+        [](BoardNode& board, sf::Time) {
+            // You will need to add a clearShadow() method to BoardNode
+            board.clearShadow(); 
+        });
+
+    commands.push(clearShadow);
+}
+
 void Player::initialzeKeys()
 {
     mKeyBinding[sf::Keyboard::Key::R] = RotateCW;
@@ -214,6 +241,14 @@ int Player::getTransformedId(int currentId, Transformation transform) const
             return -1;
         }
     }
+}
+
+int Player::getCanonicalId(int transformedId) const
+{
+    assert(transformedId >= 0 && transformedId < Blokus::PolyominoCount);
+    const auto& library = Blokus::PolyominoGenerator::getData();
+
+    return library.transformedToCanonical[transformedId];
 }
 
 

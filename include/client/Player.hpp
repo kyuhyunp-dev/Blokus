@@ -50,8 +50,14 @@ class Player
         
         void pushPlaceCommand(sf::Vector2i minSnappedGrid, CommandQueue& commands) const;
 
-        int getTransformedId(int currentId, Transformation transform) const;
+        void pushReturnCommand(CommandQueue& commands) const;
 
+        void pushClearShadowCommand(CommandQueue& commands) const;
+
+        int getTransformedId(int currentId, Transformation transform) const;
+        
+        int getCanonicalId(int transformedId) const;
+        
         void initialzeKeys();
 
     private:

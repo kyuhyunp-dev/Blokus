@@ -61,6 +61,11 @@ void BoardNode::updateShadow(int pieceId, sf::Vector2i minSnappedGrid, sf::Color
     mShadow = { pieceId, minSnappedGrid, color };
 }
 
+void BoardNode::clearShadow()
+{
+    mShadow = std::nullopt;
+}
+
 void BoardNode::addPiece(std::unique_ptr<PieceNode> piece, sf::Vector2i gridPos) {
     // 1. Calculate the local position relative to the BoardNode
     sf::Vector2f localPos = { 

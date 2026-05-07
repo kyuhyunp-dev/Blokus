@@ -110,3 +110,31 @@ TEST_F(ArenaTest, PlacePieceWithoutActivePiece) {
         arena->placePiece(targetGrid);
     }, ""); 
 }
+
+TEST_F(ArenaTest, ReturnPiece_SuccessfullyReturnsToTray) {
+    int targetId = 1;
+    sf::Vector2f targetPos(150.f, 200.f);
+    arena->grabPiece(targetId, targetPos);
+
+    auto* actionLayer = arena->getLayer(Arena::Action);
+    ASSERT_EQ(actionLayer->getChildCount(), 1);
+
+    auto* grabbedPiece = static_cast<PieceNode*>(actionLayer->getChildren().back());
+    
+    arena->returnPiece();
+
+    EXPECT_EQ(actionLayer->getChildCount(), 0);
+
+    EXPECT_NO_FATAL_FAILURE({
+        arena->grabPiece(targetId, targetPos);
+    });
+}
+
+TEST_F(ArenaTest, ReturnPiece_WithoutActivePiece_Crashes) {
+    GTEST_FLAG_SET(death_test_style, "threadsafe");
+
+    // Intentionally do NOT call grabPiece()
+    ASSERT_DEATH({
+        arena->returnPiece();
+    }, "");
+}

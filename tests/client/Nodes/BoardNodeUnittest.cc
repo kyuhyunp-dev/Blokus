@@ -10,20 +10,18 @@
 class BoardNodeTest : public ::testing::Test 
 {
 protected:
-    BoardNodeTest() 
-        : textures()         
-        , boardNode()            
+    void SetUp() override 
     {
+        boardNode = std::make_unique<BoardNode>();
+        boardNode->setPosition({100.f, 100.f});
+    }
+    
+    std::optional<BoardNode::Shadow> shadow() const 
+    {
+        return boardNode->mShadow;
     }
 
-    void SetUp() override {
-        // Assume Config::GridSize is 40.f for these calculations
-        // We set the board at an offset to test the InverseTransform
-        boardNode.setPosition({100.f, 100.f}); 
-    }
-
-    MockTextureHolder textures;
-    BoardNode boardNode;
+    std::unique_ptr<BoardNode> boardNode;
 };
 
 TEST_F(BoardNodeTest, GridSize)
@@ -40,7 +38,7 @@ TEST_F(BoardNodeTest, PerfectSnap)
     // localTopLeft = (20, 20) - (20, 20) = (0, 0).
     sf::Vector2f worldMouse(120.f, 120.f);
 
-    sf::Vector2i result = boardNode.getMinSnappedGrid(worldMouse, centroid);
+    sf::Vector2i result = boardNode->getMinSnappedGrid(worldMouse, centroid);
 
     EXPECT_EQ(result.x, 0);
     EXPECT_EQ(result.y, 0);
@@ -51,7 +49,7 @@ TEST_F(BoardNodeTest, RoundingUpThreshold)
     sf::Vector2f centroid(0.f, 0.f); 
     
     sf::Vector2f worldMouse(119.9f, 119.9f); 
-    sf::Vector2i result = boardNode.getMinSnappedGrid(worldMouse, centroid);
+    sf::Vector2i result = boardNode->getMinSnappedGrid(worldMouse, centroid);
     EXPECT_EQ(result.x, 0);
     EXPECT_EQ(result.y, 0);
 
@@ -61,13 +59,13 @@ TEST_F(BoardNodeTest, RoundingUpThreshold)
             static_cast<float> (pos) 
         };
 
-        result = boardNode.getMinSnappedGrid(worldMouse, centroid);
+        result = boardNode->getMinSnappedGrid(worldMouse, centroid);
         EXPECT_EQ(result.x, 1);
         EXPECT_EQ(result.y, 1); 
     }
 
     worldMouse = { 160.f, 160.f };
-    result = boardNode.getMinSnappedGrid(worldMouse, centroid);
+    result = boardNode->getMinSnappedGrid(worldMouse, centroid);
     EXPECT_EQ(result.x, 2);
     EXPECT_EQ(result.y, 2);
 }
@@ -77,7 +75,7 @@ TEST_F(BoardNodeTest, NegativeRounding)
     sf::Vector2f centroid(0.f, 0.f);
     
     sf::Vector2f worldMouse(80.f, 80.f); 
-    sf::Vector2i result = boardNode.getMinSnappedGrid(worldMouse, centroid);
+    sf::Vector2i result = boardNode->getMinSnappedGrid(worldMouse, centroid);
     EXPECT_EQ(result.x, -1);
     EXPECT_EQ(result.y, -1);
 
@@ -87,8 +85,30 @@ TEST_F(BoardNodeTest, NegativeRounding)
             static_cast<float> (pos) + 0.01f
         };
 
-        result = boardNode.getMinSnappedGrid(worldMouse, centroid);
+        result = boardNode->getMinSnappedGrid(worldMouse, centroid);
         EXPECT_EQ(result.x, 0);
         EXPECT_EQ(result.y, 0); 
     }
+}
+
+TEST_F(BoardNodeTest, UpdateAndClearShadow) {
+    // 1. Arrange
+    int pieceId = 3;
+    sf::Vector2i gridPos(5, 5);
+    sf::Color shadowColor = sf::Color(255, 255, 255, 128); // Test with alpha
+
+    // 2. Act (Update)
+    boardNode->updateShadow(pieceId, gridPos, shadowColor);
+
+    // 3. Assert (Update worked)
+    ASSERT_TRUE(shadow().has_value());
+    EXPECT_EQ(shadow()->pieceId, pieceId);
+    EXPECT_EQ(shadow()->minCoord, gridPos);
+    EXPECT_EQ(shadow()->color, shadowColor);
+
+    // 4. Act (Clear)
+    boardNode->clearShadow();
+
+    // 5. Assert (Clear worked)
+    EXPECT_FALSE(shadow().has_value());
 }
