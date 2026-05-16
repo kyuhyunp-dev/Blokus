@@ -7,7 +7,7 @@
 
 namespace
 {
-    TEST(UpdateTest, LessThanSecond)
+    TEST(StatisticsTrackerTest, LessThanSecond)
     {
         std::ostringstream oss;
         auto sink = std::make_shared<spdlog::sinks::ostream_sink_mt>(oss);
@@ -28,7 +28,7 @@ namespace
         spdlog::set_default_logger(sourceLogger);
     }
 
-    TEST(UpdateTest, MoreThanSecond)
+    TEST(StatisticsTrackerTest, MoreThanSecond)
     {
         std::ostringstream oss;
         auto sink = std::make_shared<spdlog::sinks::ostream_sink_mt>(oss);

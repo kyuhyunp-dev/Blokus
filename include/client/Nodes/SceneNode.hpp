@@ -19,6 +19,8 @@ class SceneNode : public sf::Transformable, public  sf::Drawable
         typedef std::unique_ptr<SceneNode> Ptr;
 
     public:
+        virtual ~SceneNode() = default;
+        
         SceneNode();
 
         void attachChild(Ptr child);
@@ -42,7 +44,7 @@ class SceneNode : public sf::Transformable, public  sf::Drawable
 
         virtual bool contains(sf::Vector2f worldPoint) const;
         
-        void onCommand(const Command& command, sf::Time dt);
+        virtual void onCommand(const Command& command, sf::Time dt);
 
         virtual unsigned int getCategory() const;
 
@@ -51,7 +53,7 @@ class SceneNode : public sf::Transformable, public  sf::Drawable
         
         void updateChildren(sf::Time dt);
 
-        void draw(sf::RenderTarget& target, 
+        virtual void draw(sf::RenderTarget& target, 
             sf::RenderStates states) const;
         
         virtual void drawCurrent(sf::RenderTarget& target,

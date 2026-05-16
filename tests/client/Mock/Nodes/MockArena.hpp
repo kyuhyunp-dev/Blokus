@@ -1,36 +1,27 @@
 #ifndef MOCK_ARENA_HPP
 #define MOCK_ARENA_HPP
 
-#include "Nodes/Arena.hpp"
-#include <memory>
+#include <gmock/gmock.h>
+#include "Nodes/IArena.hpp"
 
 
-class MockArena : public Arena 
-{
+class MockArena : public IArena 
+{ // The constructor for Arena has too many arguments + buildScene
 public:
-   MockArena(sf::RenderTarget& target, MockTextureHolder& textures, 
-              CommandQueue& commands, Team team)
-        : Arena(target, textures, 
-            {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17}, 
-            commands, team) 
-    {
-    }
+    MOCK_METHOD(unsigned int, getCategory, (), (const, override));
+    MOCK_METHOD(void, buildScene, (), (override));
 
-    // Spy variables to track what the Command does
-    bool placePieceCalled = false;
-    bool returnPieceCalled = false;
-    sf::Vector2i lastPlacedGrid = {-1, -1};
+    MOCK_METHOD(void, grabPiece, (int, sf::Vector2f), (override));
+    MOCK_METHOD(void, placePiece, (sf::Vector2i), (override));
+    MOCK_METHOD(void, returnPiece, (), (override));
 
-    void placePiece(sf::Vector2i gridCoord) override 
-    {
-        placePieceCalled = true;
-        lastPlacedGrid = gridCoord;
-    }
-
-    void returnPiece() override 
-    {
-        returnPieceCalled = true;
-    }
-};
+    MOCK_METHOD(TrayNode*, getTrayNodePtr, (), (const, override));
+    MOCK_METHOD(BoardNode*, getBoardNodePtr, (), (const, override));
+    
+    // Arena is a SceneNode 
+    MOCK_METHOD(void, updateCurrent, (sf::Time), (override));
+    MOCK_METHOD(void, onCommand, (const Command&, sf::Time), (override));
+    MOCK_METHOD(void, draw, (sf::RenderTarget&, sf::RenderStates), (const, override));   
+}; 
 
 #endif

@@ -1,3 +1,11 @@
+# Library for my header-only Mocks
+add_library(BlokusSharedMocks INTERFACE)
+
+target_include_directories(BlokusSharedMocks INTERFACE
+    ${CMAKE_CURRENT_SOURCE_DIR}/..
+)
+
+
 # Build the test executable
 add_executable(BlokusSharedTests
     PolyominoLoaderUnittest.cc
@@ -21,6 +29,7 @@ add_dependencies(BlokusSharedTests generate_assets)
 target_link_libraries(BlokusSharedTests
     PRIVATE
         BlokusSharedLib
+        BlokusSharedMocks
         GTest::gtest_main
         GTest::gmock      
         GTest::gmock_main
