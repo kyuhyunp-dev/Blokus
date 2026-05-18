@@ -17,14 +17,12 @@ public:
     // Core lifecycle
     virtual void buildScene() = 0;
 
-    // Actions
+    // Actions 
     virtual unsigned int getCategory() const = 0;
-                    
+
     virtual void grabPiece(int id, sf::Vector2f worldPos) = 0;
     virtual void placePiece(sf::Vector2i gridCoord) = 0;
     virtual void returnPiece() = 0;
-
-    void onCommand(const Command& command, sf::Time dt) override = 0;
 
     // Queries
     virtual TrayNode* getTrayNodePtr() const = 0;
