@@ -135,7 +135,7 @@ void SceneNode::onCommand(const Command& command, sf::Time dt)
     }
 
     // 2. Recursively pass the command to all children
-    for (const auto& child : mChildren)
+    for (auto& child : mChildren)
     {
         child->onCommand(command, dt);
     }

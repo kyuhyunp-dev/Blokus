@@ -44,7 +44,7 @@ void PieceNode::updateLayout()
     for (const auto& pos : coordinates) 
     {
         auto block = std::make_unique<BlockNode>(
-            mTextures.get(Textures::Tiles), Utility::getRect(mTeam));
+            mTextures.get(Textures::Tiles), getRect(mTeam));
         
         block->setPosition({pos.x * Config::GridSize, pos.y * Config::GridSize});
         attachChild(std::move(block));

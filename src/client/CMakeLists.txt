@@ -3,15 +3,19 @@ add_library(BlokusClientLib STATIC
 Command/Command.cpp
 Command/CommandQueue.cpp
 Nodes/Arena.cpp
-Nodes/BlockNode.cpp
+Nodes/BlockNode.cpp  
 Nodes/BoardNode.cpp
 Nodes/PieceNode.cpp
 Nodes/SceneNode.cpp
 Nodes/TrayNode.cpp
-Game.cpp
+States/NetworkGameState.cpp
+States/State.cpp
+States/StateStack.cpp
+Application.cpp
 Path.cpp
 Player.cpp 
 StatisticsTracker.cpp
+Utility.cpp
 )
 
 # Link dependencies
@@ -26,7 +30,7 @@ target_include_directories(BlokusClientLib PUBLIC
 )
 
 # Define client executable
-add_executable(BlokusClient main.cpp)
+add_executable(BlokusClient Main.cpp)
 
 # Link dependencies
 target_link_libraries(BlokusClient PRIVATE

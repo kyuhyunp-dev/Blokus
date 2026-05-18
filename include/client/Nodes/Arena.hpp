@@ -1,24 +1,20 @@
 #ifndef ARENA_HPP
 #define ARENA_HPP
 
+#include "Nodes/IArena.hpp"
 #include "Nodes/SceneNode.hpp"
 #include "Resource/ResourceHolder.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
 #include "shared/Team.hpp"
 #include "shared/Constants.hpp"
 
-class Referee;
 class CommandQueue;
-class BoardNode;
-class TrayNode;
-
-
 namespace sf
 {
     class RenderTarget;
 }
 
-class Arena : public SceneNode
+class Arena : public IArena
 {
 public:
     enum Layer 
@@ -33,19 +29,16 @@ public:
         std::array<int, Blokus::DeckSize> deck, 
         CommandQueue &commands, Team team);
 
-    void buildScene();
+    void buildScene() override;
 
     unsigned int getCategory() const override;
 
-    void grabPiece(int id, sf::Vector2f worldPos);
+    void grabPiece(int id, sf::Vector2f worldPos) override;
+    virtual void placePiece(sf::Vector2i gridCoord) override;
+    virtual void returnPiece() override;
 
-    virtual void placePiece(sf::Vector2i gridCoord);
-
-    virtual void returnPiece();
-
-    TrayNode* getTrayNodePtr() const;
-
-    BoardNode* getBoardNodePtr() const; 
+    TrayNode* getTrayNodePtr() const override;
+    BoardNode* getBoardNodePtr() const override; 
 
     SceneNode* getLayer(Layer layer) const;
 

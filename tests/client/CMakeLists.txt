@@ -1,14 +1,17 @@
 # Build the test executable
 add_executable(BlokusClientTests
-    StatisticsTrackerUnittest.cc
-    Resource/ResourceHolderUnittest.cc
+    Command/CommandQueueUnittest.cc
     Nodes/SceneNodeUnittest.cc
     Nodes/PieceNodeUnittest.cc
     Nodes/ArenaUnittest.cc
     Nodes/TrayNodeUnittest.cc
     Nodes/BoardNodeUnittest.cc     
-    Command/CommandQueueUnittest.cc
+    Resource/ResourceHolderUnittest.cc
+    States/NetworkGameStateUnittest.cc
+    States/StateStackUnittest.cc
+    ApplicationUnittest.cc
     PlayerUnittest.cc
+    StatisticsTrackerUnittest.cc
     # add other test files here
 )
 
@@ -22,6 +25,7 @@ endif()
 target_link_libraries(BlokusClientTests
     PRIVATE
         BlokusClientLib
+        BlokusSharedMocks
         GTest::gmock      
         GTest::gmock_main        
         spdlog::spdlog
@@ -29,8 +33,7 @@ target_link_libraries(BlokusClientTests
 
 # Include directories
 target_include_directories(BlokusClientTests PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}                # Your client source code
-    ${CMAKE_CURRENT_SOURCE_DIR}/Mock # The Mock folder
+    ${CMAKE_CURRENT_SOURCE_DIR}                
 )
 
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)

@@ -6,9 +6,11 @@
 #include "Nodes/BoardNode.hpp"
 #include "Query/TrayQuery.hpp"
 #include "Query/BoardQuery.hpp"
+#include "Utility.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <iostream>
+#include <cassert>
 
 
 Player::Player(sf::RenderWindow& window, Referee& referee)
@@ -19,7 +21,7 @@ Player::Player(sf::RenderWindow& window, Referee& referee)
     , mHeldPiecePtr(nullptr)
     , mCurrentMousePos(0, 0)
 {
-    initialzeKeys();
+    initializeKeys();
 }
 
 void Player::setQuery(TrayQuery* trayPtr, BoardQuery* boardPtr)
@@ -60,44 +62,41 @@ void Player::handleEvent(const sf::Event& event, CommandQueue& commands)
                     pushReturnCommand(commands); 
                 }
                 
-                pushClearShadowCommand(commands);              
                 mHeldPiecePtr = nullptr;
+                pushClearShadowCommand(commands);              
             }
-            else 
-            {          
-                if (auto piecePtr = mTrayPtr->getPieceAt(worldPos))
-                {
-                    mHeldPiecePtr = piecePtr; 
-                    pushGrabCommand(worldPos, commands);
-                }
-            } 
+            else if (auto piecePtr = mTrayPtr->getPieceAt(worldPos))
+            {
+                mHeldPiecePtr = piecePtr; 
+                pushGrabCommand(worldPos, commands);
+            }
         }
+    }
+
+    if (mHeldPiecePtr == nullptr) 
+    {
+        return;
     }
 
     if (auto keyPressed = event.getIf<sf::Event::KeyPressed>()) 
     { // Use function to set the id immediately to change shadow's id
         auto it = mKeyBinding.find(keyPressed->code);
-        if (it != mKeyBinding.end() && mHeldPiecePtr) 
+        if (it != mKeyBinding.end()) 
         {
             int pieceId = mHeldPiecePtr->getId(); 
             mHeldPiecePtr->setId(getTransformedId(pieceId, it->second));
         }
     }
 
-    if (mHeldPiecePtr)
-    { 
-       if (auto mouseMoved = event.getIf<sf::Event::MouseMoved>())
-        {
-            mCurrentMousePos = mouseMoved->position;
-            sf::Vector2f worldPos = mWindow.mapPixelToCoords(mCurrentMousePos);
-            mHeldPiecePtr->setPosition(worldPos);
-        } 
-        
-        // Check shadow 60 times every second
+    if (auto mouseMoved = event.getIf<sf::Event::MouseMoved>())
+    {
+        mCurrentMousePos = mouseMoved->position;
         sf::Vector2f worldPos = mWindow.mapPixelToCoords(mCurrentMousePos);
-        
-        pushShadowCommand(worldPos, commands);
-    }
+        mHeldPiecePtr->setPosition(worldPos);
+    } 
+    
+    sf::Vector2f worldPos = mWindow.mapPixelToCoords(mCurrentMousePos);
+    pushShadowCommand(worldPos, commands);
 }
 
 std::optional<int> Player::getHeldPieceId() const
@@ -116,12 +115,14 @@ Team Player::getTeam() const
 
 void Player::pushGrabCommand(sf::Vector2f worldPos, CommandQueue& commands) const
 {
+    int pieceId = mHeldPiecePtr->getId();
+
     Command grab;
     grab.category = Category::Arena;
-    grab.action = derivedAction<Arena>(
-        [this, worldPos](Arena& arena, sf::Time) 
+    grab.action = derivedAction<IArena>(
+        [pieceId, worldPos](IArena& arena, sf::Time) 
     {
-        arena.grabPiece(mHeldPiecePtr->getId(), worldPos);
+        arena.grabPiece(pieceId, worldPos);
     });
 
     commands.push(grab);
@@ -134,7 +135,7 @@ void Player::pushShadowCommand(sf::Vector2f worldPos, CommandQueue& commands) co
     
     int pieceId = mHeldPiecePtr->getId();
     sf::Color color = (mReferee.isValid(pieceId, minSnappedGrid, mTeam) ? 
-        Utility::getShadowColor(mTeam) : Utility::getShadowColor(Team::None));
+        getShadowColor(mTeam) : getShadowColor(Team::None));
 
     Command shadow; 
     shadow.category = Category::Board;
@@ -150,8 +151,8 @@ void Player::pushPlaceCommand(sf::Vector2i minSnappedGrid, CommandQueue& command
 {
     Command place;
     place.category = Category::Arena;
-    place.action = derivedAction<Arena>(
-        [minSnappedGrid](Arena& arena, sf::Time) 
+    place.action = derivedAction<IArena>(
+        [minSnappedGrid](IArena& arena, sf::Time) 
     {
         arena.placePiece(minSnappedGrid);
     });
@@ -163,8 +164,8 @@ void Player::pushReturnCommand(CommandQueue& commands) const
 {
     Command returnCmd;
     returnCmd.category = Category::Arena;
-    returnCmd.action = derivedAction<Arena>(
-        [](Arena& arena, sf::Time) 
+    returnCmd.action = derivedAction<IArena>(
+        [](IArena& arena, sf::Time) 
     {
         arena.returnPiece();
     });
@@ -177,15 +178,15 @@ void Player::pushClearShadowCommand(CommandQueue& commands) const
     Command clearShadow;
     clearShadow.category = Category::Board;
     clearShadow.action = derivedAction<BoardNode>(
-        [](BoardNode& board, sf::Time) {
-            // You will need to add a clearShadow() method to BoardNode
+        [](BoardNode& board, sf::Time) 
+        {
             board.clearShadow(); 
         });
 
     commands.push(clearShadow);
 }
 
-void Player::initialzeKeys()
+void Player::initializeKeys()
 {
     mKeyBinding[sf::Keyboard::Key::R] = RotateCW;
     mKeyBinding[sf::Keyboard::Key::C] = RotateCCW;

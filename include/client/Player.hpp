@@ -21,17 +21,19 @@ class PieceNode;
 class Player
 {
     public:
+        virtual ~Player() = default;
+        
         Player(sf::RenderWindow& window, Referee& referee);
         
-        void setQuery(TrayQuery* tray, BoardQuery* board);
+        virtual void setQuery(TrayQuery* tray, BoardQuery* board);
 
-        void setTeam(Team team);
+        virtual void setTeam(Team team);
         
-        void handleEvent(const sf::Event& event, CommandQueue& commands);
+        virtual void handleEvent(const sf::Event& event, CommandQueue& commands);
 
-        std::optional<int> getHeldPieceId() const;
+        virtual std::optional<int> getHeldPieceId() const;
 
-        Team getTeam() const;
+        virtual Team getTeam() const;
 
     private:
         enum Transformation
@@ -58,7 +60,7 @@ class Player
         
         int getCanonicalId(int transformedId) const;
         
-        void initialzeKeys();
+        void initializeKeys();
 
     private:
         sf::RenderWindow& mWindow;

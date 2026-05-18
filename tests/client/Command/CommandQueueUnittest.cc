@@ -12,18 +12,18 @@ TEST(CommandQueueTest, PushAndPopTest)
 
     // 2. Single Push/Pop cycle
     Command cmd1;
-    cmd1.category = Category::Arena;
+    cmd1.category = Category::Scene;
     
     queue.push(cmd1);
     EXPECT_FALSE(queue.isEmpty());
 
     Command popped1 = queue.pop();
-    EXPECT_EQ(popped1.category, Category::Arena);
+    EXPECT_EQ(popped1.category, Category::Scene);
     EXPECT_TRUE(queue.isEmpty());
 
     // 3. Double Push/Pop cycle (Verifying FIFO)
     Command cmd2;
-    cmd2.category = Category::ActivePiece;
+    cmd2.category = Category::Arena;
   
     queue.push(cmd2);
 
@@ -35,7 +35,7 @@ TEST(CommandQueueTest, PushAndPopTest)
 
     // First out should be cmd2
     Command popped2 = queue.pop();
-    EXPECT_EQ(popped2.category, Category::ActivePiece);
+    EXPECT_EQ(popped2.category, Category::Arena);
     EXPECT_FALSE(queue.isEmpty());
 
     // Second out should be cmd3

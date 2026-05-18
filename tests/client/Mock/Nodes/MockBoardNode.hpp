@@ -1,37 +1,16 @@
 #ifndef MOCK_BOARD_NODE_HPP
 #define MOCK_BOARD_NODE_HPP
 
+#include <gmock/gmock.h>
 #include "Nodes/BoardNode.hpp"
-#include "Mock/Resource/MockTextureHolder.hpp"
-
 
 class MockBoardNode : public BoardNode 
 {
 public:
-    MockBoardNode()
-        : BoardNode() 
-        , clearShadowCalled(false)
-    {
-    }
+    MockBoardNode() : BoardNode() {}
 
-    void updateShadow(int pieceId, sf::Vector2i coord, sf::Color color) override 
-    {
-        clearShadowCalled = false;
-        lastPieceId = pieceId;
-        lastCoord = coord;
-        lastColor = color;
-    }
-
-    void clearShadow() override
-    {
-        clearShadowCalled = true;
-    }
-
-public: 
-    int lastPieceId;
-    sf::Vector2i lastCoord;
-    sf::Color lastColor;
-    bool clearShadowCalled;
-}; 
+    MOCK_METHOD(void, updateShadow, (int pieceId, sf::Vector2i minSnappedGrid, sf::Color color), (override));
+    MOCK_METHOD(void, clearShadow, (), (override));
+};
 
 #endif
