@@ -6,8 +6,6 @@
 #include "Mock/Resource/MockFontHolder.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
 
-#include "Mock/MockPlayer.hpp"
-
 
 class TestableNetworkGameState : public NetworkGameState 
 {

@@ -11,7 +11,7 @@
 #include <vector>
 #include <memory>
 
-class Command;
+struct Command;
 
 class SceneNode : public sf::Transformable, public  sf::Drawable
 {
