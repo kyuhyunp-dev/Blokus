@@ -6,6 +6,7 @@
 #include "Nodes/BoardNode.hpp"
 #include "Query/TrayQuery.hpp"
 #include "Query/BoardQuery.hpp"
+#include "Utility.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <iostream>
@@ -114,12 +115,14 @@ Team Player::getTeam() const
 
 void Player::pushGrabCommand(sf::Vector2f worldPos, CommandQueue& commands) const
 {
+    int pieceId = mHeldPiecePtr->getId();
+
     Command grab;
     grab.category = Category::Arena;
     grab.action = derivedAction<IArena>(
-        [this, worldPos](IArena& arena, sf::Time) 
+        [pieceId, worldPos](IArena& arena, sf::Time) 
     {
-        arena.grabPiece(mHeldPiecePtr->getId(), worldPos);
+        arena.grabPiece(pieceId, worldPos);
     });
 
     commands.push(grab);

@@ -12,8 +12,8 @@
 
 NetworkGameState::NetworkGameState(StateStack& stack, Context context)
     : State(stack, context)
-    , mReferee()
     , mCommandQueue()
+    , mReferee()
     , mArenaPtr(nullptr) 
     , mPlayers()
     , mLocalPlayerIdentifier()

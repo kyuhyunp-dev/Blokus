@@ -41,9 +41,6 @@ public:
 	template <typename T>
 	void registerState(States::ID stateID);
 
-	template <typename T, typename Param1>
-	void registerState(States::ID stateID, Param1 arg1);
-
 	void update(sf::Time dt);
 	void draw();
 	void handleEvent(const sf::Event& event);

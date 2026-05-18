@@ -43,7 +43,7 @@ TEST_F(ApplicationTest, UpdateViewUltraWide)
     // This means the viewport width will shrink below 1.0f, centered on the screen.
     EXPECT_LT(viewport.size.x, 1.0f); 
     EXPECT_EQ(viewport.size.y, 1.0f); // Height should remain fully filled (100%)
-    EXPECT_EQ(viewport.position.x, 0.f); // It should be offset from the left edge to center it
+    EXPECT_NEAR(viewport.position.x, 0.f, 1e-6f); // It should be offset from the left edge to center it
 }
 
 TEST_F(ApplicationTest, UpdateViewTall)
@@ -58,5 +58,5 @@ TEST_F(ApplicationTest, UpdateViewTall)
     // Since the window is taller than 16:9, it should add letterboxes (black bars on top/bottom)
     EXPECT_EQ(viewport.size.x, 1.0f); // Width should remain fully filled (100%)
     EXPECT_LT(viewport.size.y, 1.0f); // Height should shrink below 1.0f
-    EXPECT_EQ(viewport.position.y, 0.f); // It should be offset from the top edge to center it
-}
+    EXPECT_NEAR(viewport.position.y, 0.f, 1e-6f); // It should be offset from the top edge to center it
+}  

@@ -69,6 +69,7 @@ TEST_F(NetworkGameStateTest, UpdatePassesCommandsToArena)
 {
     TestableNetworkGameState state(mStack, mContext);
     state.onActivate(); 
+    ASSERT_NE(state.mockArenaPtr, nullptr); 
 
     std::array<Category::Type, 3> categories = 
         {Category::Scene, Category::Arena, Category::Board};
@@ -91,6 +92,7 @@ TEST_F(NetworkGameStateTest, DrawPassesArena)
 {
     TestableNetworkGameState state(mStack, mContext);
     state.onActivate(); 
+    ASSERT_NE(state.mockArenaPtr, nullptr); 
     
     EXPECT_CALL(*state.mockArenaPtr, draw(testing::_, testing::_))
         .Times(1);

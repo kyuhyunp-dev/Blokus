@@ -1,5 +1,5 @@
-#ifndef GAME_HPP
-#define GAME_HPP
+#ifndef NETWORK_GAME_STATE_HPP
+#define NETWORK_GAME_STATE_HPP
 
 #include "States/State.hpp"
 #include "Command/CommandQueue.hpp"
@@ -19,6 +19,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <map>
 
 
 class NetworkGameState : public State

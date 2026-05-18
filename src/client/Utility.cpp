@@ -1,4 +1,5 @@
 #include "Utility.hpp"
+#include <cmath>
 
 
 sf::Color getShadowColor(Team team)

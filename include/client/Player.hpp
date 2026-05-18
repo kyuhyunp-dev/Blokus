@@ -21,6 +21,8 @@ class PieceNode;
 class Player
 {
     public:
+        virtual ~Player() = default;
+        
         Player(sf::RenderWindow& window, Referee& referee);
         
         virtual void setQuery(TrayQuery* tray, BoardQuery* board);

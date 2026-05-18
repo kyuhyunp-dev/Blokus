@@ -43,7 +43,13 @@ void Application::run()
 			if (mStateStack.isEmpty())
 			{
 				mWindow.close();
+				break;
 			}
+		}
+
+		if (!mWindow.isOpen())
+		{
+			break; 
 		}
 
 		mStatistics.update(dt);

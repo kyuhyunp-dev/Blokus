@@ -29,16 +29,16 @@ public:
         std::array<int, Blokus::DeckSize> deck, 
         CommandQueue &commands, Team team);
 
-    void buildScene();
+    void buildScene() override;
 
     unsigned int getCategory() const override;
 
-    void grabPiece(int id, sf::Vector2f worldPos);
-    virtual void placePiece(sf::Vector2i gridCoord);
-    virtual void returnPiece();
+    void grabPiece(int id, sf::Vector2f worldPos) override;
+    virtual void placePiece(sf::Vector2i gridCoord) override;
+    virtual void returnPiece() override;
 
-    TrayNode* getTrayNodePtr() const;
-    BoardNode* getBoardNodePtr() const; 
+    TrayNode* getTrayNodePtr() const override;
+    BoardNode* getBoardNodePtr() const override; 
 
     SceneNode* getLayer(Layer layer) const;
 
