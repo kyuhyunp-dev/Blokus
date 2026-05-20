@@ -5,6 +5,8 @@
 #include "Resource/ResourceIdentifiers.hpp"
 #include "States/StateStack.hpp"
 #include "StatisticsTracker.hpp"
+#include "Network/NetworkClient.hpp"
+#include "shared/Game/GameSessionData.hpp"
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -43,6 +45,9 @@ private:
 
 	TextureHolder mTextures;
 	FontHolder& mFonts;
+
+	GameSessionData mGameSessionData;
+	NetworkClient mNetworkClient;
 
 	StateStack mStateStack;
 	
