@@ -6,7 +6,6 @@ using ::testing::HasSubstr;
 
 #include "shared/PolyominoUtil.hpp"
 #include "shared/Constants.hpp"
-#include "polyomino_generated.h"
 
 #include <iostream>
 #include <array>

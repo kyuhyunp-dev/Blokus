@@ -5,26 +5,13 @@ target_include_directories(BlokusSharedMocks INTERFACE
     ${CMAKE_CURRENT_SOURCE_DIR}/..
 )
 
-
 # Build the test executable
 add_executable(BlokusSharedTests
-    PolyominoLoaderUnittest.cc
     PolyominoUtilsUnittest.cc
     RefereeUnittest.cc
     # add other test files here
 
 )
-
-# Define the path clearly
-set(PIECES_PATH "${CMAKE_SOURCE_DIR}/assets/shared/pieces.bin")
-
-# Add the definition to your test target
-target_compile_definitions(BlokusSharedTests PRIVATE 
-    PIECES_BIN_PATH="${PIECES_PATH}"
-)
-
-# Ensure the assets are built before the tests run
-add_dependencies(BlokusSharedTests generate_assets)
 
 target_link_libraries(BlokusSharedTests
     PRIVATE

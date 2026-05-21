@@ -1,12 +1,5 @@
-# 1. Define the exact path where the header WILL be
-set(GEN_HEADER "${CMAKE_BINARY_DIR}/PolyominoSchemaTarget/polyomino_generated.h")
-
-# 2. Tell CMake this is a generated file
-set_source_files_properties("${GEN_HEADER}" PROPERTIES GENERATED TRUE)
-
 # Set SHARED_SOURCES that depend on GEN_HEADER
 set(SHARED_SOURCES
-    PolyominoLoader.cpp
     PolyominoUtil.cpp
     Referee.cpp
 )
@@ -28,14 +21,10 @@ target_link_libraries(BlokusSharedLib PUBLIC
     SFML::System
     SFML::Network
     spdlog::spdlog
-    PolyominoSchemaTarget
-    flatbuffers::flatbuffers
     project_configs 
 )
 
 target_include_directories(BlokusSharedLib PUBLIC 
     "${CMAKE_SOURCE_DIR}/include"
-    "${CMAKE_BINARY_DIR}/PolyominoSchemaTarget" 
-    "$<TARGET_PROPERTY:PolyominoSchemaTarget,BINARY_DIR>"
 )
 
