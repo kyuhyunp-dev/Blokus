@@ -108,7 +108,8 @@ TEST_F(NetworkClientTest, SendAndPollPacket)
             gotPacket = true;
             break;  
         }
-        
+
+        ++numTries;
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 
