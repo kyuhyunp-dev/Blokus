@@ -2,6 +2,7 @@
 add_library(BlokusClientLib STATIC
 Command/Command.cpp
 Command/CommandQueue.cpp
+Network/NetworkClient.cpp
 Nodes/Arena.cpp
 Nodes/BlockNode.cpp  
 Nodes/BoardNode.cpp

@@ -26,6 +26,7 @@ target_link_libraries(BlokusSharedLib PUBLIC
     SFML::Graphics 
     SFML::Window
     SFML::System
+    SFML::Network
     spdlog::spdlog
     PolyominoSchemaTarget
     flatbuffers::flatbuffers
