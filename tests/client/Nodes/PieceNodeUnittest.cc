@@ -2,13 +2,17 @@
 
 #include <gtest/gtest.h>
 #include "Nodes/PieceNode.hpp" 
-#include "Config.hpp"
+#include "ClientConfig.hpp"
+#include "shared/TestBase.hpp" 
 
 #include "SFML/Graphics/Texture.hpp"
 #include <SFML/Window/Context.hpp>
 
 
-TEST(PieceNodeTest, NumberOfBlocks) 
+class PieceNodeTest : public PolyominoTestBase {
+};
+
+TEST_F(PieceNodeTest, NumberOfBlocks) 
 {
     // Use the real type PieceNode expects
     MockTextureHolder testTextures;
@@ -22,28 +26,28 @@ TEST(PieceNodeTest, NumberOfBlocks)
     // If your load() calls sf::Texture::loadFromFile, you might need a 
     // specific 'insert' method in your ResourceHolder for testing.
 
-    std::array<int, Blokus::PolyominoCount> expectedNumBlocks;
-    auto pieces = Blokus::PolyominoGenerator::getData().polyominoById;
-    for (int id = 0; id < Blokus::PolyominoCount; ++id)
+    std::array<int, Config::PolyominoCount> expectedNumBlocks;
+    auto pieces = sLibrary.polyominoById;
+    for (int id = 0; id < Config::PolyominoCount; ++id)
     {
         expectedNumBlocks[id] = pieces[id].blocks.size();
     }
      
-    for (int id = 0; id < Blokus::PolyominoCount; ++id)
+    for (int id = 0; id < Config::PolyominoCount; ++id)
     {  
         const Team blue = Team::Blue;
-        PieceNode piece(id, blue, testTextures);
+        PieceNode piece(id, blue, testTextures, sLibrary);
         EXPECT_EQ(piece.getChildCount(), expectedNumBlocks[id]);
     } 
 }
 
-TEST(PieceNodeTest, IdentityManagement) 
+TEST_F(PieceNodeTest, IdentityManagement) 
 {
     MockTextureHolder testTextures;
     testTextures.load(Textures::Tiles, "dummy_data");
     
     // Constructor test
-    PieceNode piece(0, Team::Red, testTextures);
+    PieceNode piece(0, Team::Red, testTextures, sLibrary);
     EXPECT_EQ(piece.getId(), 0);
 
     // setId() test
@@ -51,31 +55,31 @@ TEST(PieceNodeTest, IdentityManagement)
     EXPECT_EQ(piece.getId(), 5); 
 }
 
-TEST(PieceNodeTest, Color) 
+TEST_F(PieceNodeTest, Color) 
 {
     MockTextureHolder testTextures;
     testTextures.load(Textures::Tiles, "dummy_data");
 
-    PieceNode yellow(1, Team::Yellow, testTextures);
+    PieceNode yellow(1, Team::Yellow, testTextures, sLibrary);
     EXPECT_EQ(yellow.getTeam(), Team::Yellow);
 
-    PieceNode green(1, Team::Green, testTextures);
+    PieceNode green(1, Team::Green, testTextures, sLibrary);
     EXPECT_EQ(green.getTeam(), Team::Green);
 
-    PieceNode blue(1, Team::Blue, testTextures);
+    PieceNode blue(1, Team::Blue, testTextures, sLibrary);
     EXPECT_EQ(blue.getTeam(), Team::Blue);
 
-    PieceNode red(1, Team::Red, testTextures);
+    PieceNode red(1, Team::Red, testTextures, sLibrary);
     EXPECT_EQ(red.getTeam(), Team::Red);
 }
 
-TEST(PieceNodeTest, SetIdUpdatesBlocks) 
+TEST_F(PieceNodeTest, SetIdUpdatesBlocks) 
 {
     MockTextureHolder testTextures;
     testTextures.load(Textures::Tiles, "dummy_data");
 
     // Start with ID 0 (1 block)
-    PieceNode piece(0, Team::Blue, testTextures);
+    PieceNode piece(0, Team::Blue, testTextures, sLibrary);
     EXPECT_EQ(piece.getChildCount(), 1);
 
     // Change to ID 1 (Suppose it has 2 blocks)
@@ -83,13 +87,13 @@ TEST(PieceNodeTest, SetIdUpdatesBlocks)
     EXPECT_EQ(piece.getChildCount(), 2); // The test now proves the layout updated!
 }
 
-TEST(PieceNodeTest, MonominoContains) 
+TEST_F(PieceNodeTest, MonominoContains) 
 {
     MockTextureHolder testTextures;
     testTextures.load(Textures::Tiles, "dummy_data");
 
     // ID 0 (1 block)    
-    auto monomino = std::make_unique<PieceNode>(0, Team::Blue, testTextures);
+    auto monomino = std::make_unique<PieceNode>(0, Team::Blue, testTextures, sLibrary);
     monomino->setPosition({0.f, 0.f});
     EXPECT_EQ(monomino->getChildCount(), 1);
     
@@ -104,13 +108,13 @@ TEST(PieceNodeTest, MonominoContains)
     EXPECT_TRUE(monomino->contains({Config::GridSize - 1, Config::GridSize - 1}));
 }
 
-TEST(PieceNodeTest, CShapeContains) 
+TEST_F(PieceNodeTest, CShapeContains) 
 {
     MockTextureHolder testTextures;
     testTextures.load(Textures::Tiles, "dummy_data");
 
     // ID 14 (5 blocks C shape)    
-    auto cShape = std::make_unique<PieceNode>(14, Team::Blue, testTextures);
+    auto cShape = std::make_unique<PieceNode>(14, Team::Blue, testTextures, sLibrary);
     cShape->setPosition({0.f, 0.f});
     EXPECT_EQ(cShape->getChildCount(), 5);
    
@@ -144,13 +148,13 @@ TEST(PieceNodeTest, CShapeContains)
     EXPECT_TRUE(cShape->contains({Config::GridSize + gridMid, Config::GridSize * 2 + gridMid}));
 }
 
-TEST(PieceNodeTest, ConstructorSetsOriginToCentroid) {
+TEST_F(PieceNodeTest, ConstructorSetsOriginToCentroid) {
     // 1. Setup Mock/Stub dependencies
     MockTextureHolder testTextures;
     testTextures.load(Textures::Tiles, "dummy_data");
 
     // 2. Initialize Blue Domino (0, 0), (0, 1)
-    PieceNode piece(1, Team::Blue, testTextures);
+    PieceNode piece(1, Team::Blue, testTextures, sLibrary);
 
     // 3. Manually calculate expected centroid for validation
     sf::Vector2f expectedCentroid = { Config::GridSize / 2.f, Config::GridSize };

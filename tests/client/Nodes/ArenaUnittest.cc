@@ -6,11 +6,12 @@
 #include "shared/Referee.hpp"
 #include "Command/CommandQueue.hpp"
 #include "Mock/Resource/MockTextureHolder.hpp"
+#include "shared/TestBase.hpp"
 
 #include <SFML/Graphics/RenderTexture.hpp>
 
  
-class ArenaTest : public ::testing::Test 
+class ArenaTest : public PolyominoTestBase 
 {
 protected:
     void SetUp() override 
@@ -21,18 +22,17 @@ protected:
 
         mockTextures.load(Textures::ID::Tiles, "unused_path");
 
-        arena = std::make_unique<Arena>(target, mockTextures, deck, commands, Team::Blue);
+        arena = std::make_unique<Arena>(target, mockTextures, sLibrary, deck, commands, Team::Blue);
         arena->buildScene();
     }
 
     // Mock/Real objects used in the test
     MockTextureHolder mockTextures;
     sf::RenderTexture target; // Headless or dummy for internal refs
-    const std::array<int, Blokus::DeckSize> deck = 
+    const std::array<int, Config::DeckSize> deck = 
     {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17}; 
     CommandQueue commands;
     std::unique_ptr<Arena> arena; 
-
 };
 
 TEST_F(ArenaTest, GrabPiece) {

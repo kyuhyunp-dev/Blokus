@@ -7,7 +7,11 @@
 class MockReferee : public Referee 
 {
 public:
-    // MOCK_METHOD(ReturnType, MethodName, (Args...), (Modifiers));
+    MockReferee(const PolyominoDefinition& library)
+    : Referee(library)
+    {}    
+
+// MOCK_METHOD(ReturnType, MethodName, (Args...), (Modifiers));
     MOCK_METHOD(void, place, (int pieceId, sf::Vector2i minOffset, Team team), (override));
     MOCK_METHOD(bool, isValid, (int pieceId, sf::Vector2i minOffset, Team team), (const, override));
 };

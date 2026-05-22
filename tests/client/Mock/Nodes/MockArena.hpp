@@ -8,8 +8,10 @@
 class MockArena : public IArena 
 { // The constructor for Arena has too many arguments + buildScene
 public:
+    
     MOCK_METHOD(unsigned int, getCategory, (), (const, override));
     MOCK_METHOD(void, buildScene, (), (override));
+    MOCK_METHOD(void, loadTextures, (), (override));
 
     MOCK_METHOD(void, grabPiece, (int, sf::Vector2f), (override));
     MOCK_METHOD(void, placePiece, (sf::Vector2i), (override));

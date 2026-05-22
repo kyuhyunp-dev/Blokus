@@ -4,7 +4,7 @@
 #include "SceneNode.hpp"
 #include "PieceNode.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
-#include "Config.hpp"
+#include "ClientConfig.hpp"
 #include "Query/TrayQuery.hpp"
 
 #include <map>

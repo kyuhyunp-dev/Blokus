@@ -4,11 +4,13 @@
 #include <memory>
 
 
-PieceNode::PieceNode(int pieceId, const Team team, TextureHolder& textures)
+PieceNode::PieceNode(int pieceId, const Team team, 
+    TextureHolder& textures, const PolyominoDefinition& library)
     : mCurrentId(pieceId)
     , mSlotId(std::nullopt)
     , mTeam(team)
     , mTextures(textures)
+    , mLibrary(library)
     , mCentroid()
 {
    updateLayout();
@@ -38,8 +40,7 @@ void PieceNode::updateLayout()
 {
     clearChildren();
 
-    const auto &library = Blokus::PolyominoGenerator::getData();
-    const auto &coordinates = library.polyominoById.at(mCurrentId).blocks;
+    const auto &coordinates = mLibrary.polyominoById.at(mCurrentId).blocks;
 
     for (const auto& pos : coordinates) 
     {
@@ -53,8 +54,7 @@ void PieceNode::updateLayout()
 
 void PieceNode::setCentroid()
 {
-    const auto &library = Blokus::PolyominoGenerator::getData();
-    const auto &coordinates = library.polyominoById.at(mCurrentId).blocks;
+    const auto &coordinates = mLibrary.polyominoById.at(mCurrentId).blocks;
 
     mCentroid = { 0.f, 0.f };
     for (const auto& pos : coordinates) 

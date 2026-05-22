@@ -16,7 +16,8 @@ public:
 
     // Core lifecycle
     virtual void buildScene() = 0;
-
+    virtual void loadTextures() = 0;
+    
     // Actions 
     virtual unsigned int getCategory() const = 0;
 

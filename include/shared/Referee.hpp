@@ -2,7 +2,7 @@
 #define REFEREE_HPP
 
 #include "shared/Team.hpp"
-#include "shared/Constants.hpp"
+#include "shared/SharedConfig.hpp"
 #include "shared/PolyominoUtil.hpp"
 
 #include <vector>
@@ -11,7 +11,7 @@
 class Referee 
 {   
 public:
-    Referee();
+    Referee(const PolyominoDefinition& library);
 
     virtual ~Referee() = default;
 
@@ -37,12 +37,12 @@ private:
     std::vector<sf::Vector2i> getCornerPositions(int pieceId, sf::Vector2i minOffset) const;
 
 private:
-    const Blokus::PolyominoDefinition& library;
+    const PolyominoDefinition& mLibrary;
     
     std::array<bool, TeamCount> mIsFirstMove;
     std::array<sf::Vector2i, TeamCount> mStartPos;
     std::array<int, TeamCount> mScores;
-    std::array<Team, Blokus::CellCount> mBoard;
+    std::array<Team, Config::CellCount> mBoard;
 };
 
 

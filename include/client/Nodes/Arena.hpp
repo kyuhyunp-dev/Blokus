@@ -6,7 +6,9 @@
 #include "Resource/ResourceHolder.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
 #include "shared/Team.hpp"
-#include "shared/Constants.hpp"
+#include "shared/SharedConfig.hpp"
+#include "shared/PolyominoUtil.hpp"
+
 
 class CommandQueue;
 namespace sf
@@ -26,7 +28,8 @@ public:
 
 public:
     Arena(sf::RenderTarget& window, TextureHolder& textures, 
-        std::array<int, Blokus::DeckSize> deck, 
+        const PolyominoDefinition& library, 
+        std::array<int, Config::DeckSize> deck, 
         CommandQueue &commands, Team team);
 
     void buildScene() override;
@@ -41,11 +44,14 @@ public:
     BoardNode* getBoardNodePtr() const override; 
 
     SceneNode* getLayer(Layer layer) const;
+    
+    void loadTextures() override;
 
 private:
     sf::RenderTarget& mTarget;
     TextureHolder& mTextures; 
-    
+    const PolyominoDefinition& mLibrary;
+     
     std::array<SceneNode*, LayerCount> mSceneLayers;
     CommandQueue& mCommands;
 
@@ -56,7 +62,7 @@ private:
 
     Team mActiveTeam;
     const Team mTeam;
-    std::array<int, Blokus::DeckSize> mDeck;
+    std::array<int, Config::DeckSize> mDeck;
 };
 
 #endif

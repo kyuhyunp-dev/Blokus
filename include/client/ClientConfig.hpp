@@ -2,7 +2,7 @@
 #define CONFIG_HPP
 
 #include <SFML/System/Vector2.hpp>
-#include "shared/Constants.hpp"
+#include "shared/SharedConfig.hpp"
 #include "shared/Team.hpp"
 
 #include "SFML/Graphics/Color.hpp"

@@ -23,7 +23,7 @@ class Player
     public:
         virtual ~Player() = default;
         
-        Player(sf::RenderWindow& window, Referee& referee);
+        Player(sf::RenderWindow& window, const PolyominoDefinition& library, Referee& referee);
         
         virtual void setQuery(TrayQuery* tray, BoardQuery* board);
 
@@ -65,6 +65,7 @@ class Player
     private:
         sf::RenderWindow& mWindow;
         Referee& mReferee;
+        const PolyominoDefinition& mLibrary;
 
         Team mTeam = Team::None; 
 

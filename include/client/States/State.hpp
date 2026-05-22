@@ -3,6 +3,9 @@
 
 #include "States/StateIdentifiers.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
+#include "Network/NetworkClient.hpp"
+#include "shared/Game/GameSessionData.hpp"
+#include "shared/PolyominoUtil.hpp"
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Window/Event.hpp>
@@ -25,11 +28,17 @@ public:
 
 	struct Context
 	{
-		Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts);
+		Context(sf::RenderWindow& window, TextureHolder& textures, 
+			FontHolder& fonts, GameSessionData& gameSessionData, 
+			NetworkClient& networkClient, 
+			const PolyominoDefinition& library);
 		
 		sf::RenderWindow* window;
 		TextureHolder* textures;
 		FontHolder* fonts;
+		GameSessionData* gameSessionData;
+		NetworkClient* networkClient;
+		const PolyominoDefinition* library;
 	};
 
 	State(StateStack& stack, Context context);

@@ -16,7 +16,7 @@ Application.cpp
 Path.cpp
 Player.cpp 
 StatisticsTracker.cpp
-Utility.cpp
+ClientUtility.cpp
 )
 
 # Link dependencies

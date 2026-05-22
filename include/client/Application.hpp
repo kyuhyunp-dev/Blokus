@@ -7,6 +7,7 @@
 #include "StatisticsTracker.hpp"
 #include "Network/NetworkClient.hpp"
 #include "shared/Game/GameSessionData.hpp"
+#include "shared/PolyominoUtil.hpp"
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Graphics/RenderWindow.hpp>
@@ -17,7 +18,7 @@
 class Application
 {
 public:
-	Application(FontHolder& fonts);
+	Application(FontHolder& fonts, const PolyominoDefinition& library);
 
 	// Delete copy constructor and assignment operator
 	Application(const Application&) = delete;
@@ -48,6 +49,7 @@ private:
 
 	GameSessionData mGameSessionData;
 	NetworkClient mNetworkClient;
+	const PolyominoDefinition& mLibrary;
 
 	StateStack mStateStack;
 	

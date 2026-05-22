@@ -9,15 +9,16 @@
 #include "States/StateIdentifiers.hpp"
 #include "Resource/ResourceHolder.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
+#include "shared/TestBase.hpp"
 
 #include "SFML/Graphics/RenderWindow.hpp"
 
 
-class StateStackTest : public ::testing::Test {
+class StateStackTest : public PolyominoTestBase {
 protected:
     StateStackTest()
         // We can pass dummy context objects for testing the stack
-        : mContext(mWindow, mTextures, mFonts)
+        : mContext(mWindow, mTextures, mFonts, mGameSessionData, mNetworkClient, sLibrary)
         , mStates(mContext)
     {
     }
@@ -43,6 +44,9 @@ protected:
     sf::RenderWindow mWindow;
     MockTextureHolder mTextures; 
     MockFontHolder mFonts;
+    GameSessionData mGameSessionData;
+    NetworkClient mNetworkClient;
+
     State::Context mContext;
     StateStack mStates;
 };
@@ -152,5 +156,4 @@ TEST_F(StateStackTest, RequestsForwarded) {
     mStates.update(sf::Time::Zero); 
     EXPECT_TRUE(mStates.isEmpty());
 }
-
 
