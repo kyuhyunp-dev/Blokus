@@ -27,7 +27,7 @@ struct PolyominoDefinition
 class PolyominoGenerator
 {
     public:
-        explicit PolyominoGenerator();
+        PolyominoGenerator();
 
         const PolyominoDefinition& getData()
         {
