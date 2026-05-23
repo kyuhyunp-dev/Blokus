@@ -2,12 +2,15 @@
 
 #include <gtest/gtest.h>
 #include "Nodes/TrayNode.hpp" 
-#include "Config.hpp"
+#include "ClientConfig.hpp"
+#include "shared/TestBase.hpp"
 
 #include "SFML/Graphics/Texture.hpp"
-    
 
-TEST(TrayNodeTest, WithdrawalAndHitTest) 
+
+class TrayNodeTest : public PolyominoTestBase {};
+
+TEST_F(TrayNodeTest, WithdrawalAndHitTest) 
 {
     // 1. Setup
     MockTextureHolder testTextures;
@@ -24,7 +27,7 @@ TEST(TrayNodeTest, WithdrawalAndHitTest)
     EXPECT_FALSE(tray.getPieceAt(clickInside));
 
     // 3. Add a piece
-    auto piece = std::make_unique<PieceNode>(testPieceId, Team::Red, testTextures);
+    auto piece = std::make_unique<PieceNode>(testPieceId, Team::Red, testTextures, sLibrary);
     // Manually set position/size for the test if your TrayNode doesn't layout automatically
     piece->setPosition({0.f, 0.f}); 
     auto piecePtr = piece.get();
@@ -50,7 +53,7 @@ TEST(TrayNodeTest, WithdrawalAndHitTest)
     EXPECT_FALSE(tray.getPieceAt(clickInside));
 }
 
-TEST(TrayNodeTest, WithdrawInvalidIdCrashes) 
+TEST_F(TrayNodeTest, WithdrawInvalidIdCrashes) 
 {
     GTEST_FLAG_SET(death_test_style, "threadsafe");
     

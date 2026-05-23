@@ -1,8 +1,8 @@
-#ifndef UTILITY_HPP
-#define UTILITY_HPP
+#ifndef CLIENT_UTILITY_HPP
+#define CLIENT_UTILITY_HPP
 
 #include "shared/Team.hpp"
-#include "Config.hpp"
+#include "ClientConfig.hpp"
 
 #include "SFML/Graphics/Color.hpp"
 #include "SFML/Graphics/Rect.hpp"

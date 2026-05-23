@@ -2,25 +2,20 @@
 
 #include <gtest/gtest.h>
 #include "Nodes/BoardNode.hpp" 
-#include "Config.hpp"
+#include "ClientConfig.hpp"
+#include "shared/TestBase.hpp"
 
 #include "SFML/Graphics/Texture.hpp"
 
-
-class BoardNodeTest : public ::testing::Test 
+class BoardNodeTest : public PolyominoTestBase 
 {
 protected:
     void SetUp() override 
     {
-        boardNode = std::make_unique<BoardNode>();
+        boardNode = std::make_unique<BoardNode>(sLibrary);
         boardNode->setPosition({100.f, 100.f});
     }
     
-    std::optional<BoardNode::Shadow> shadow() const 
-    {
-        return boardNode->mShadow;
-    }
-
     std::unique_ptr<BoardNode> boardNode;
 };
 
@@ -101,14 +96,15 @@ TEST_F(BoardNodeTest, UpdateAndClearShadow) {
     boardNode->updateShadow(pieceId, gridPos, shadowColor);
 
     // 3. Assert (Update worked)
-    ASSERT_TRUE(shadow().has_value());
-    EXPECT_EQ(shadow()->pieceId, pieceId);
-    EXPECT_EQ(shadow()->minCoord, gridPos);
-    EXPECT_EQ(shadow()->color, shadowColor);
+    const auto shadow = boardNode->getShadow();
+    ASSERT_TRUE(shadow.has_value());
+    EXPECT_EQ(shadow->pieceId, pieceId);
+    EXPECT_EQ(shadow->minCoord, gridPos);
+    EXPECT_EQ(shadow->color, shadowColor);
 
     // 4. Act (Clear)
     boardNode->clearShadow();
 
     // 5. Assert (Clear worked)
-    EXPECT_FALSE(shadow().has_value());
+    EXPECT_FALSE(boardNode->getShadow().has_value());
 }

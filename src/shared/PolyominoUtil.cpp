@@ -6,9 +6,6 @@
 #include <cassert>
 #include <iostream>
 
-namespace Blokus
-{
-
 
 PolyominoGenerator::PolyominoGenerator()
 {
@@ -23,14 +20,14 @@ PolyominoGenerator::PolyominoGenerator()
 
     mPieceLibrary.clockwiseRotatedIds[0] = 0;
     mPieceLibrary.horizontallyReflectedIds[0] = 0;
-    for (int id = 0; id < CanonicalCount; ++id)
+    for (int id = 0; id < Config::CanonicalCount; ++id)
     {
         mPieceLibrary.transformedToCanonical[id] = id;
     }
-
+ 
     // Start BFS search
     size_t pieceSize = 1;
-    while (!sourceCanonicalPieces.empty() && pieceSize < MaxBlocks)
+    while (!sourceCanonicalPieces.empty() && pieceSize < Config::MaxBlocks)
     { // Generate all polyominoes of pieceSize
         size_t pieceSizeCount = sourceCanonicalPieces.size();
         for (size_t i = 0; i < pieceSizeCount; ++i)
@@ -41,7 +38,7 @@ PolyominoGenerator::PolyominoGenerator()
             for (const sf::Vector2i block : currentPiece)
             { // For every block, try adding another block next to it
                 sf::Vector2i nextBlock = block;
-                for (const auto dir : CardinalOffsets)
+                for (const auto dir : Config::CardinalOffsets)
                 {
                     nextBlock += dir;
 
@@ -207,12 +204,12 @@ sf::Vector2i PolyominoGenerator::getOrigin(const Blocks& piece) const
 
 bool PolyominoGenerator::isNormalized(int id) const
 {
-    return id >= 0 && id < PolyominoCount;
+    return id >= 0 && id < Config::PolyominoCount;
 }
 
 bool PolyominoGenerator::isCanonical(int id) const
 {
-    return id >= 0 && id < CanonicalCount;
+    return id >= 0 && id < Config::CanonicalCount;
 }
 
 Blocks PolyominoGenerator::normalize(const Blocks& piece) const
@@ -234,7 +231,7 @@ void PolyominoGenerator::addSensors(int id)
     // Calculate edge blocks (neighbors of the polyomino that are not part of it)
     for (const sf::Vector2i block : piece.blocks)
     {
-        for (const auto dir : CardinalOffsets)
+        for (const auto dir : Config::CardinalOffsets)
         {
             sf::Vector2i neighbor = block + dir;
             if (piece.blocks.find(neighbor) == piece.blocks.end())
@@ -247,7 +244,7 @@ void PolyominoGenerator::addSensors(int id)
     // Calculate corner blocks (diagonal neighbors of the polyomino that are not part of it or edge)
     for (const sf::Vector2i block : piece.blocks)
     {
-        for (const auto dir : DiagonalOffsets)
+        for (const auto dir : Config::DiagonalOffsets)
         {
             sf::Vector2i neighbor = block + dir;
             if (piece.blocks.find(neighbor) == piece.blocks.end() &&
@@ -257,5 +254,4 @@ void PolyominoGenerator::addSensors(int id)
             }
         }
     }
-}
-} // namespace Blokus
+} 

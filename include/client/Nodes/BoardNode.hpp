@@ -5,7 +5,7 @@
 
 #include "Resource/ResourceIdentifiers.hpp"
 #include "shared/Team.hpp"
-#include "shared/Constants.hpp"
+#include "shared/SharedConfig.hpp"
 #include "Query/BoardQuery.hpp"
 
 #include "SFML/Graphics/RectangleShape.hpp"
@@ -17,13 +17,23 @@ class BoardNode : public SceneNode , public BoardQuery
     friend class BoardNodeTest; 
 
 public:
-    BoardNode();
+    struct Shadow
+    {
+        int pieceId;
+        sf::Vector2i minCoord; 
+        sf::Color color;
+    };
+
+public:
+    BoardNode(const PolyominoDefinition& library);
 
     sf::FloatRect getGlobalBounds() const;
 
     sf::Vector2i getMinSnappedGrid(sf::Vector2f worldPos, sf::Vector2f minOffset) const override;
 
     unsigned int getCategory() const override;
+
+    const std::optional<Shadow> getShadow() const;
 
     virtual void updateShadow(int pieceId, sf::Vector2i minSnappedGrid, sf::Color color);
 
@@ -37,14 +47,8 @@ private:
     void drawShadow(sf::RenderTarget& target, sf::RenderStates states) const;
 
 private:
-    struct Shadow
-    {
-        int pieceId;
-        sf::Vector2i minCoord; 
-        sf::Color color;
-    };
+    const PolyominoDefinition& mLibrary;
 
-private:
     sf::RectangleShape mBackground;
     sf::VertexArray mBoardLines;
 

@@ -6,16 +6,17 @@
 #include "Nodes/BoardNode.hpp"
 #include "Query/TrayQuery.hpp"
 #include "Query/BoardQuery.hpp"
-#include "Utility.hpp"
+#include "ClientUtility.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <iostream>
 #include <cassert>
 
 
-Player::Player(sf::RenderWindow& window, Referee& referee)
+Player::Player(sf::RenderWindow& window, const PolyominoDefinition& library, Referee& referee)
     : mWindow(window)
     , mReferee(referee)
+    , mLibrary(library)
     , mTrayPtr(nullptr)
     , mBoardPtr(nullptr)
     , mHeldPiecePtr(nullptr)
@@ -196,14 +197,13 @@ void Player::initializeKeys()
 
 int Player::getTransformedId(int currentId, Transformation transform) const
 {
-    assert(currentId >= 0 && currentId < Blokus::PolyominoCount);
-    const auto& library = Blokus::PolyominoGenerator::getData();
+    assert(currentId >= 0 && currentId < Config::PolyominoCount);
 
     switch(transform) 
     {
         case Transformation::RotateCW: 
         {
-            return library.clockwiseRotatedIds.at(currentId);
+            return mLibrary.clockwiseRotatedIds.at(currentId);
         }
 
         case Transformation::RotateCCW: 
@@ -212,7 +212,7 @@ int Player::getTransformedId(int currentId, Transformation transform) const
             int id = currentId;
             for (int i = 0; i < 3; ++i)
             {
-                id = library.clockwiseRotatedIds.at(id);
+                id = mLibrary.clockwiseRotatedIds.at(id);
             }
             
             return id;
@@ -220,17 +220,17 @@ int Player::getTransformedId(int currentId, Transformation transform) const
 
         case Transformation::ReflectH: 
         {
-            return library.horizontallyReflectedIds.at(currentId);
+            return mLibrary.horizontallyReflectedIds.at(currentId);
         }
 
         case Transformation::ReflectV:
         {
             // Vertical Flip = Horizontal Flip -> Rotate CW -> Rotate CW
-            int id = library.horizontallyReflectedIds.at(currentId);
+            int id = mLibrary.horizontallyReflectedIds.at(currentId);
             
             for (int i = 0; i < 2; ++i)
             {
-                id = library.clockwiseRotatedIds.at(id);
+                id = mLibrary.clockwiseRotatedIds.at(id);
             }
 
             return id; 
@@ -246,10 +246,9 @@ int Player::getTransformedId(int currentId, Transformation transform) const
 
 int Player::getCanonicalId(int transformedId) const
 {
-    assert(transformedId >= 0 && transformedId < Blokus::PolyominoCount);
-    const auto& library = Blokus::PolyominoGenerator::getData();
+    assert(transformedId >= 0 && transformedId < Config::PolyominoCount);
 
-    return library.transformedToCanonical[transformedId];
+    return mLibrary.transformedToCanonical[transformedId];
 }
 
 

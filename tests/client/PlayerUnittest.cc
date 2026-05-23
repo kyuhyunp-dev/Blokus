@@ -9,17 +9,17 @@
 #include "Mock/Nodes/MockArena.hpp"
 #include "shared/Mock/MockReferee.hpp"
 #include "shared/PolyominoUtil.hpp"
-#include "Utility.hpp"
+#include "shared/TestBase.hpp"
 
 
-class PlayerTest : public ::testing::Test {
+class PlayerTest : public PolyominoTestBase {
 protected:
     PlayerTest() 
         : mTextures()           
         , mTray()   
-        , mBoard()              
+        , mBoard() 
         , mPlayer(nullptr)     
-        , mLibrary(Blokus::PolyominoGenerator::getData())
+        , mReferee(sLibrary)
     {
     }
 
@@ -28,7 +28,7 @@ protected:
         mWindow.create(sf::VideoMode({800, 600}), "Test Window");
         // RenderWindow can be initialized headlessly in SFML for most logic
         // MockTrayQuery is passed to the player (via a setter or constructor)
-        mPlayer = std::make_unique<Player>(mWindow, mReferee);
+        mPlayer = std::make_unique<Player>(mWindow, sLibrary, mReferee);
         mPlayer->setTeam(Team::Blue);
         mPlayer->setQuery(&mTray, &mBoard);
         
@@ -42,7 +42,6 @@ protected:
     CommandQueue mCommands;
     std::unique_ptr<Player> mPlayer;
     testing::NiceMock<MockReferee> mReferee;
-    Blokus::PolyominoDefinition mLibrary;
 };
 
 TEST_F(PlayerTest, ValidPlacement) {
@@ -55,10 +54,10 @@ TEST_F(PlayerTest, ValidPlacement) {
     ON_CALL(mockArena, getCategory())
         .WillByDefault(testing::Return(Category::Arena)); 
 
-    testing::NiceMock<MockBoardNode> mockBoard;
+    testing::NiceMock<MockBoardNode> mockBoard(sLibrary);
     
     mPlayer->setTeam(currentTeam);
-    PieceNode dummyPiece(pieceId, currentTeam, mTextures);
+    PieceNode dummyPiece(pieceId, currentTeam, mTextures, sLibrary);
 
     // Grab Piece -> TrayQuery::getPieceAt, BoardNode::getMinSnappedGrid 
     EXPECT_CALL(mTray, getPieceAt(testing::_))
@@ -196,11 +195,10 @@ TEST_F(PlayerTest, ReturnTransformedPiece) {
     ON_CALL(mockArena, getCategory())
         .WillByDefault(testing::Return(Category::Arena)); 
 
-    testing::NiceMock<MockBoardNode> mockBoard;
-
+    testing::NiceMock<MockBoardNode> mockBoard(sLibrary);
 
     mPlayer->setTeam(currentTeam);
-    PieceNode dummyNode(pieceId, currentTeam, mTextures);
+    PieceNode dummyNode(pieceId, currentTeam, mTextures, sLibrary);
 
     // Grab Piece -> TrayQuery::getPieceAt, BoardNode::getMinSnappedGrid 
     EXPECT_CALL(mTray, getPieceAt(testing::_))
@@ -223,7 +221,7 @@ TEST_F(PlayerTest, ReturnTransformedPiece) {
     }
 
     // Transform
-    int rotatedId = mLibrary.clockwiseRotatedIds[pieceId];
+    int rotatedId = sLibrary.clockwiseRotatedIds[pieceId];
     EXPECT_CALL(mBoard, getMinSnappedGrid(testing::_, testing::_))
         .WillOnce(testing::Return(failGrid));
 
@@ -338,10 +336,10 @@ TEST_F(PlayerTest, Transform)
     ON_CALL(mockArena, getCategory())
         .WillByDefault(testing::Return(Category::Arena)); 
 
-    testing::NiceMock<MockBoardNode> mockBoard;
+    testing::NiceMock<MockBoardNode> mockBoard(sLibrary);
 
     mPlayer->setTeam(currentTeam);
-    PieceNode dummyPiece(initialId, currentTeam, mTextures);
+    PieceNode dummyPiece(initialId, currentTeam, mTextures, sLibrary);
 
     // Grab Piece -> TrayQuery::getPieceAt, BoardNode::getMinSnappedGrid 
     EXPECT_CALL(mTray, getPieceAt(testing::_))
@@ -367,7 +365,7 @@ TEST_F(PlayerTest, Transform)
     sf::Event cwEvent = sf::Event::KeyPressed{sf::Keyboard::Key::R};
     mPlayer->handleEvent(cwEvent, mCommands);
 
-    int cwId = mLibrary.clockwiseRotatedIds[initialId];
+    int cwId = sLibrary.clockwiseRotatedIds[initialId];
     ASSERT_TRUE(mPlayer->getHeldPieceId().has_value());
     EXPECT_EQ(mPlayer->getHeldPieceId().value(), cwId); 
 
@@ -379,7 +377,7 @@ TEST_F(PlayerTest, Transform)
     EXPECT_EQ(mPlayer->getHeldPieceId().value(), initialId); 
 
     // Horizontal Reflection
-    int hId = mLibrary.horizontallyReflectedIds[initialId];
+    int hId = sLibrary.horizontallyReflectedIds[initialId];
     sf::Event hEvent = sf::Event::KeyPressed{sf::Keyboard::Key::H};
     mPlayer->handleEvent(hEvent, mCommands);
 
@@ -387,7 +385,7 @@ TEST_F(PlayerTest, Transform)
     EXPECT_EQ(mPlayer->getHeldPieceId().value(), hId); 
 
     // Vertical Reflection
-    int vId = mLibrary.clockwiseRotatedIds[cwId];
+    int vId = sLibrary.clockwiseRotatedIds[cwId];
     sf::Event vEvent = sf::Event::KeyPressed{sf::Keyboard::Key::V};
     mPlayer->handleEvent(vEvent, mCommands);
 

@@ -1,6 +1,6 @@
 #include "Nodes/BlockNode.hpp"
-#include "shared/Constants.hpp"
-#include "Config.hpp"
+#include "shared/SharedConfig.hpp"
+#include "ClientConfig.hpp"
 
 
 BlockNode::BlockNode(const sf::Texture& texture, const sf::IntRect& textureRect)

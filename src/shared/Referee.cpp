@@ -3,20 +3,20 @@
 #include <cassert>
 
 
-Referee::Referee()
-    : library(Blokus::PolyominoGenerator::getData())
+Referee::Referee(const PolyominoDefinition& library)
+    : mLibrary(library)
 {
     for (int team = 0; team < TeamCount; ++team)
     {
         mIsFirstMove[team] = true;
         mScores[team] = 0;
 
-        int x = (team & (1 << 0) ? Blokus::BoardSize - 1 : 0);
-        int y = (team & (1 << 1) ? Blokus::BoardSize - 1 : 0);
+        int x = (team & (1 << 0) ? Config::BoardSize - 1 : 0);
+        int y = (team & (1 << 1) ? Config::BoardSize - 1 : 0);
         mStartPos[team] = { x, y };
     }
 
-    for (int cell = 0; cell < Blokus::CellCount; ++cell)
+    for (int cell = 0; cell < Config::CellCount; ++cell)
     {
         mBoard[cell] = Team::None;
     }
@@ -29,7 +29,7 @@ void Referee::place(int pieceId, sf::Vector2i minOffset, Team team)
     auto blocks = getBlockPositions(pieceId, minOffset);
     for (const auto pos : blocks)
     {
-        mBoard[Blokus::getIndex(pos.x, pos.y)] = team;
+        mBoard[getIndex(pos.x, pos.y)] = team;
     }
 
     mIsFirstMove[team] = false;
@@ -63,7 +63,7 @@ bool Referee::canFit(const std::vector<sf::Vector2i>& blocks) const
         {
             return false;
         }
-        if (mBoard[Blokus::getIndex(pos.x, pos.y)] != Team::None) 
+        if (mBoard[getIndex(pos.x, pos.y)] != Team::None) 
         {
             return false;
         }
@@ -93,7 +93,7 @@ bool Referee::hasCornerContact(const std::vector<sf::Vector2i>& corners, Team te
     for (const auto pos : corners) 
     {
         if (isWithinBound(pos) && 
-        mBoard[Blokus::getIndex(pos.x, pos.y)] == team) 
+        mBoard[getIndex(pos.x, pos.y)] == team) 
         {
             return true;
         }
@@ -109,7 +109,7 @@ bool Referee::hasEdgeContact(const std::vector<sf::Vector2i>& edges, Team team) 
     for (const auto pos : edges) 
     {
         if (isWithinBound(pos) && 
-        mBoard[Blokus::getIndex(pos.x, pos.y)] == team) 
+        mBoard[getIndex(pos.x, pos.y)] == team) 
         {
             return true;
         }
@@ -120,15 +120,15 @@ bool Referee::hasEdgeContact(const std::vector<sf::Vector2i>& edges, Team team) 
 
 bool Referee::isWithinBound(const sf::Vector2i& pos) const
 {
-    return pos.x >= 0 && pos.x < Blokus::BoardSize && 
-        pos.y >= 0 && pos.y < Blokus::BoardSize;
+    return pos.x >= 0 && pos.x < Config::BoardSize && 
+        pos.y >= 0 && pos.y < Config::BoardSize;
 }
 
 std::vector<sf::Vector2i> Referee::getBlockPositions(int pieceId, sf::Vector2i minOffset) const
 {
     std::vector<sf::Vector2i> blockPositions;
-    blockPositions.reserve(Blokus::MaxBlocks);
-    const auto& blocks = library.polyominoById.at(pieceId).blocks;
+    blockPositions.reserve(Config::MaxBlocks);
+    const auto& blocks = mLibrary.polyominoById.at(pieceId).blocks;
     for (auto pos : blocks) 
     {
         blockPositions.push_back(minOffset + pos);
@@ -139,7 +139,7 @@ std::vector<sf::Vector2i> Referee::getBlockPositions(int pieceId, sf::Vector2i m
 std::vector<sf::Vector2i> Referee::getEdgePositions(int pieceId, sf::Vector2i minOffset) const
 {
     std::vector<sf::Vector2i> edgePositions;
-    const auto& edges = library.polyominoById.at(pieceId).sensors.edges;
+    const auto& edges = mLibrary.polyominoById.at(pieceId).sensors.edges;
     for (auto pos : edges) 
     {
         edgePositions.push_back(minOffset + pos);
@@ -151,7 +151,7 @@ std::vector<sf::Vector2i> Referee::getEdgePositions(int pieceId, sf::Vector2i mi
 std::vector<sf::Vector2i> Referee::getCornerPositions(int pieceId, sf::Vector2i minOffset) const
 {
     std::vector<sf::Vector2i> cornerPositions;
-    const auto& corners = library.polyominoById.at(pieceId).sensors.corners;
+    const auto& corners = mLibrary.polyominoById.at(pieceId).sensors.corners;
     for (auto pos : corners) 
     {
         cornerPositions.push_back(minOffset + pos);

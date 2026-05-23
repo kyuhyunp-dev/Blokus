@@ -1,6 +1,6 @@
 #include "Application.hpp"
 #include "States/NetworkGameState.hpp"
-#include "Config.hpp"
+#include "ClientConfig.hpp"
 #include "States/State.hpp"
 #include "States/StateIdentifiers.hpp"
 
@@ -9,12 +9,15 @@
 
 const sf::Time Application::TimePerFrame = sf::seconds(1.f/60.f);
 
-Application::Application(FontHolder& fonts)
+Application::Application(FontHolder& fonts, const PolyominoDefinition& library)
 	: mWindow(sf::VideoMode({ Config::ScreenWidth, Config::ScreenHeight }), "Blokem")
 	, mMainView()
 	, mTextures()
 	, mFonts(fonts)
-	, mStateStack(State::Context(mWindow, mTextures, mFonts))
+	, mGameSessionData()
+	, mNetworkClient()
+	, mLibrary(library)
+	, mStateStack(State::Context(mWindow, mTextures, mFonts, mGameSessionData, mNetworkClient, mLibrary))
 	, mStatistics()
 {
 	mWindow.setKeyRepeatEnabled(false);

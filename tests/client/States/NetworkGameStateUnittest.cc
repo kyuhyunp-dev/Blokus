@@ -4,14 +4,14 @@
 #include "Mock/Nodes/MockArena.hpp"
 #include "Mock/Resource/MockTextureHolder.hpp"
 #include "Mock/Resource/MockFontHolder.hpp"
+#include "shared/TestBase.hpp"
 #include <SFML/Graphics/RenderWindow.hpp>
-
-
+    
 class TestableNetworkGameState : public NetworkGameState 
 {
 public:
     using NetworkGameState::getCommandQueue;
-     
+    
 public:
     MockArena* mockArenaPtr = nullptr; 
 
@@ -29,22 +29,25 @@ protected:
     }
 
     void setQuery() override 
-    { // Do nothing
+    { // Do nothing       
     }
 };
 
 
-class NetworkGameStateTest : public ::testing::Test 
+class NetworkGameStateTest : public PolyominoTestBase 
 {
 protected:
     sf::RenderWindow mWindow;
     MockTextureHolder mTextureHolder; 
     MockFontHolder mFontHolder;
+    GameSessionData mGameSessionData;
+    NetworkClient mNetworkClient;
+    
     State::Context mContext;
     StateStack mStack;
 
     NetworkGameStateTest()
-        : mContext(mWindow, mTextureHolder, mFontHolder)
+        : mContext(mWindow, mTextureHolder, mFontHolder, mGameSessionData, mNetworkClient, sLibrary)
         , mStack(mContext)
     {
     }
@@ -56,7 +59,7 @@ TEST_F(NetworkGameStateTest, UpdatePassesTimeToArena)
     TestableNetworkGameState state(mStack, mContext);
     state.onActivate();
     ASSERT_NE(state.mockArenaPtr, nullptr); 
-     
+    
     EXPECT_CALL(*state.mockArenaPtr, updateCurrent(sf::Time::Zero))
         .Times(1);
     
@@ -81,7 +84,7 @@ TEST_F(NetworkGameStateTest, UpdatePassesCommandsToArena)
     }
     
     EXPECT_CALL(*state.mockArenaPtr, onCommand(testing::_, sf::Time::Zero))
-        .Times(3);
+        .Times(categories.size());
     
     state.update(sf::Time::Zero);
 }

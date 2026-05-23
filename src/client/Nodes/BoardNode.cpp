@@ -3,24 +3,25 @@
 
 #include "SFML/Graphics/PrimitiveType.hpp"
 #include "SFML/Graphics/Vertex.hpp"
-#include "Config.hpp"
+#include "ClientConfig.hpp"
 #include <cmath>
 
 
-BoardNode::BoardNode()
-    : mBoardLines(sf::PrimitiveType::Lines, (Blokus::BoardSize + 1) * 4)
-{ // Should use private functions to organize code FirstMove, grid, background, score etc.
-    float boardSize = Blokus::BoardSize * Config::GridSize;
+BoardNode::BoardNode(const PolyominoDefinition& library)
+    : mLibrary(library)
+    , mBoardLines(sf::PrimitiveType::Lines, (Config::BoardSize + 1) * 4)
+{  
+    float boardSize = Config::BoardSize * Config::GridSize;
     
-    // 1. Setup Background
+    // Setup Background
     mBackground.setSize({boardSize, boardSize});    
     mBackground.setFillColor(sf::Color::White); 
 
     sf::Color lineCol(100, 100, 100);
     int vertexCount = 0;
 
-    // 2. Setup Grid Lines (Vertical and Horizontal)
-    for (int i = 0; i <= Blokus::BoardSize; ++i) 
+    // Setup Grid Lines (Vertical and Horizontal)
+    for (int i = 0; i <= Config::BoardSize; ++i) 
     {
         float pos = i * Config::GridSize;
         
@@ -56,6 +57,11 @@ unsigned int BoardNode::getCategory() const
     return Category::Board;
 }
 
+const std::optional<BoardNode::Shadow> BoardNode::getShadow() const 
+{
+    return mShadow;
+}
+
 void BoardNode::updateShadow(int pieceId, sf::Vector2i minSnappedGrid, sf::Color color)
 {
     mShadow = { pieceId, minSnappedGrid, color };
@@ -67,23 +73,18 @@ void BoardNode::clearShadow()
 }
 
 void BoardNode::addPiece(std::unique_ptr<PieceNode> piece, sf::Vector2i gridPos) {
-    // 1. Calculate the local position relative to the BoardNode
     sf::Vector2f localPos = { 
         gridPos.x * Config::GridSize, 
         gridPos.y * Config::GridSize 
     };
     
-    // 2. Set the position relative to THIS node (BoardNode)
     piece->setPosition(localPos);
-    
-    // 3. Attach
     attachChild(std::move(piece));
 }
 
 void BoardNode::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) const
 {
     target.draw(mBackground, states);
-
     target.draw(mBoardLines, states);
      
     if (mShadow) 
@@ -94,8 +95,7 @@ void BoardNode::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) c
 
 void BoardNode::drawShadow(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    const auto &library = Blokus::PolyominoGenerator::getData();
-    const auto &coordinates = library.polyominoById.at(mShadow->pieceId).blocks;
+    const auto &coordinates = mLibrary.polyominoById.at(mShadow->pieceId).blocks;
 
     sf::RectangleShape rect(sf::Vector2f(Config::GridSize, Config::GridSize));
     rect.setFillColor(mShadow->color);
@@ -103,8 +103,8 @@ void BoardNode::drawShadow(sf::RenderTarget& target, sf::RenderStates states) co
     for (const auto& offset : coordinates)
     {
         sf::Vector2i gridPos = mShadow->minCoord + offset;
-        if (gridPos.x >= 0 && gridPos.x < Blokus::BoardSize &&
-            gridPos.y >= 0 && gridPos.y < Blokus::BoardSize)
+        if (gridPos.x >= 0 && gridPos.x < Config::BoardSize &&
+            gridPos.y >= 0 && gridPos.y < Config::BoardSize)
         {
             float px = gridPos.x * Config::GridSize;
             float py = gridPos.y * Config::GridSize;

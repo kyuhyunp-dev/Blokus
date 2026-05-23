@@ -13,7 +13,7 @@ TrayNode::TrayNode(TextureHolder& textures)
 // Initial setup: Adds a piece to a specific logical slot
 void TrayNode::addPiece(int slotId, PiecePtr piece)
 { 
-    assert(slotId >= 0 && slotId < Blokus::DeckSize);
+    assert(slotId >= 0 && slotId < Config::DeckSize);
     
     // Position the piece within the Tray's local space
     piece->setPosition(calculateSlotPosition(slotId));
@@ -55,7 +55,7 @@ void TrayNode::drawCurrent(sf::RenderTarget& target, sf::RenderStates states) co
     slotShape.setOutlineColor(sf::Color(255, 255, 255, 50));
     slotShape.setOutlineThickness(1.f);
 
-    for (int i = 0; i < Blokus::DeckSize; ++i) {
+    for (int i = 0; i < Config::DeckSize; ++i) {
         slotShape.setPosition(calculateSlotPosition(i));
         target.draw(slotShape, states);
     }

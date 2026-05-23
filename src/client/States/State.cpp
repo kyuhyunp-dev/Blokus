@@ -2,11 +2,15 @@
 #include "States/StateStack.hpp"
 
 
-State::Context::Context(sf::RenderWindow& window, TextureHolder& textures,
-	FontHolder& fonts)
+State::Context::Context(sf::RenderWindow& window, TextureHolder& textures, 
+	FontHolder& fonts, GameSessionData& gameSessionData, NetworkClient& networkClient,
+	const PolyominoDefinition& library)
 	: window(&window)
 	, textures(&textures)
 	, fonts(&fonts)
+	, gameSessionData(&gameSessionData)
+	, networkClient(&networkClient)
+	, library(&library)
 {
 }
 

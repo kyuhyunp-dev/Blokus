@@ -45,8 +45,6 @@ class NetworkGameState : public State
     private:
         using PlayerPtr = std::unique_ptr<Player>;
 
-        void loadTextures();
-
     private:
         CommandQueue mCommandQueue;
         Referee mReferee;

@@ -12,10 +12,12 @@
 
 
 Arena::Arena(sf::RenderTarget& target, TextureHolder& textures, 
-    std::array<int, Blokus::DeckSize> deck, 
+    const PolyominoDefinition& library,
+    std::array<int, Config::DeckSize> deck, 
     CommandQueue& commands, Team team)
     : mTarget(target)
     , mTextures(textures)
+    , mLibrary(library)
     , mSceneLayers()
     , mBoardPtr(nullptr)
     , mTrayPtr(nullptr)
@@ -37,7 +39,7 @@ void Arena::buildScene()
         SceneNode::attachChild(std::move(layer));
     }
 
-    auto board = std::make_unique<BoardNode>();
+    auto board = std::make_unique<BoardNode>(mLibrary);
     mBoardPtr = board.get();
     board->setPosition({ Config::Padding, Config::Padding });  
     mSceneLayers[World]->attachChild(std::move(board));
@@ -53,9 +55,9 @@ void Arena::buildScene()
     mSceneLayers[World]->attachChild(std::move(tray));
 
     // Place pieces in the World componenet 
-    for (int slotId = 0; slotId < Blokus::DeckSize; ++slotId) {
+    for (int slotId = 0; slotId < Config::DeckSize; ++slotId) {
         int pieceId = mDeck[slotId];
-        auto piece = std::make_unique<PieceNode>(pieceId, mTeam, mTextures);
+        auto piece = std::make_unique<PieceNode>(pieceId, mTeam, mTextures, mLibrary);
         mTrayPtr->addPiece(slotId, std::move(piece));
     }
 }
@@ -67,7 +69,7 @@ unsigned int Arena::getCategory() const
 
 void Arena::grabPiece(int id, sf::Vector2f worldPos) 
 {
-    assert(id >= 0 && id < Blokus::PolyominoCount && "Invalid ID");
+    assert(id >= 0 && id < Config::PolyominoCount && "Invalid ID");
     //  Pull from Tray (The Tray identifies it by ID now, not position)
     auto piece = mTrayPtr->withdrawPiece(id);
     
@@ -128,3 +130,8 @@ SceneNode* Arena::getLayer(Layer layer) const
 }
 
 
+void Arena::loadTextures()
+{
+    std::string tileFile = getAssetPath("client/textures/tiles.png");
+    mTextures.load(Textures::ID::Tiles, tileFile); 
+}
