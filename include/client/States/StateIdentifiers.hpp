@@ -6,6 +6,7 @@ namespace States
 	enum class ID
 	{
 		None,
+		Title,
 		NetworkGame
 	};
 }

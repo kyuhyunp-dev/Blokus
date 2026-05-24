@@ -11,13 +11,13 @@ int main(int argc, char** argv)
 {
     initializeResourceRoot(argv[0]);
 
+    TextureHolder textures;    
+    FontHolder fonts;
+    fonts.load(Fonts::ID::Sansation, "client/fonts/sansation.ttf");
+    
     PolyominoGenerator libraryGenerator;
     
-    FontHolder fonts;
-	std::string fontFilename = getAssetPath("client/fonts/sansation.ttf");
-    fonts.load(Fonts::ID::Sansation, fontFilename);
-    
-    Application app(fonts, libraryGenerator.getData());
+    Application app(textures, fonts, libraryGenerator.getData());
     app.run();
 
     return 0;

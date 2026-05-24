@@ -51,10 +51,7 @@ public:
 
 	bool isEmpty() const;
 
-private:
-	State::Ptr createState(States::ID stateID);
-	void applyPendingChanges();
-
+protected:
 	struct PendingChange
 	{
 		explicit PendingChange(Action action, States::ID stateID = States::ID::None);
@@ -62,6 +59,14 @@ private:
 		Action action;
 		States::ID stateID;
 	};
+	
+    const std::vector<PendingChange>& getPendingChanges() const { 
+        return mPendingList; 
+    }
+
+private:
+	State::Ptr createState(States::ID stateID);
+	void applyPendingChanges();
 
 	std::vector<State::Ptr> mStack;
 	std::vector<PendingChange> mPendingList;

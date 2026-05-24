@@ -10,6 +10,7 @@ add_executable(BlokusClientTests
     Resource/ResourceHolderUnittest.cc
     States/NetworkGameStateUnittest.cc
     States/StateStackUnittest.cc
+    States/TitleStateUnittest.cc
     ApplicationUnittest.cc
     PlayerUnittest.cc
     StatisticsTrackerUnittest.cc

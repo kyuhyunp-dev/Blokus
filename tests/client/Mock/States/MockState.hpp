@@ -4,7 +4,7 @@
 #include <gmock/gmock.h>
 #include "States/State.hpp"
 
-// 1. Create a Mock State to track method calls
+// Create a Mock State to track method calls
 class MockState : public State {
 public:
     // Change access to public for tests
