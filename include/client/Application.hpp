@@ -18,7 +18,7 @@
 class Application
 {
 public:
-	Application(FontHolder& fonts, const PolyominoDefinition& library);
+	Application(TextureHolder& textures, FontHolder& fonts, const PolyominoDefinition& library);
 
 	// Delete copy constructor and assignment operator
 	Application(const Application&) = delete;
@@ -44,7 +44,7 @@ private:
 	sf::RenderWindow mWindow;
 	sf::View mMainView;
 
-	TextureHolder mTextures;
+	TextureHolder& mTextures;
 	FontHolder& mFonts;
 
 	GameSessionData mGameSessionData;

@@ -21,7 +21,8 @@ namespace Textures
 {
 	enum ID
 	{
-		Tiles
+		Tiles,
+        TitleScreen
 	};
 }
 

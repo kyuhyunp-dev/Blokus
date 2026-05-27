@@ -1,18 +1,20 @@
 #include "Application.hpp"
+#include "States/TitleState.hpp"
 #include "States/NetworkGameState.hpp"
 #include "ClientConfig.hpp"
 #include "States/State.hpp"
 #include "States/StateIdentifiers.hpp"
+#include "Path.hpp"
 
 #include <iostream>
 
 
 const sf::Time Application::TimePerFrame = sf::seconds(1.f/60.f);
 
-Application::Application(FontHolder& fonts, const PolyominoDefinition& library)
+Application::Application(TextureHolder& textures, FontHolder& fonts, const PolyominoDefinition& library)
 	: mWindow(sf::VideoMode({ Config::ScreenWidth, Config::ScreenHeight }), "Blokem")
 	, mMainView()
-	, mTextures()
+	, mTextures(textures)
 	, mFonts(fonts)
 	, mGameSessionData()
 	, mNetworkClient()
@@ -21,10 +23,12 @@ Application::Application(FontHolder& fonts, const PolyominoDefinition& library)
 	, mStatistics()
 {
 	mWindow.setKeyRepeatEnabled(false);
+	
+	mTextures.load(Textures::ID::TitleScreen, "client/textures/titlePage.png");
 
 	updateView(mWindow.getSize());
 	registerStates();
-	mStateStack.pushState(States::ID::NetworkGame);
+	mStateStack.pushState(States::ID::Title);
 }
 
 void Application::run()
@@ -129,5 +133,6 @@ void Application::render()
 
 void Application::registerStates()
 {
+	mStateStack.registerState<TitleState>(States::ID::Title);
 	mStateStack.registerState<NetworkGameState>(States::ID::NetworkGame);
 }

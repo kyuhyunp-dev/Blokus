@@ -2,7 +2,6 @@
 #include "Nodes/BoardNode.hpp"
 #include "Nodes/TrayNode.hpp"
 #include "shared/Team.hpp"
-#include "Path.hpp"
 #include "Command/CommandQueue.hpp"
 
 #include <SFML/Graphics/RenderTarget.hpp>
@@ -132,6 +131,6 @@ SceneNode* Arena::getLayer(Layer layer) const
 
 void Arena::loadTextures()
 {
-    std::string tileFile = getAssetPath("client/textures/tiles.png");
+    std::string tileFile = "client/textures/tiles.png";
     mTextures.load(Textures::ID::Tiles, tileFile); 
 }

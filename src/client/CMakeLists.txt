@@ -12,11 +12,12 @@ Nodes/TrayNode.cpp
 States/NetworkGameState.cpp
 States/State.cpp
 States/StateStack.cpp
+States/TitleState.cpp
+ClientUtility.cpp
 Application.cpp
 Path.cpp
 Player.cpp 
 StatisticsTracker.cpp
-ClientUtility.cpp
 )
 
 # Link dependencies

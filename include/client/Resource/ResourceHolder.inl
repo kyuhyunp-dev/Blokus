@@ -1,20 +1,23 @@
 #include "ResourceHolder.hpp"
+#include "Path.hpp"
 #include "SFML/Graphics/Font.hpp"
 
 
 template <typename Resource, typename Identifier>
 void ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string& filename) {
-    auto resource = std::make_unique<Resource>();
+	std::string safePath = getAssetPath(filename);
+
+	auto resource = std::make_unique<Resource>();
 
     // Use if constexpr to handle SFML 3's naming differences
     if constexpr (std::is_same_v<Resource, sf::Font>) 
 	{
-        if (!resource->openFromFile(filename))
+        if (!resource->openFromFile(safePath))
             throw std::runtime_error("ResourceHolder::load - Failed to open font " + filename);
     } 
 	else  
 	{
-        if (!resource->loadFromFile(filename))
+        if (!resource->loadFromFile(safePath))
             throw std::runtime_error("ResourceHolder::load - Failed to load resource " + filename);
     }
 
@@ -25,9 +28,10 @@ template <typename Resource, typename Identifier>
 template <typename Parameter>
 void ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string& filename, const Parameter& secondParam)
 {
+	std::string safePath = getAssetPath(filename);
 	// Create and load resource
 	std::unique_ptr<Resource> resource(new Resource());
-	if (!resource->loadFromFile(filename, secondParam))
+	if (!resource->loadFromFile(safePath, secondParam))
 		throw std::runtime_error("ResourceHolder::load - Failed to load " + filename);
 
 	// If loading successful, insert resource to map

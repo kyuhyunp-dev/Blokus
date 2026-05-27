@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "Application.hpp"
 #include "Mock/Resource/MockFontHolder.hpp" 
+#include "Mock/Resource/MockTextureHolder.hpp"
 #include "shared/TestBase.hpp"
 
 
@@ -15,13 +16,12 @@ public:
     using Application::getMainView;
 };
 
-#include "Mock/Resource/MockFontHolder.hpp" // Or your real FontHolder setup
-
 
 class ApplicationTest : public PolyominoTestBase  
 {
 protected:
     MockFontHolder mFonts;
+    MockTextureHolder mTextures;
 
     void SetUp() override 
     {
@@ -32,7 +32,7 @@ protected:
 TEST_F(ApplicationTest, UpdateViewUltraWide)
 {
     // Arrange: Create our testable wrapper instance
-    TestableApplication app(mFonts, sLibrary);
+    TestableApplication app(mTextures, mFonts, sLibrary);
 
     // Act: Simulate resizing the window to an Ultra-wide 21:9 resolution (e.g., 2560x1080)
     // Your virtual target resolution is 16:9 (defined in Config::VirtualRes)
@@ -50,7 +50,7 @@ TEST_F(ApplicationTest, UpdateViewUltraWide)
 
 TEST_F(ApplicationTest, UpdateViewTall)
 {
-    TestableApplication app(mFonts, sLibrary);
+    TestableApplication app(mTextures, mFonts, sLibrary);
 
     // Act: Simulate a squarish or tall window (e.g., 1024x1024)
     app.updateView(sf::Vector2u(1024, 1024));
