@@ -8,6 +8,7 @@ add_executable(BlokusClientTests
     Nodes/TrayNodeUnittest.cc
     Nodes/BoardNodeUnittest.cc     
     Resource/ResourceHolderUnittest.cc
+    States/LobbyStateUnittest.cc 
     States/NetworkGameStateUnittest.cc
     States/StateStackUnittest.cc
     States/TitleStateUnittest.cc

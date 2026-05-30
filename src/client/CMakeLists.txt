@@ -9,6 +9,7 @@ Nodes/BoardNode.cpp
 Nodes/PieceNode.cpp
 Nodes/SceneNode.cpp
 Nodes/TrayNode.cpp
+States/LobbyState.cpp
 States/NetworkGameState.cpp
 States/State.cpp
 States/StateStack.cpp

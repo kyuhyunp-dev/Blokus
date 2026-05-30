@@ -1,19 +1,14 @@
 #include <gtest/gtest.h>
 #include "States/TitleState.hpp"
-#include "States/StateStack.hpp"
+
 #include "Mock/Resource/MockTextureHolder.hpp"
 #include "Mock/Resource/MockFontHolder.hpp"
+
 #include "shared/TestBase.hpp"
+#include "States/TestableStateStack.hpp"
+
 #include <SFML/Graphics/RenderWindow.hpp>
 
-
-class TestableStateStack : public StateStack 
-{
-public:
-    using StateStack::StateStack; 
-
-    using StateStack::getPendingChanges; 
-};
 
 class TestableTitleState : public TitleState 
 {
@@ -74,29 +69,28 @@ TEST_F(TitleStateTest, StateTransition)
 {
     TestableTitleState state(mStack, mContext);
 
-    // Right click does not transition
-    sf::Event::MouseButtonPressed rightClick;
-    rightClick.button = sf::Mouse::Button::Right;
-    rightClick.position = {100, 100};
-
-    state.handleEvent(rightClick);
-
-    auto pendingChanges = mStack.getPendingChanges();
-
-    EXPECT_EQ(pendingChanges.size(), 0);
-
-    // Left click transitions
+    // Left click does not cause transition
     sf::Event::MouseButtonPressed leftClick;
     leftClick.button = sf::Mouse::Button::Left;
     leftClick.position = {100, 100};
 
     state.handleEvent(leftClick);
 
+    auto pendingChanges = mStack.getPendingChanges();
+
+    EXPECT_EQ(pendingChanges.size(), 0);
+
+    // Any Key causes transition 
+    sf::Event::KeyReleased spaceReleased;
+    spaceReleased.code = sf::Keyboard::Key::Space;
+
+    state.handleEvent(spaceReleased);
+
     pendingChanges = mStack.getPendingChanges();
 
-    ASSERT_EQ(pendingChanges.size(), 2);
-    EXPECT_EQ(pendingChanges[0].action, StateStack::Action::Pop);
+    EXPECT_EQ(pendingChanges.size(), 2);
+    EXPECT_EQ(pendingChanges[0].action, StateStack::Action::Pop);   
     EXPECT_EQ(pendingChanges[1].action, StateStack::Action::Push);
-    EXPECT_EQ(pendingChanges[1].stateID, States::ID::NetworkGame);
+    EXPECT_EQ(pendingChanges[1].stateID, States::ID::Lobby);
 }
 
