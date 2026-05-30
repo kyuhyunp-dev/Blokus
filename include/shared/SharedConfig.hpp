@@ -23,9 +23,9 @@ namespace Config
         sf::Vector2i{1, -1}, sf::Vector2i{-1, -1}
     };
 
-    const int CanonicalCount = 21;
-    const int PolyominoCount = 91;
-    const int DeckSize = 18;
+    inline constexpr int CanonicalCount = 21;
+    inline constexpr int PolyominoCount = 91;
+    inline constexpr int DeckSize = 18;
 }
 
 #endif

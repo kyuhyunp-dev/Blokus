@@ -1,5 +1,6 @@
 #include "Application.hpp"
 #include "States/TitleState.hpp"
+#include "States/LobbyState.hpp"
 #include "States/NetworkGameState.hpp"
 #include "ClientConfig.hpp"
 #include "States/State.hpp"
@@ -134,5 +135,6 @@ void Application::render()
 void Application::registerStates()
 {
 	mStateStack.registerState<TitleState>(States::ID::Title);
+	mStateStack.registerState<LobbyState>(States::ID::Lobby);
 	mStateStack.registerState<NetworkGameState>(States::ID::NetworkGame);
 }

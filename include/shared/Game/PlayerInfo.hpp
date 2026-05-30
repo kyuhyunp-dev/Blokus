@@ -2,7 +2,7 @@
 #define PLAYER_INFO_HPP
 
 #include "shared/Team.hpp"
-
+#include <cstdint>
 #include <string>
 
 
@@ -11,7 +11,6 @@ struct PlayerInfo
     int playerId;
     Team team;
     std::string username;
-    std::string profilePath; 
     bool isConnected;
     float remainingTime;    
 };

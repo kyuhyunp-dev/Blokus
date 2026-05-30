@@ -5,16 +5,16 @@
 
 TitleState::TitleState(StateStack& stack, Context context)
 	: State(stack, context)
-	, mTitleText(context.fonts->get(Fonts::ID::Sansation), "BLOKEM", 120)
+	, mTitleText(context.fonts->get(Fonts::ID::Sansation), "BLOKEM", 80)
 	, mText(context.fonts->get(Fonts::ID::Sansation), "Press any key to start", 30)
 	, mShowText(true)          
 	, mTextEffectTime(sf::Time::Zero)
 {
 	centerOrigin(mTitleText);
 	centerOrigin(mText);
-
+	
 	mText.setPosition(context.window->getView().getCenter());
-	mTitleText.setPosition({mText.getPosition().x, mText.getPosition().y / 2.f});
+	mTitleText.setPosition({mText.getPosition().x, 150.f});
 }
 
 void TitleState::draw()
@@ -47,7 +47,7 @@ bool TitleState::handleEvent(const sf::Event& event)
 	if (event.getIf<sf::Event::KeyReleased>())
 	{
 		requestStackPop();
-		requestStackPush(States::ID::NetworkGame);
+		requestStackPush(States::ID::Lobby);
 	}
 
 	return false;
