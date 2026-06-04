@@ -63,7 +63,8 @@ namespace GUI
 
         // Move mouse to point A
         sf::Vector2i posA(100, 100);
-        sf::Event moveA = sf::Event::MouseMoved {.position = posA };
+        sf::Event::MouseMoved moveA;
+        moveA.position = posA;
         sf::Vector2f worldPosA {100.f, 100.f};
 
         EXPECT_CALL(*child1Ptr, select()).Times(1);
@@ -72,10 +73,9 @@ namespace GUI
 
         // Click mouse at point B
         sf::Vector2i posB{200, 200};
-        sf::Event clickB = sf::Event::MouseButtonPressed {
-            .button = sf::Mouse::Button::Left,
-            .position = posB
-        };
+        sf::Event::MouseButtonPressed clickB;
+        clickB.button = sf::Mouse::Button::Left;
+        clickB.position = posB;
         sf::Vector2f worldPosB {200.f, 200.f};
        
         EXPECT_CALL(*child1Ptr, deselect()).Times(1);
@@ -90,9 +90,8 @@ namespace GUI
         container.handleEvent(moveA, worldPosA);
 
         // Enter Text at B
-        sf::Event enterTextB = sf::Event::TextEntered {
-            .unicode = 'A'
-        };
+        sf::Event::TextEntered enterTextB;
+        enterTextB.unicode = 'A';
 
         EXPECT_CALL(*child1Ptr, handleEvent(testing::_, testing::_)).Times(0);
         EXPECT_CALL(*child2Ptr, handleEvent(testing::_, testing::_)).Times(1);
@@ -114,7 +113,8 @@ namespace GUI
 
         // Move mouse to point A
         sf::Vector2i posA(100, 100);
-        sf::Event moveA = sf::Event::MouseMoved {.position = posA };
+        sf::Event::MouseMoved moveA; 
+        moveA.position = posA;
         sf::Vector2f worldPosA {100.f, 100.f};
 
         EXPECT_CALL(*child1Ptr, select()).Times(0);
@@ -123,10 +123,9 @@ namespace GUI
 
         // Click mouse at point B
         sf::Vector2i posB{200, 200};
-        sf::Event clickB = sf::Event::MouseButtonPressed {
-            .button = sf::Mouse::Button::Left,
-            .position = posB
-        };
+        sf::Event::MouseButtonPressed clickB; 
+        clickB.button = sf::Mouse::Button::Left;
+        clickB.position = posB;
         sf::Vector2f worldPosB {200.f, 200.f};
        
         EXPECT_CALL(*child1Ptr, select()).Times(0);
@@ -150,7 +149,8 @@ namespace GUI
 
         // Move mouse to point A
         sf::Vector2i posA(300, 300);
-        sf::Event moveA = sf::Event::MouseMoved {.position = posA };
+        sf::Event::MouseMoved moveA;
+        moveA.position = posA;
         sf::Vector2f worldPosA {300.f, 300.f};
 
         EXPECT_CALL(*child1Ptr, select()).Times(0);
@@ -158,10 +158,9 @@ namespace GUI
         container.handleEvent(moveA, worldPosA);
 
         // Click mouse at point B
-        sf::Event clickA = sf::Event::MouseButtonPressed {
-            .button = sf::Mouse::Button::Left,
-            .position = posA
-        };
+        sf::Event::MouseButtonPressed clickA;
+        clickA.button = sf::Mouse::Button::Left;
+        clickA.position = posA;
  
         EXPECT_CALL(*child1Ptr, select()).Times(0);
         EXPECT_CALL(*child1Ptr, activate()).Times(0);
