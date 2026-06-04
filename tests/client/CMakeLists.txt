@@ -1,6 +1,7 @@
 # Build the test executable
 add_executable(BlokusClientTests
     Command/CommandQueueUnittest.cc
+    GUI/ContainerUnittest.cc
     Network/NetworkClientUnittest.cc
     Nodes/SceneNodeUnittest.cc
     Nodes/PieceNodeUnittest.cc
