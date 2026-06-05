@@ -2,6 +2,7 @@
 add_executable(BlokusClientTests
     Command/CommandQueueUnittest.cc
     GUI/ContainerUnittest.cc
+    GUI/LabelUnittest.cc
     Network/NetworkClientUnittest.cc
     Nodes/SceneNodeUnittest.cc
     Nodes/PieceNodeUnittest.cc

@@ -36,5 +36,5 @@ namespace GUI
 
         friend class ContainerTest;
     };  
-};
+}
 #endif
