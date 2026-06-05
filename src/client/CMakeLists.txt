@@ -4,6 +4,7 @@ Command/Command.cpp
 Command/CommandQueue.cpp
 GUI/Component.cpp
 GUI/Container.cpp
+GUI/Label.cpp
 Network/NetworkClient.cpp
 Nodes/Arena.cpp
 Nodes/BlockNode.cpp  
