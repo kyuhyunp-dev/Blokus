@@ -2,6 +2,7 @@
 add_library(BlokusClientLib STATIC
 Command/Command.cpp
 Command/CommandQueue.cpp
+GUI/Button.cpp
 GUI/Component.cpp
 GUI/Container.cpp
 GUI/Label.cpp
