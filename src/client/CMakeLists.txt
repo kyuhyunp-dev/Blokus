@@ -6,6 +6,7 @@ GUI/Button.cpp
 GUI/Component.cpp
 GUI/Container.cpp
 GUI/Label.cpp
+GUI/TextBox.cpp
 Network/NetworkClient.cpp
 Nodes/Arena.cpp
 Nodes/BlockNode.cpp  

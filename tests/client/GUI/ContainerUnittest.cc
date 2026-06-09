@@ -12,7 +12,7 @@ namespace GUI
     class ContainerTest : public ::testing::Test 
     {
     protected:
-        GUI::Container container;
+        Container container;
 
         testing::NiceMock<MockComponent>* child1Ptr = nullptr;
         testing::NiceMock<MockComponent>* child2Ptr = nullptr;
