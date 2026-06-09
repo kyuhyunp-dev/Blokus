@@ -4,6 +4,7 @@ add_executable(BlokusClientTests
     GUI/ButtonUnittest.cc
     GUI/ContainerUnittest.cc
     GUI/LabelUnittest.cc
+    GUI/TextBoxUnittest.cc
     Network/NetworkClientUnittest.cc
     Nodes/SceneNodeUnittest.cc
     Nodes/PieceNodeUnittest.cc
