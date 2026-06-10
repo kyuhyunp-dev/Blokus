@@ -19,6 +19,7 @@ States/NetworkGameState.cpp
 States/State.cpp
 States/StateStack.cpp
 States/TitleState.cpp
+States/UsernameState.cpp
 ClientUtility.cpp
 Application.cpp
 Path.cpp

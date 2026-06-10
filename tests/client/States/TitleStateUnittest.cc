@@ -91,6 +91,6 @@ TEST_F(TitleStateTest, StateTransition)
     EXPECT_EQ(pendingChanges.size(), 2);
     EXPECT_EQ(pendingChanges[0].action, StateStack::Action::Pop);   
     EXPECT_EQ(pendingChanges[1].action, StateStack::Action::Push);
-    EXPECT_EQ(pendingChanges[1].stateID, States::ID::Lobby);
+    EXPECT_EQ(pendingChanges[1].stateID, States::ID::Username);
 }
 

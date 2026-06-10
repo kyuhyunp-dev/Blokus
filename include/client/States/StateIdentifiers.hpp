@@ -7,6 +7,7 @@ namespace States
 	{
 		None,
 		Title,
+		Username,
 		Lobby,
 		NetworkGame
 	};
