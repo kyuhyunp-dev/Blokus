@@ -26,7 +26,6 @@ void TitleState::draw()
 	{
 		window.draw(mText);
 	} 
-
 }
 
 bool TitleState::update(sf::Time dt)
@@ -47,7 +46,7 @@ bool TitleState::handleEvent(const sf::Event& event)
 	if (event.getIf<sf::Event::KeyReleased>())
 	{
 		requestStackPop();
-		requestStackPush(States::ID::Lobby);
+		requestStackPush(States::ID::Username);
 	}
 
 	return false;
