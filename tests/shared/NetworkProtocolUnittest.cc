@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "shared/NetworkProtocol.hpp"
+#include "shared/Network/NetworkProtocol.hpp"
 
 // Test case for the PacketType enum serialization
 TEST(NetworkProtocolTest, PacketTypeRoundTrip) 
@@ -58,14 +58,13 @@ TEST(NetworkProtocolTest, JoinMatchRequestEmptyCode)
 TEST(NetworkProtocolTest, MatchJoinedResponseRoundTrip) 
 {
     sf::Packet packet;
-    NetworkProtocol::MatchJoinedResponse originalResponse{3, "LOBBY_A"};
+    NetworkProtocol::MatchJoinedResponse originalResponse{"LOBBY_A"};
     
     packet << originalResponse;
     
     NetworkProtocol::MatchJoinedResponse deserializedResponse;
     packet >> deserializedResponse;
     
-    EXPECT_EQ(originalResponse.localPlayerId, deserializedResponse.localPlayerId);
     EXPECT_EQ(originalResponse.matchCode, deserializedResponse.matchCode);
 }
 
