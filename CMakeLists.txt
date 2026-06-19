@@ -55,7 +55,8 @@ set(CMAKE_INSTALL_RPATH "$ORIGIN")
 # Add Shared Library
 add_subdirectory(src/shared)
 
-# Add Source Directory (defines BlokusClient, BlokusTests)
+# Add Source Directory 
+add_subdirectory(src/server)
 add_subdirectory(src/client)
 add_subdirectory(tests)
 

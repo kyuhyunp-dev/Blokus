@@ -3,7 +3,7 @@
 
 struct MatchInfo 
 {
-    int targetPlayerCount;  
+    int targetPlayerCount = 2;  
     int currentPlayerCount;  
 };
 

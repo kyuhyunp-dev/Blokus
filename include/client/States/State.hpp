@@ -4,7 +4,7 @@
 #include "States/StateIdentifiers.hpp"
 #include "Resource/ResourceIdentifiers.hpp"
 #include "Network/NetworkClient.hpp"
-#include "shared/Game/GameSessionData.hpp"
+#include "shared/Network/GameSessionData.hpp"
 #include "shared/PolyominoUtil.hpp"
 
 #include <SFML/System/Time.hpp>

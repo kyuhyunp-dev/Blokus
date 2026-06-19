@@ -18,6 +18,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/tests)
 
 # Route to the workers
 add_subdirectory(shared)
+add_subdirectory(server)
 add_subdirectory(client)
 
 

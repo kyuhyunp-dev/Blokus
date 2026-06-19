@@ -46,10 +46,6 @@ target_link_libraries(BlokusClient PRIVATE
     BlokusClientLib
 )
 
-# Define PIECES_PATH and ASSETS_PATH
-target_compile_definitions(BlokusClient PRIVATE 
-)
-
 # Assets copy (Portability)
 # This copies the client-specific assets to the build folder automatically
 add_custom_command(
