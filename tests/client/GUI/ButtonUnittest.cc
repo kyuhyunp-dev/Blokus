@@ -9,7 +9,7 @@
 class MockCallback 
 {
 public:
-    MOCK_METHOD(void, onActivate, ());
+    MOCK_METHOD(void, onFocus, ());
 };
 
 class ButtonTest : public ::testing::Test 
@@ -28,41 +28,47 @@ protected:
     }
 };
 
-TEST_F(ButtonTest, ConstructorInitializesCorrectly) 
+TEST_F(ButtonTest, Constructor) 
 {
     GUI::Button button(text, font, buttonSize);
     
-    EXPECT_TRUE(button.isSelectable());
-    EXPECT_FALSE(button.isSelected());
-    EXPECT_FALSE(button.isActive());
+    EXPECT_TRUE(button.isInteractive());
+    EXPECT_FALSE(button.isHovered());
+    EXPECT_FALSE(button.isPressed());
+    EXPECT_FALSE(button.isFocused());
 }
 
-TEST_F(ButtonTest, DeselectUpdatesState) 
+TEST_F(ButtonTest, States) 
 {
     GUI::Button button(text, font, buttonSize);
-    
-    button.select();
-    EXPECT_TRUE(button.isSelected());
 
-    button.deselect();
-    EXPECT_FALSE(button.isSelected());
-}
-
-TEST_F(ButtonTest, ActivateTriggersCallbackAndResetsState) 
-{
-    GUI::Button button(text, font, buttonSize);
     MockCallback mock;
-
-    EXPECT_CALL(mock, onActivate())
+    EXPECT_CALL(mock, onFocus())
         .Times(1);
 
     button.setCallback([&mock]() {
-        mock.onActivate();
+        mock.onFocus();
     });
 
-    button.activate();
-    EXPECT_FALSE(button.isActive());
+    // Hover State 
+    button.hover();
+    EXPECT_TRUE(button.isHovered());
+
+    button.unhover();
+    EXPECT_FALSE(button.isHovered());
+
+    // Pressed State
+    button.press();
+    EXPECT_TRUE(button.isPressed());
+    
+    button.release();
+    EXPECT_FALSE(button.isPressed());
+
+    // Focus State
+    button.focus();
+    EXPECT_FALSE(button.isFocused());
 }
+
 
 TEST_F(ButtonTest, HandleEventIsNoOp) 
 {
@@ -76,8 +82,9 @@ TEST_F(ButtonTest, HandleEventIsNoOp)
 
     EXPECT_NO_THROW(button.handleEvent(click, worldPos));
     
-    EXPECT_FALSE(button.isSelected());
-    EXPECT_FALSE(button.isActive());
+    EXPECT_FALSE(button.isHovered());
+    EXPECT_FALSE(button.isPressed());
+    EXPECT_FALSE(button.isFocused());
 }
 
 TEST_F(ButtonTest, GetGlobalBoundsReflectsTransformAndSize) 

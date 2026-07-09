@@ -2,6 +2,7 @@
 #define TITLE_STATE_HPP
 
 #include "States/State.hpp"
+#include "GUI/Container.hpp"
 
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Text.hpp>
@@ -18,16 +19,9 @@ public:
 	virtual bool update(sf::Time dt);
 	virtual bool handleEvent(const sf::Event& event);
 
-protected:
-    bool getShowText() const { return mShowText; }
-    sf::Time getTextEffectTime() const { return mTextEffectTime; }
-
 private:
-	sf::Text mTitleText;
-	sf::Text mText;
+	GUI::Container mGUIContainer;
 
-	bool mShowText;
-	sf::Time mTextEffectTime;
 };
 
 #endif

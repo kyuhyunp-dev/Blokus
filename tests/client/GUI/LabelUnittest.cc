@@ -18,10 +18,10 @@ protected:
     }
 };
 
-TEST_F(LabelTest, LabelIsNeverSelectable) 
+TEST_F(LabelTest, LabelIsNeverInteractive) 
 {
     GUI::Label label("Score: 0", font);
-    EXPECT_FALSE(label.isSelectable());
+    EXPECT_FALSE(label.isInteractive());
 }
 
 TEST_F(LabelTest, HandleEventDoesNotModifyStateOrCrash) 
@@ -35,9 +35,10 @@ TEST_F(LabelTest, HandleEventDoesNotModifyStateOrCrash)
     sf::Vector2f worldPos{10.f, 10.f};
 
     EXPECT_NO_THROW(label.handleEvent(click, worldPos));
-    
-    EXPECT_FALSE(label.isSelected());
-    EXPECT_FALSE(label.isActive());
+    EXPECT_FALSE(label.isInteractive());
+    EXPECT_FALSE(label.isHovered());
+    EXPECT_FALSE(label.isPressed());
+    EXPECT_FALSE(label.isFocused());
 }
 
 TEST_F(LabelTest, SetTextUpdatesGlobalBoundsSize) 

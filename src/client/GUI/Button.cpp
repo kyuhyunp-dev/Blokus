@@ -1,80 +1,108 @@
 #include "GUI/Button.hpp"
 #include <SFML/Graphics/RenderTarget.hpp>
+#include <SFML/Window/Event.hpp>
 
 
-namespace GUI 
+GUI::Button::Button(const std::string& text, const sf::Font& font, const sf::Vector2f& size)
+    : mText(font, text, 16)
+    , mShape(size)
 {
-    Button::Button(const std::string& text, const sf::Font& font, const sf::Vector2f& size)
-        : mText(font, text, 16)
-        , mShape(size)
+    mShape.setFillColor(UNPRESSED);
+    mShape.setOutlineColor(NON_HOVER_OUTLINE);
+    mShape.setOutlineThickness(0.f);
+
+    mText.setFillColor(sf::Color::Black);
+
+    // Centering text that is shifted by its position
+    sf::FloatRect textBounds = mText.getLocalBounds();
+    mText.setOrigin({
+        textBounds.position.x + textBounds.size.x / 2.0f,
+        textBounds.position.y + textBounds.size.y / 2.0f
+    });
+
+    mText.setPosition({ size.x / 2.0f, size.y / 2.0f });
+}
+
+void GUI::Button::setCallback(Callback callback) 
+{
+    mCallback = std::move(callback);
+}
+
+bool GUI::Button::isInteractive() const 
+{
+    return true;
+}
+
+void GUI::Button::hover() 
+{
+    Component::hover();
+    updateVisuals();    
+}
+
+void GUI::Button::unhover() 
+{
+    Component::unhover();
+    updateVisuals();
+}
+
+void GUI::Button::press(std::optional<sf::Vector2f> worldMousePos) 
+{
+    Component::press();
+    updateVisuals();
+}
+
+void GUI::Button::release(std::optional<sf::Vector2f> worldMousePos) 
+{
+    Component::release(worldMousePos);
+    updateVisuals();
+}
+
+void GUI::Button::focus() 
+{
+    Component::focus(); 
+
+    if (mCallback) 
     {
-        mShape.setFillColor(UNPRESSED);
-        mShape.setOutlineColor(NON_HOVER_OUTLINE);
-        mShape.setOutlineThickness(-OUTLINE_WIDTH);
-
-        mText.setFillColor(sf::Color::Black);
-
-        // Centering text that is shifted by its position
-        sf::FloatRect textBounds = mText.getLocalBounds();
-        mText.setOrigin({
-            textBounds.position.x + textBounds.size.x / 2.0f,
-            textBounds.position.y + textBounds.size.y / 2.0f
-        });
-
-        mText.setPosition({ size.x / 2.0f, size.y / 2.0f });
+        mCallback();
     }
 
-    void Button::setCallback(Callback callback) 
+    Component::unfocus(); 
+}
+
+void GUI::Button::handleEvent(const sf::Event& event, std::optional<sf::Vector2f> worldMousePos)
+{
+}
+
+sf::FloatRect GUI::Button::getGlobalBounds() const 
+{
+    return getTransform().transformRect(mShape.getLocalBounds());
+}
+
+std::optional<sf::Cursor::Type> GUI::Button::getMouseCursorType() const
+{
+    if (isPressed() || isHovered()) 
     {
-        mCallback = std::move(callback);
+        return sf::Cursor::Type::Hand;
     }
+    
+    return std::nullopt;
+}
 
-    bool Button::isSelectable() const 
+void GUI::Button::draw(sf::RenderTarget& target, sf::RenderStates states) const 
+{
+    states.transform *= getTransform();
+    target.draw(mShape, states);
+    target.draw(mText, states);
+}
+
+void GUI::Button::updateVisuals()
+{
+    if (isPressed())
     {
-        return true;
+        mShape.setOutlineThickness(-OUTLINE_WIDTH); 
     }
-
-    void Button::select() 
+    else
     {
-        Component::select(); 
-        mShape.setOutlineColor(HOVER_OUTLINE);
-    }
-
-    void Button::deselect() 
-    {
-        Component::deselect(); 
-        mShape.setOutlineColor(NON_HOVER_OUTLINE);
-    }
-
-    void Button::activate() 
-    {
-        Component::activate(); 
-        mShape.setFillColor(PRESSED);
-
-        if (mCallback) 
-        {
-            mCallback();
-        }
-
-        mShape.setFillColor(UNPRESSED);
-        Component::deactivate(); 
-    }
-
-    void Button::handleEvent(const sf::Event& /*event*/, std::optional<sf::Vector2f> /*worldMousePos*/) 
-    {
-        // Handled entirely by the Container
-        return; 
-    }
-
-    sf::FloatRect Button::getGlobalBounds() const 
-    {
-        return getTransform().transformRect(mShape.getLocalBounds());
-    }
-
-    void Button::draw(sf::RenderTarget& target, sf::RenderStates states) const 
-    {
-        states.transform *= getTransform();
-        target.draw(mShape, states);
-        target.draw(mText, states);
+        mShape.setOutlineThickness(0.0f);
     }
 }

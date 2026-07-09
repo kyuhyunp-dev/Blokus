@@ -3,12 +3,12 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 
 
-GUI::Label::Label(const std::string& text, const sf::Font& font)
-    : mText(font, text, CHAR_SIZE)
+GUI::Label::Label(const std::string& text, const sf::Font& font, unsigned int size)
+    : mText(font, text, size)
 {
 }
 
-bool GUI::Label::isSelectable() const
+bool GUI::Label::isInteractive() const
 {
     return false;
 }

@@ -9,8 +9,10 @@
 
 #include <SFML/System/Time.hpp>
 #include <SFML/Window/Event.hpp>
+#include <SFML/Window/Cursor.hpp>
 
 #include <memory>
+#include <optional>
 
 
 namespace sf
@@ -57,10 +59,16 @@ protected:
 	void requestStateClear();
 
 	Context getContext() const;
+	std::optional<sf::Vector2f> getWorldMousePosition(const sf::Event& event) const;
+
+	void setMouseCursor(sf::Cursor::Type cursorType);
+	void loadMouseCursor(sf::Cursor::Type cursorType);
 
 private:
 	StateStack* mStack;
 	Context mContext;
+	std::unordered_map<sf::Cursor::Type, sf::Cursor> mLoadedCursors;
+	sf::Cursor::Type mCurrentMouseCursorType;
 
 };
 
