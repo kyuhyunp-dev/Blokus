@@ -21,6 +21,8 @@ GUI::Button::Button(const std::string& text, const sf::Font& font, const sf::Vec
     });
 
     mText.setPosition({ size.x / 2.0f, size.y / 2.0f });
+
+    setOrigin(size / 2.f);
 }
 
 void GUI::Button::setCallback(Callback callback) 

@@ -10,12 +10,12 @@ GameServer::GameServer()
 {
     if (mListener.listen(ServerPort) != sf::Socket::Status::Done) 
     {
-        throw std::runtime_error("Failed to bind to port " + std::to_string(ServerPort));
+        throw std::runtime_error("[GameServer] Failed to bind to port " + std::to_string(ServerPort));
     }
 
     mSelector.add(mListener);
     
-    spdlog::info("Server started. Listening on port {}...", ServerPort);
+    spdlog::info("[GameServer] Server started. Listening on port {}...", ServerPort);
 }
 
 void GameServer::run() 
@@ -48,7 +48,7 @@ void GameServer::handleIncomingConnections()
         auto address = client->getRemoteAddress();
         if (address.has_value())
         {
-            spdlog::info("New client connected from {}", address.value().toString());
+            spdlog::info("[GameServer] New client connected from {}", address.value().toString());
         }
 
         mSelector.add(*client);
@@ -64,19 +64,18 @@ void GameServer::handleIncomingPackets()
         
         if (mSelector.isReady(client)) 
         {
-
-            spdlog::info("Handle Incoming Packet");
+            spdlog::info("[GameServer] Handle Incoming Packet");
             sf::Packet packet;
             sf::Socket::Status status = client.receive(packet);
 
             if (status == sf::Socket::Status::Done) 
             {
-                spdlog::info("Received a packet from a client!");
+                spdlog::info("[GameServer] Received a packet from a client!");
                 processPacket(packet, client); 
             } 
             else if (status == sf::Socket::Status::Disconnected || status == sf::Socket::Status::Error) 
             {
-                spdlog::info("Client disconnected.");
+                spdlog::info("[GameServer] Client disconnected.");
 
                 auto itMatch = mSocketToMatch.find(&client);
                 if (itMatch != mSocketToMatch.end()) 
@@ -90,13 +89,13 @@ void GameServer::handleIncomingPackets()
                         { return player.socketPtr == &client; }),
                         match.players.end()
                     );
-                    spdlog::info("Removed player from match {}. Remaining: {}", matchCode, match.players.size());
+                    spdlog::info("[GameServer] Removed player from match {}. Remaining: {}", matchCode, match.players.size());
 
                     mSocketToMatch.erase(itMatch);
                     
                     if (match.players.empty())
                     {
-                        spdlog::info("Match {} is empty and has been destroyed.", matchCode);
+                        spdlog::info("[GameServer] Match {} is empty and has been destroyed.", matchCode);
                         mMatches.erase(matchCode);
                     }
                 }
@@ -122,7 +121,7 @@ void GameServer::processPacket(sf::Packet& packet, sf::TcpSocket& sender)
         {
             case NetworkProtocol::PacketType::CreateMatch:
             {
-                spdlog::info("Processing CreateMatch request...");
+                spdlog::info("[GameServer] Processing CreateMatch request...");
 
                 std::string newCode = generateMatchCode();
                 
@@ -133,14 +132,14 @@ void GameServer::processPacket(sf::Packet& packet, sf::TcpSocket& sender)
                 // Register in the reverse-lookup map for quick disconnects
                 mSocketToMatch[&sender] = newCode;
 
-                std::string reason = fmt::format("Match {} successfully created for host.", newCode);
+                std::string reason = fmt::format("[GameServer] ACK: Match {} successfully created for host.", newCode);
                 formMatchJoinedPacket(newCode);
                 sendMatchJoinedPacket(sender, reason);
                 break;
             }
             case NetworkProtocol::PacketType::JoinMatch:
             {
-                spdlog::info("Processing JoinMatch request...");
+                spdlog::info("[GameServer] Processing JoinMatch request...");
 
                 NetworkProtocol::JoinMatchRequest request;
                 packet >> request;
@@ -151,7 +150,7 @@ void GameServer::processPacket(sf::Packet& packet, sf::TcpSocket& sender)
                     Server::Match& match = matchIt->second;
                     if (match.players.size() >= MAX_PLAYER)
                     {
-                        std::string reason = fmt::format("Failed JoinMatch request with Code {}: Too Many Players", request.matchCode);
+                        std::string reason = fmt::format("[GameServer] NACK: Failed JoinMatch request with Code {}: Too Many Players", request.matchCode);
                         formMatchJoinFailedPacket(reason);
                         sendMatchJoinFailedPacket(sender, reason);
                         break;
@@ -162,13 +161,13 @@ void GameServer::processPacket(sf::Packet& packet, sf::TcpSocket& sender)
 
                     mSocketToMatch[&sender] = request.matchCode;
                     
-                    std::string reason = fmt::format("Guest successfully joined match with Code {}", request.matchCode);
+                    std::string reason = fmt::format("[GameServer] ACK: Guest successfully joined match with Code {}", request.matchCode);
                     formMatchJoinedPacket(request.matchCode);
                     sendMatchJoinedPacket(sender, reason);
                 }
                 else 
                 {
-                    std::string reason = fmt::format("Failed JoinMatch request with Code {}: Code not found", request.matchCode);
+                    std::string reason = fmt::format("[GameServer] NACK: Failed JoinMatch request with Code {}: Code not found", request.matchCode);
                     formMatchJoinFailedPacket(reason);
                     sendMatchJoinFailedPacket(sender, reason);
                 }
@@ -176,7 +175,7 @@ void GameServer::processPacket(sf::Packet& packet, sf::TcpSocket& sender)
             }
             default:
             {
-                spdlog::warn("Received unexpected packet type on server.");
+                spdlog::warn("[GameServer] Received unexpected packet type on server.");
                 break;
             }
         } 
@@ -205,7 +204,7 @@ void GameServer::sendMatchJoinedPacket(sf::TcpSocket& client, const std::string&
     }
     else
     {
-        spdlog::error("Failed to send MatchJoined packet to client. {}", logContext);
+        spdlog::error("[GameServer] NACK: Failed to send MatchJoined packet to client. {}", logContext);
     }
 }
 
@@ -217,7 +216,7 @@ void GameServer::sendMatchJoinFailedPacket(sf::TcpSocket& client, const std::str
     }
     else
     {
-        spdlog::error("Failed to send MatchJoinFailed packet to client. {}", logContext);
+        spdlog::error("[GameServer] NACK: Failed to send MatchJoinFailed packet to client. {}", logContext);
     }
 }
 

@@ -10,7 +10,7 @@ NetworkClient::NetworkClient()
 {
 }
 
-bool NetworkClient::connect(const std::string& ip, unsigned short port)
+bool NetworkClient::connect(const std::string_view& ip, unsigned short port)
 {
     // In SFML 3.x, IP addresses must be safely resolved
     std::optional<sf::IpAddress> address = sf::IpAddress::resolve(ip);

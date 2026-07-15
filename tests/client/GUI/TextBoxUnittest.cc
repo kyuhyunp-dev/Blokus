@@ -53,7 +53,7 @@ namespace GUI
     
     TEST_F(TextBoxTest, ComponentTest) 
     {
-        TextBox box(font, {200.f, 50.f});
+        TextBox box("Enter 4 digit code", font, {200.f, 50.f});
 
         // Constructor state
         EXPECT_TRUE(box.isInteractive());
@@ -94,11 +94,11 @@ namespace GUI
 
     TEST_F(TextBoxTest, Cursor)
     {
-        TextBox box(font, {200.f, 50.f});
-        box.setPosition({ 0.f, 0.f });
+        TextBox box("Enter 4 digit code", font, {200.f, 50.f});
+        box.setPosition({ 100.f, 25.f });
 
         Button button("button", font, {100.f, 100.f});
-        button.setPosition({300.f, 0.f});
+        button.setPosition({50.f, 50.f});
 
         sf::Vector2f mid = sf::Vector2f(100.f, 25.f);
         sf::Vector2f out = sf::Vector2f(300.f, 150.f);
@@ -136,7 +136,7 @@ namespace GUI
 
    TEST_F(TextBoxTest, TextEntryAndLimits) 
     {
-        TextBox box(font, {200.f, 50.f});
+        TextBox box("Enter 4 digit code", font, {200.f, 50.f});
         box.focus(); 
 
         // Regular typing
@@ -171,8 +171,8 @@ namespace GUI
 
     TEST_F(TextBoxTest, CursorBlinkingOverTime) 
     {
-        TextBox box(font, {200.f, 50.f});
-        box.setPosition({0.f, 0.f});
+        TextBox box("Enter 4 digit code", font, {200.f, 50.f});
+        box.setPosition({100.f, 25.f});
         sf::Vector2f mid = sf::Vector2f(100.f, 25.f);
 
         // Activate the box
@@ -191,8 +191,8 @@ namespace GUI
 
     TEST_F(TextBoxTest, Highlight)
     {
-        TextBox box(font, {200.f, 50.f});
-        box.setPosition({0.f, 0.f});
+        TextBox box("Enter 4 digit code", font, {200.f, 50.f});
+        box.setPosition({100.f, 25.f});
         sf::Vector2f mid = sf::Vector2f(100.f, 25.f);
 
         box.press(mid);
@@ -229,8 +229,8 @@ namespace GUI
 
     TEST_F(TextBoxTest, HighlightAndErase) 
     {
-        TextBox box(font, {200.f, 50.f});
-        box.setPosition({0.f, 0.f});
+        TextBox box("Enter 4 digit code", font, {200.f, 50.f});
+        box.setPosition({100.f, 25.f});
 
         box.focus();
 
@@ -270,7 +270,8 @@ namespace GUI
 
     TEST_F(TextBoxTest, HighlightArrowSpace) 
     {
-        TextBox box(font, {200.f, 50.f});
+        TextBox box("Enter 4 digit code", font, {200.f, 50.f});
+        box.setPosition({100.f, 25.f});
         box.focus();
 
         sendText(box, 'A');
@@ -309,7 +310,9 @@ namespace GUI
 
     TEST_F(TextBoxTest, RepeatActionBackspace) 
     {
-        TextBox box(font, {200.f, 50.f});
+        TextBox box("Enter 4 digit code", font, {200.f, 50.f});
+        box.setPosition({100.f, 25.f});
+
         box.focus();
         
         // Type 5 characters
@@ -347,7 +350,8 @@ namespace GUI
     
     TEST_F(TextBoxTest, RepeatActionArrow) 
     {
-        TextBox box(font, {200.f, 50.f});
+        TextBox box("Enter 4 digit code", font, {200.f, 50.f});
+        box.setPosition({100.f, 25.f});
         box.focus();
         
         // Type 5 characters
@@ -402,7 +406,8 @@ namespace GUI
     
     TEST_F(TextBoxTest, Unfocus) 
     {
-        TextBox box(font, {200.f, 50.f});
+        TextBox box("Enter 4 digit code", font, {200.f, 50.f});
+        box.setPosition({100.f, 25.f});
         sf::Vector2f mid = sf::Vector2f(100.f, 25.f);
 
         box.press(mid);
@@ -429,8 +434,8 @@ namespace GUI
 
     TEST_F(TextBoxTest, DynamicLayoutUpdates) 
     {
-        TextBox box(font, {200.f, 50.f});
-        box.setPosition({0.f, 0.f});
+        TextBox box("Enter 4 digit code", font, {200.f, 50.f});
+        box.setPosition({100.f, 25.f});
         box.focus();
 
         // Capture initial placeholder positions (empty string displays "Enter 4 Digit Code")

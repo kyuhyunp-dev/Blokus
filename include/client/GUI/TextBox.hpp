@@ -13,7 +13,7 @@ namespace GUI
     class TextBox : public Component 
     {
     public:
-        TextBox(const sf::Font& font, const sf::Vector2f& size);
+        TextBox(const std::string placeholder, const sf::Font& font, const sf::Vector2f& size);
 
         bool isInteractive() const override;
         
@@ -74,7 +74,7 @@ namespace GUI
         sf::RectangleShape mShape;
         sf::Text mText;
         std::string mString;
-        
+        const std::string mPlaceholder;   
         // Blinking Cursor mechanics
         sf::RectangleShape mCursor;
         sf::Time mCursorTime;

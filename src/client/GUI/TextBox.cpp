@@ -5,11 +5,10 @@
 #include <SFML/Window/Clipboard.hpp>
 
 #include <algorithm>
-
-
-GUI::TextBox::TextBox(const sf::Font& font, const sf::Vector2f& size)
+GUI::TextBox::TextBox(const std::string placeholder, const sf::Font& font, const sf::Vector2f& size)
     : mShape(size)
     , mText(font, "", 16)
+    , mPlaceholder(placeholder)
     , mShowCursor(false)
     , mCursorIndex(0)
     , mCursorTime(sf::Time::Zero)
@@ -38,6 +37,8 @@ GUI::TextBox::TextBox(const sf::Font& font, const sf::Vector2f& size)
     mSelectionHighlight.setFillColor(sf::Color(173, 216, 230, 128));
 
     updateLayout();
+
+    setOrigin(size / 2.f);
 }
 
 bool GUI::TextBox::isInteractive() const 
@@ -277,7 +278,7 @@ void GUI::TextBox::updateLayout()
 {
     if (mString.empty())
     {
-        mText.setString("Enter 4 Digit Code");
+        mText.setString(mPlaceholder);
         mText.setFillColor(sf::Color(150, 150, 150)); 
     }
     else

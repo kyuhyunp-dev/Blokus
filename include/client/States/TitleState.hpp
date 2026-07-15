@@ -10,6 +10,11 @@
 #include <SFML/Graphics/RenderWindow.hpp>
 
 
+namespace GUI
+{
+	class Label;
+}
+
 class TitleState : public State
 {
 public:
@@ -19,9 +24,17 @@ public:
 	virtual bool update(sf::Time dt);
 	virtual bool handleEvent(const sf::Event& event);
 
-private:
-	GUI::Container mGUIContainer;
+protected:
+	void requestCreateMatch();
+	void requestJoinMatch(const std::string& matchCode);
+	void processPacket(sf::Packet& packet);
 
+	GUI::Label* mStatusLabel;
+
+private:
+	static constexpr int CODE_SIZE = 4;
+
+	GUI::Container mGUIContainer;
 };
 
 #endif

@@ -3,8 +3,9 @@
 
 struct MatchInfo 
 {
+    std::string matchCode;
     int targetPlayerCount = 2;  
-    int currentPlayerCount;  
+    int currentPlayerCount = 0;  
 };
 
 #endif
