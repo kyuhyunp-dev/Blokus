@@ -8,6 +8,8 @@ FetchContent_Declare(
     SYSTEM
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # For Windows compatibility
+set(gtest_build_shared_libs OFF CACHE BOOL "" FORCE)
+
 FetchContent_MakeAvailable(googletest)
 
 # Make GoogleTest commands available to all subdirectories

@@ -50,6 +50,7 @@ set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
+set(gtest_build_shared_libs OFF CACHE BOOL "" FORCE)
 
 # ---------------- Subdirectories ----------------
 # Add Shared Library
