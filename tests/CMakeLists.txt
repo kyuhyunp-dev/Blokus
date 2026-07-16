@@ -23,13 +23,17 @@ set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_BACKUP} CACHE BOOL "" FORCE)
 # Forcefully strip the DLL expectation macro from all GoogleTest interface targets
 foreach(tgt gtest gtest_main gmock gmock_main)
     if(TARGET ${tgt})
-        get_target_property(defs ${tgt} INTERFACE_COMPILE_DEFINITIONS)
-        if(defs)
-            list(REMOVE_ITEM defs "GTEST_LINKED_AS_SHARED_LIBRARY=1")
-            set_target_properties(${tgt} PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${defs}")
-        endif()
-
-        target_compile_definitions(${tgt} INTERFACE GTEST_HAS_DLL=0)
+        # Clear existing definitions
+        set_property(TARGET ${tgt} PROPERTY INTERFACE_COMPILE_DEFINITIONS)
+        
+        #  Hard-code GTest to think it is static
+        target_compile_definitions(${tgt} INTERFACE 
+            GTEST_HAS_DLL=0
+            GTEST_LINKED_AS_SHARED_LIBRARY=0
+        )
+        
+        #  Ensure MSVC doesn't try to look for import libs
+        set_target_properties(${tgt} PROPERTIES IMPORTED_IMPLIB "")
     endif()
 endforeach()
 
