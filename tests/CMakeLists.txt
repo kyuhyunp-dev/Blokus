@@ -27,9 +27,9 @@ foreach(tgt gtest gtest_main gmock gmock_main)
         if(defs)
             list(REMOVE_ITEM defs "GTEST_LINKED_AS_SHARED_LIBRARY=1")
             set_target_properties(${tgt} PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${defs}")
-
-            target_compile_definitions(${tgt} INTERFACE GTEST_HAS_DLL=0)
         endif()
+
+        target_compile_definitions(${tgt} INTERFACE GTEST_HAS_DLL=0)
     endif()
 endforeach()
 
