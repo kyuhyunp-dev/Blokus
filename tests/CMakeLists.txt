@@ -7,15 +7,18 @@ FetchContent_Declare(
     EXCLUDE_FROM_ALL
     SYSTEM
 )
-set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # For Windows compatibility
 
 set(gtest_build_shared_libs OFF CACHE BOOL "" FORCE)
 set(gmock_build_shared_libs OFF CACHE BOOL "" FORCE)
 
-set(TEMP_BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS})
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # For Windows compatibility
+
+set(BUILD_SHARED_LIBS_BACKUP ${BUILD_SHARED_LIBS})
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(googletest)
+
+set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_BACKUP} CACHE BOOL "" FORCE)
 
 # Forcefully strip the DLL expectation macro from all GoogleTest interface targets
 foreach(tgt gtest gtest_main gmock gmock_main)
@@ -24,6 +27,8 @@ foreach(tgt gtest gtest_main gmock gmock_main)
         if(defs)
             list(REMOVE_ITEM defs "GTEST_LINKED_AS_SHARED_LIBRARY=1")
             set_target_properties(${tgt} PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${defs}")
+
+            target_compile_definitions(${tgt} INTERFACE GTEST_HAS_DLL=0)
         endif()
     endif()
 endforeach()
