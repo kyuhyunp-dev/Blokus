@@ -33,6 +33,11 @@ void GUI::Container::handleEvent(const sf::Event& event,
     ))
     { // Only Focused Textbox can handle Key Events
         mChildren[*mFocusedChild]->handleEvent(event, worldMousePos);
+        
+        if (!mChildren[*mFocusedChild]->isFocused())
+        {
+            mFocusedChild = std::nullopt;
+        }
         return; 
     }
 
@@ -49,6 +54,16 @@ void GUI::Container::handleEvent(const sf::Event& event,
             std::optional<std::size_t> targetChild = getComponentIndexAt(*worldMousePos);
             if (targetChild)
             { // Pressed a Component
+                if (mHoveredChild != targetChild)
+                { // Never moved a mouse and pressed   
+                    if (mHoveredChild)
+                    {
+                        mChildren[*mHoveredChild]->unhover();
+                    }
+                    mChildren[*targetChild]->hover();
+                    mHoveredChild = targetChild;
+                }
+
                 if (mFocusedChild && *mFocusedChild != *targetChild)
                 {
                     mChildren[*mFocusedChild]->unfocus();

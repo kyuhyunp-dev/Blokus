@@ -17,7 +17,16 @@ set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
 FetchContent_MakeAvailable(googletest)
 
-set(BUILD_SHARED_LIBS ${TEMP_BUILD_SHARED_LIBS} CACHE BOOL "" FORCE)
+# Forcefully strip the DLL expectation macro from all GoogleTest interface targets
+foreach(tgt gtest gtest_main gmock gmock_main)
+    if(TARGET ${tgt})
+        get_target_property(defs ${tgt} INTERFACE_COMPILE_DEFINITIONS)
+        if(defs)
+            list(REMOVE_ITEM defs "GTEST_LINKED_AS_SHARED_LIBRARY=1")
+            set_target_properties(${tgt} PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${defs}")
+        endif()
+    endif()
+endforeach()
 
 # Make GoogleTest commands available to all subdirectories
 include(GoogleTest)

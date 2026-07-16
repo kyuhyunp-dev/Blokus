@@ -88,6 +88,10 @@ void GUI::TextBox::unfocus()
     
     mShowCursor = false;
     updateHighlight();
+
+    mRepeatAction = RepeatAction::None;
+    mRepeatTime = sf::Time::Zero;
+    mInInitialDelay = false;
 }
 
 void GUI::TextBox::handleEvent(const sf::Event& event, std::optional<sf::Vector2f> worldMousePos) 
