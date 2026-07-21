@@ -28,18 +28,20 @@ protected: // for run and unit test
 
     // for unit test
     std::vector<std::unique_ptr<sf::TcpSocket>> mClients;
-    sf::Packet mOutboundPacket;   
     std::map<sf::TcpSocket*, std::string> mSocketToMatch; 
     std::map<std::string, Server::Match> mMatches;
     sf::SocketSelector mSelector;
 
-private:
-    void formMatchJoinedPacket(const std::string& code);
-    void formMatchJoinFailedPacket(const std::string& reason);
-    
-    void sendMatchJoinedPacket(sf::TcpSocket& client, const std::string& logContext);
-    void sendMatchJoinFailedPacket(sf::TcpSocket& client, const std::string& logContext);
+protected:
+    virtual sf::Socket::Status sendToClient(sf::TcpSocket& client, sf::Packet& packet);
 
+private:
+    sf::Packet formMatchJoinedPacket(std::string_view code);
+    sf::Packet formMatchJoinFailedPacket(NetworkProtocol::JoinError reason);
+
+    void sendMatchJoinedPacket(sf::TcpSocket& client, sf::Packet& packet, std::string_view code);
+    void sendMatchJoinFailedPacket(sf::TcpSocket& client, sf::Packet& packet, std::string_view code, NetworkProtocol::JoinError reason);
+   
     std::string generateMatchCode();
 
 private:

@@ -16,9 +16,23 @@ public:
 
     // Expose protected state via getters
     const auto& getClients() const { return mClients; }
-    const sf::Packet& getOutboundPacket() const { return mOutboundPacket; }
     const auto& getMatches() const { return mMatches; }
     sf::SocketSelector& getSelector() { return mSelector; }
+
+    const sf::Packet& getOutboundPacket() const 
+    {
+        return mSpyPacket;
+    }
+
+protected:
+    sf::Socket::Status sendToClient(sf::TcpSocket& client, sf::Packet& packet) override 
+    {
+        mSpyPacket = packet; 
+        return sf::Socket::Status::Done; 
+    }
+
+private:
+    sf::Packet mSpyPacket;
 };
 
 TEST(GameServerTest, ConnectCreateJoinDisconnect) 
@@ -93,53 +107,93 @@ TEST(GameServerTest, ConnectCreateJoinDisconnect)
 TEST(GameServerTest, CreateOutboundPackets) 
 { // Test for every packet
     TestableGameServer server;
-    sf::TcpSocket dummySender; 
+    sf::TcpSocket dummyHost; 
+    sf::TcpSocket dummyGuest; 
+    sf::TcpSocket dummyGuest2; 
+
+    NetworkProtocol::PacketType outType;
+    NetworkProtocol::MatchJoinedResponse successfulResponse;
+    NetworkProtocol::MatchJoinFailedResponse failedResponse; 
 
     // CreateMatch
     sf::Packet createRequest;
     createRequest << NetworkProtocol::PacketType::CreateMatch;
 
-    server.processPacket(createRequest, dummySender);
+    server.processPacket(createRequest, dummyHost);
     
     sf::Packet outboundCreate = server.getOutboundPacket(); 
-    NetworkProtocol::PacketType outType;
-    NetworkProtocol::MatchJoinedResponse createResponse;
     
-    // Extract MatchJoinedResponse
-    ASSERT_TRUE(outboundCreate >> outType >> createResponse) << "Failed to extract CreateMatch outbound packet.";
+    ASSERT_TRUE(outboundCreate >> outType >> successfulResponse) << "Failed to extract CreateMatch outbound packet.";
     EXPECT_EQ(outType, NetworkProtocol::PacketType::MatchJoined);
-    EXPECT_FALSE(createResponse.matchCode.empty());
+    EXPECT_FALSE(successfulResponse.matchCode.empty());
 
-    std::string matchCode = createResponse.matchCode;
+    std::string matchCode = successfulResponse.matchCode;
+
+    // Create Existing Match 
+    sf::Packet createExistingRequest;
+    createExistingRequest << NetworkProtocol::PacketType::CreateMatch;
+    server.processPacket(createExistingRequest, dummyHost);
+     
+    sf::Packet outboundExistingCreate = server.getOutboundPacket(); 
+
+    ASSERT_TRUE(outboundExistingCreate >> outType >> failedResponse) << "Failed to extract CreateMatch outbound packet.";
+    EXPECT_EQ(outType, NetworkProtocol::PacketType::MatchJoinFailed);
+    EXPECT_EQ(failedResponse.reason, NetworkProtocol::JoinError::AlreadyInMatch);
+
+    // Join Match using incorrect code
+    sf::Packet wrongCodeRequest;
+     
+    std::string code = "0000";
+    if (matchCode == code)
+    {
+        code = "0001";
+    }
+     
+    NetworkProtocol::JoinMatchRequest incorrectJoinPayload { code };
+    wrongCodeRequest << NetworkProtocol::PacketType::JoinMatch << incorrectJoinPayload;
+
+    server.processPacket(wrongCodeRequest, dummyGuest);
+
+    sf::Packet wrongCodeOutbound = server.getOutboundPacket();
+
+    ASSERT_TRUE(wrongCodeOutbound >> outType >> failedResponse) << "Failed to extract JoinMatch outbound packet.";
+    EXPECT_EQ(outType, NetworkProtocol::PacketType::MatchJoinFailed);
+    EXPECT_EQ(failedResponse.reason, NetworkProtocol::JoinError::MatchNotFound);
 
     // JoinMatch
     sf::Packet joinRequest;
     NetworkProtocol::JoinMatchRequest joinPayload { matchCode };
     joinRequest << NetworkProtocol::PacketType::JoinMatch << joinPayload;
 
-    server.processPacket(joinRequest, dummySender);
+    server.processPacket(joinRequest, dummyGuest);
 
     sf::Packet outboundJoin = server.getOutboundPacket();
-    NetworkProtocol::PacketType joinOutType;
-    NetworkProtocol::MatchJoinedResponse joinResponse;
 
-    // Extract MatchJoinedResponse
-    ASSERT_TRUE(outboundJoin >> joinOutType >> joinResponse) << "Failed to extract JoinMatch outbound packet.";
-    EXPECT_EQ(joinOutType, NetworkProtocol::PacketType::MatchJoined);
-    EXPECT_EQ(joinResponse.matchCode, matchCode);
+    ASSERT_TRUE(outboundJoin >> outType >> successfulResponse) << "Failed to extract JoinMatch outbound packet.";
+    EXPECT_EQ(outType, NetworkProtocol::PacketType::MatchJoined);
+    EXPECT_EQ(successfulResponse.matchCode, matchCode);
 
-    // Invalid JoinMatch
-    sf::Packet failRequest;
-    NetworkProtocol::JoinMatchRequest failPayload { "INVALID_CODE" };
-    failRequest << NetworkProtocol::PacketType::JoinMatch << failPayload;
+    // Create Match using Guest
+    sf::Packet guestCreateRequest;
+    guestCreateRequest << NetworkProtocol::PacketType::CreateMatch;
 
-    server.processPacket(failRequest, dummySender);
+    server.processPacket(guestCreateRequest, dummyGuest);
 
-    sf::Packet outboundFail = server.getOutboundPacket();
-    NetworkProtocol::PacketType failOutType;
-    NetworkProtocol::MatchJoinFailedResponse failResponse;
+    sf::Packet guestCreate = server.getOutboundPacket();
 
-    // Extract MatchJoinFailedResponse
-    ASSERT_TRUE(outboundFail >> failOutType >> failResponse) << "Failed to extract JoinMatch failure packet.";
-    EXPECT_EQ(failOutType, NetworkProtocol::PacketType::MatchJoinFailed);
+    ASSERT_TRUE(guestCreate >> outType >> failedResponse) << "Failed to extract JoinMatch outbound packet.";
+    EXPECT_EQ(outType, NetworkProtocol::PacketType::MatchJoinFailed);
+    EXPECT_EQ(failedResponse.reason, NetworkProtocol::JoinError::AlreadyInMatch);
+
+    // Join Match using incorrect code
+    sf::Packet fullMatchRequest;
+    fullMatchRequest << NetworkProtocol::PacketType::JoinMatch << joinPayload;
+
+    server.processPacket(fullMatchRequest, dummyGuest2);
+
+    sf::Packet fullMatchOutbound = server.getOutboundPacket();
+
+    ASSERT_TRUE(fullMatchOutbound >> outType >> failedResponse) << "Failed to extract JoinMatch outbound packet.";
+    EXPECT_EQ(outType, NetworkProtocol::PacketType::MatchJoinFailed);
+    EXPECT_EQ(failedResponse.reason, NetworkProtocol::JoinError::MatchFull);
 }

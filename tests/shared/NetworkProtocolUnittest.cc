@@ -72,7 +72,7 @@ TEST(NetworkProtocolTest, MatchJoinedResponseRoundTrip)
 TEST(NetworkProtocolTest, MatchJoinFailedResponseRoundTrip) 
 {
     sf::Packet packet;
-    NetworkProtocol::MatchJoinFailedResponse originalResponse{"Lobby is completely full."};
+    NetworkProtocol::MatchJoinFailedResponse originalResponse{NetworkProtocol::JoinError::AlreadyInMatch};
     
     packet << originalResponse;
     

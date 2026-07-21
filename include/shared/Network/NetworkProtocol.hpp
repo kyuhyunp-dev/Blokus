@@ -18,8 +18,15 @@ namespace NetworkProtocol
         // Matchmaking 
         CreateMatch,
         JoinMatch,
-        MatchJoined,
+        MatchJoined, // Ack
         MatchJoinFailed 
+    };
+    
+    enum class JoinError : uint8_t 
+    {
+        MatchFull,
+        MatchNotFound,
+        AlreadyInMatch
     };
 
     // Operators for sending and receiving PacketTypes
@@ -70,17 +77,20 @@ namespace NetworkProtocol
 
     struct MatchJoinFailedResponse 
     { // Server -> Client
-        std::string reason;
+        JoinError reason;
     };
 
     inline sf::Packet& operator<<(sf::Packet& packet, const MatchJoinFailedResponse& response) 
     {
-        return packet << response.reason;
+        return packet << static_cast<uint8_t>(response.reason);
     }
 
     inline sf::Packet& operator>>(sf::Packet& packet, MatchJoinFailedResponse& response) 
     {
-        return packet >> response.reason;
+        uint8_t reason;
+        packet >> reason;
+        response.reason = static_cast<JoinError>(reason);
+        return packet;
     }
 }
 
