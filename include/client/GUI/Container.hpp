@@ -5,6 +5,7 @@
 #include <SFML/Graphics/RenderStates.hpp>
 #include <vector>
 #include <memory>
+#include <optional>
 
 
 namespace GUI
@@ -16,23 +17,27 @@ namespace GUI
 
         void pack(Component::Ptr component);
 
-    	bool isSelectable() const override;
+    	bool isInteractive() const override;
 		
         void handleEvent(const sf::Event& event, 
             std::optional<sf::Vector2f> worldMousePos) override;
+        void update(sf::Time dt) override; 
 
         sf::FloatRect getGlobalBounds() const override;
-    
+
+        std::optional<sf::Cursor::Type> getMouseCursorType(sf::Vector2f worldMousePos) const;
+ 
     private:
         void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 
-        bool hasSelection() const;
-
+        std::optional<std::size_t> getComponentIndexAt(sf::Vector2f worldMousePos) const;
+        
     private:
-        static const int UNSELECTED = -1;
-
         std::vector<Component::Ptr> mChildren;
-        int mSelectedChild;
+        std::optional<int> mHoveredChild;
+        std::optional<int> mFocusedChild;
+        std::optional<int> mPressedChild;
+        bool mIsDraggingBackground;
 
         friend class ContainerTest;
     };  

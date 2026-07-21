@@ -3,8 +3,13 @@
 
 #include <SFML/Graphics/Drawable.hpp>
 #include <SFML/Graphics/Transformable.hpp>
+#include <SFML/Window/Cursor.hpp>
+#include <SFML/System/Time.hpp>
+#include <SFML/System/Vector2.hpp>
 
 #include <memory>
+#include <optional>
+
 
 namespace sf
 {
@@ -27,23 +32,30 @@ namespace GUI
 		Component();
 		virtual ~Component() = default;
 
-		virtual bool isSelectable() const = 0;
-		bool isSelected() const;
-		virtual void select();
-		virtual void deselect();
+		virtual bool isInteractive() const = 0;
 
-		virtual bool isActive() const;
-		virtual void activate();
-		virtual void deactivate();
+		bool isHovered() const;
+		virtual void hover();
+		virtual void unhover();
 
-		virtual void handleEvent(const sf::Event& event, 
-            std::optional<sf::Vector2f> worldMousePos) = 0;
+		bool isPressed() const;
+		virtual void press(std::optional<sf::Vector2f> worldMousePos = std::nullopt);
+		virtual void release(std::optional<sf::Vector2f> worldMousePos = std::nullopt);
+
+		bool isFocused() const;
+		virtual void focus();
+		virtual void unfocus();	
+
+		virtual void handleEvent(const sf::Event& event, std::optional<sf::Vector2f> worldMousePos) = 0;
+		virtual void update(sf::Time dt);
 
         virtual sf::FloatRect getGlobalBounds() const = 0;
+        virtual std::optional<sf::Cursor::Type> getMouseCursorType() const;
 
 	private:
-		bool mIsSelected; // Hovered
-		bool mIsActive; // Used
+		bool mIsHovered;
+		bool mIsPressed;
+		bool mIsFocused; 
 	};
 }
 

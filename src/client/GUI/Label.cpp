@@ -3,12 +3,13 @@
 #include <SFML/Graphics/RenderTarget.hpp>
 
 
-GUI::Label::Label(const std::string& text, const sf::Font& font)
-    : mText(font, text, CHAR_SIZE)
+GUI::Label::Label(const std::string& text, const sf::Font& font, unsigned int size)
+    : mText(font, "", size)
 {
+    setText(text);
 }
 
-bool GUI::Label::isSelectable() const
+bool GUI::Label::isInteractive() const
 {
     return false;
 }
@@ -27,6 +28,9 @@ sf::FloatRect GUI::Label::getGlobalBounds() const
 void GUI::Label::setText(const std::string& text)
 {
     mText.setString(text);
+
+    sf::FloatRect bounds = mText.getLocalBounds();
+    setOrigin(bounds.position + bounds.size / 2.f);
 }
 
 void GUI::Label::draw(sf::RenderTarget& target, sf::RenderStates states) const 

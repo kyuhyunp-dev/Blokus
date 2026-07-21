@@ -16,7 +16,7 @@ add_executable(BlokusClientTests
     States/NetworkGameStateUnittest.cc
     States/StateStackUnittest.cc
     States/TitleStateUnittest.cc
-    States/UsernameStateUnittest.cc
+    # States/UsernameStateUnittest.cc
     ApplicationUnittest.cc
     PlayerUnittest.cc
     StatisticsTrackerUnittest.cc

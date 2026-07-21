@@ -12,9 +12,9 @@ namespace GUI
     class Label : public Component
     {
         public:
-            Label(const std::string& text, const sf::Font& font);
+            Label(const std::string& text, const sf::Font& font, unsigned int size = DEFAULT_SIZE);
 
-            bool isSelectable() const override;
+            bool isInteractive() const override;
             void handleEvent(const sf::Event& event, 
                 std::optional<sf::Vector2f> worldMousePos) override;
             sf::FloatRect getGlobalBounds() const override;
@@ -25,7 +25,7 @@ namespace GUI
             void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
     
         private:
-            static const int CHAR_SIZE = 16;
+            static constexpr unsigned int DEFAULT_SIZE = 16;
             sf::Text mText;
     };
 }
