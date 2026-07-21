@@ -12,6 +12,9 @@
 
 TitleState::TitleState(StateStack& stack, Context context)
 	: State(stack, context)
+	, mGUIContainer()
+	, mConnectionFuture()
+	, mIsConnecting(false)
 {
 	const sf::Font& font = getContext().fonts->get(Fonts::Sansation);
 
@@ -32,13 +35,17 @@ TitleState::TitleState(StateStack& stack, Context context)
 	// Connect to the server
 	if (!context.networkClient->isConnected())
 	{
-		if (!context.networkClient->connect(IpAddress, ServerPort))
+		mIsConnecting = true;
+		mConnectionFuture = std::async(std::launch::async, [this]()
 		{
-			// AlertState that says Could not connect to the server... 
-			mStatusLabel->setText("Could not connect to the server... ");	
-			mGUIContainer.pack(std::move(statusLabel));	
-			return; 
-		}
+			return getContext().networkClient->connect(IpAddress, ServerPort);
+		});
+
+		mStatusLabel->setText("Connecting...");
+	}
+	else
+	{
+		mStatusLabel->setText("");
 	}
 
 	// Create Match Button
@@ -100,6 +107,28 @@ bool TitleState::update(sf::Time dt)
 {
 	mGUIContainer.update(dt);
 
+	if (mIsConnecting)
+	{ // Still connecting to the server
+		if (mConnectionFuture.valid() &&
+			mConnectionFuture.wait_for(std::chrono::seconds(0)) == std::future_status::ready)
+		{
+			mIsConnecting = false;
+			bool connectedSuccessfully = mConnectionFuture.get();
+			
+			if (!connectedSuccessfully)
+			{
+				mStatusLabel->setText("Could not connect to the server...");
+			}
+			else
+			{
+				mStatusLabel->setText("");
+			}
+		}
+
+		return false;
+	}
+
+	// Can use network
 	sf::Packet packet;
 	while (getContext().networkClient->pollPacket(packet))
 	{
@@ -169,16 +198,30 @@ void TitleState::processPacket(sf::Packet& packet)
 				NetworkProtocol::MatchJoinFailedResponse response;
 				if (packet >> response)
 				{
-					spdlog::error("[TitleState] Failed to join: {}", response.reason);
+					spdlog::error("[TitleState] Failed to join the match");
 
-					std::string target = "Too Many Players";
-					if (response.reason.find(target) != std::string::npos)
+					switch (response.reason)
 					{
-						mStatusLabel->setText("Match is full");
-					}
-					else
-					{
-						mStatusLabel->setText("Code not found"); 
+						case NetworkProtocol::JoinError::AlreadyInMatch:
+						{
+							mStatusLabel->setText("Already in Match"); 
+							break;
+						}
+						case NetworkProtocol::JoinError::MatchFull:
+						{
+							mStatusLabel->setText("Match is full");
+							break;
+						}
+						case NetworkProtocol::JoinError::MatchNotFound:
+						{
+							mStatusLabel->setText("Match not found"); 
+							break;
+						}
+						default:
+						{
+							mStatusLabel->setText("Unknown Error");
+							break;
+						}
 					}
 				}
 				break;

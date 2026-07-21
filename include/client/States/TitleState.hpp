@@ -9,6 +9,9 @@
 
 #include <SFML/Graphics/RenderWindow.hpp>
 
+#include <future>
+#include <chrono>
+
 
 namespace GUI
 {
@@ -35,6 +38,8 @@ private:
 	static constexpr int CODE_SIZE = 4;
 
 	GUI::Container mGUIContainer;
+	std::future<bool> mConnectionFuture;
+	bool mIsConnecting = false;
 };
 
 #endif

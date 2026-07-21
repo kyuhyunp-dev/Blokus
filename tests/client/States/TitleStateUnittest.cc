@@ -112,7 +112,15 @@ TEST_F(TitleStateTest, ProcessMatchJoinFailed)
     TestableTitleState state(mStack, mContext);
 
     sf::Packet packet;
-    NetworkProtocol::MatchJoinFailedResponse matchFullResponse{"Error: Too Many Players in this lobby"};
+    NetworkProtocol::MatchJoinFailedResponse alreadyInMathcResponse { NetworkProtocol::JoinError::AlreadyInMatch };
+    packet << NetworkProtocol::PacketType::MatchJoinFailed << alreadyInMathcResponse;
+
+    state.processPacket(packet);
+
+    EXPECT_EQ(mStack.getPendingChanges().size(), 0);
+
+    packet.clear();
+    NetworkProtocol::MatchJoinFailedResponse matchFullResponse { NetworkProtocol::JoinError::MatchFull };
     packet << NetworkProtocol::PacketType::MatchJoinFailed << matchFullResponse;
 
     state.processPacket(packet);
@@ -120,7 +128,7 @@ TEST_F(TitleStateTest, ProcessMatchJoinFailed)
     EXPECT_EQ(mStack.getPendingChanges().size(), 0);
 
     packet.clear();
-    NetworkProtocol::MatchJoinFailedResponse invalidCodeResponse{"Error: Too Many Players in this lobby"};
+    NetworkProtocol::MatchJoinFailedResponse invalidCodeResponse{ NetworkProtocol::JoinError::MatchNotFound};
     packet << NetworkProtocol::PacketType::MatchJoinFailed << invalidCodeResponse;
 
     state.processPacket(packet);
