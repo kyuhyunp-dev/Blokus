@@ -13,6 +13,9 @@ fi
 echo "Build successful."
 echo "---------------------------------"
 
+# Define a cleanup function that runs when the script exits (or if you hit Ctrl+C)
+trap 'echo -e "\nCleaning up processes..."; kill $SERVER_PID $CLIENT1_PID $CLIENT2_PID 2>/dev/null' EXIT
+
 # Start the server in the background (&)
 echo "Starting Game Server..."
 ./build/bin/BlokusServer &
@@ -28,11 +31,9 @@ CLIENT1_PID=$!
 
 # Start a client in the foreground
 echo "Starting Client 2 (Foreground)..."
-./build/bin/BlokusClient
+./build/bin/BlokusClient &
+CLIENT2_PID=$!
 
-echo "Client 2 closed. Cleaning up..."
-kill $CLIENT1_PID
-
-# When the client is closed, kill the background server
-echo "Client closed. Shutting down server..."
-kill $SERVER_PID
+echo "Game is running. Close both clients to shut down the server."
+wait $CLIENT1_PID
+wait $CLIENT2_PID

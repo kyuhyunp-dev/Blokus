@@ -1,31 +1,33 @@
 #include "GameServer.hpp"
-#include "shared/Network/NetworkProtocol.hpp"
 #include <spdlog/spdlog.h>
 #include <random>
 #include <algorithm>
 
 
-GameServer::GameServer() 
+GameServer::GameServer(unsigned short port) 
     : mIsRunning(true) 
+    , mNextClientID(0)
+    , mClientsToDisconnect()
 {
-    if (mListener.listen(ServerPort) != sf::Socket::Status::Done) 
+    if (mListener.listen(port) != sf::Socket::Status::Done) 
     {
-        throw std::runtime_error("[GameServer] Failed to bind to port " + std::to_string(ServerPort));
+        throw std::runtime_error("[GameServer] Failed to bind to port " + std::to_string(port));
     }
 
+    // Preventing Phantom Connection
+    mListener.setBlocking(false);
     mSelector.add(mListener);
     
-    spdlog::info("[GameServer] Server started. Listening on port {}...", ServerPort);
+    spdlog::info("[GameServer] Server started. Listening on port {}...", port);
 }
 
 void GameServer::run() 
 {
     while (mIsRunning) 
-    {
-        // wait() puts the server to sleep until network activity occurs
-        if (mSelector.wait()) 
-        {
-            // Someone wants to join
+    { // waits with a fixed timeout
+        sf::Time timeout = sf::milliseconds(50);
+        if (mSelector.wait(timeout)) 
+        { 
             if (mSelector.isReady(mListener)) 
             {
                 handleIncomingConnections();
@@ -33,6 +35,14 @@ void GameServer::run()
             // Always check clients
             handleIncomingPackets();
         }
+
+        flushOutgoingQueues();
+
+        for (uint32_t idToRemove: mClientsToDisconnect)
+        {   
+            removeClient(idToRemove);
+        }
+        mClientsToDisconnect.clear();
     }
 }
 
@@ -40,169 +50,260 @@ void GameServer::handleIncomingConnections()
 {
     auto client = std::make_unique<sf::TcpSocket>();
     
+    spdlog::info("[GameServer] New Client {}", static_cast<void*>(client.get()));
+ 
     if (mListener.accept(*client) == sf::Socket::Status::Done) 
     {
+        client->setBlocking(false);
+
         auto address = client->getRemoteAddress();
         if (address.has_value())
         {
-            spdlog::info("[GameServer] New client connected from {}", address.value().toString());
-        }
+            mSelector.add(*client);
+            
+            uint32_t newID = mNextClientID++;
+            mSocketToID[client.get()] = newID;
+            mClients[newID].id = newID;
+            mClients[newID].socket = std::move(client);
+            mClients[newID].state = Server::ClientState::TitleState;
 
-        mSelector.add(*client);
-        mClients.push_back(std::move(client));
+            spdlog::info("[GameServer] New Client {} connected from {}", newID, address.value().toString());
+        }
     }
 }
 
 void GameServer::handleIncomingPackets() 
 {
-    for (auto it = mClients.begin(); it != mClients.end(); ) 
+    constexpr int MAX_PACKETS_PER_TICK = 20;
+    constexpr std::size_t MAX_PACKET_BYTES = 512; 
+
+    for (const auto& [id, client]: mClients)
     {
-        sf::TcpSocket& client = **it;
-        
-        if (mSelector.isReady(client)) 
+        if (mSelector.isReady(*client.socket))
         {
-            spdlog::info("[GameServer] Handle Incoming Packet");
+            spdlog::info("[GameServer] Handle Incoming Packet for Client {}", id);
+            int packetsReceivedThisTick = 0;
             sf::Packet packet;
-            sf::Socket::Status status = client.receive(packet);
+            
+            while (true) 
+            { // Drain the socket until empty OR rate limit is hit
+                sf::Socket::Status status = (*client.socket).receive(packet);
 
-            if (status == sf::Socket::Status::Done) 
-            {
-                spdlog::info("[GameServer] Received a packet from a client!");
-                processPacket(packet, client); 
-            } 
-            else if (status == sf::Socket::Status::Disconnected || status == sf::Socket::Status::Error) 
-            {
-                spdlog::info("[GameServer] Client disconnected.");
-
-                auto itMatch = mSocketToMatch.find(&client);
-                if (itMatch != mSocketToMatch.end()) 
+                if (status == sf::Socket::Status::Done) 
                 {
-                    std::string matchCode = itMatch->second;
-                    auto& match = mMatches[matchCode];
+                    spdlog::info("[GameServer] Client {} received packet", id);
+                    packetsReceivedThisTick++;
                     
-                    match.players.erase(
-                        std::remove_if(match.players.begin(), match.players.end(),
-                        [&client](const Server::Player& player) 
-                        { return player.socketPtr == &client; }),
-                        match.players.end()
-                    );
-                    spdlog::info("[GameServer] Removed player from match {}. Remaining: {}", matchCode, match.players.size());
-
-                    mSocketToMatch.erase(itMatch);
-                    
-                    if (match.players.empty())
+                    if (packetsReceivedThisTick > MAX_PACKETS_PER_TICK)
                     {
-                        spdlog::info("[GameServer] Match {} is empty and has been destroyed.", matchCode);
-                        mMatches.erase(matchCode);
+                        spdlog::warn("[GameServer] Client {} exceeded rate limit ({} packets). Dropping.", id, MAX_PACKETS_PER_TICK);
+                        mClientsToDisconnect.push_back(id);
+                        break; // Stop draining, they are dead to us
                     }
+
+                    if (packet.getDataSize() > MAX_PACKET_BYTES)
+                    {
+                        spdlog::warn("[GameServer] Client {} sent oversized packet ({} bytes). Dropping.", id, packet.getDataSize());
+                        mClientsToDisconnect.push_back(id);
+                        continue;
+                    }
+
+                    processPacket(packet, id); 
                 }
-
-                mSelector.remove(client);
-                it = mClients.erase(it); 
-
-                continue;
-            } 
-        } 
-
-        ++it;
-    }
-}
-
-void GameServer::processPacket(sf::Packet& packet, sf::TcpSocket& sender)
-{
-    NetworkProtocol::PacketType type;
-    sf::Packet responsePacket;
-    if (packet >> type)
-    {
-        switch(type) 
-        {
-            case NetworkProtocol::PacketType::CreateMatch:
-            {
-                spdlog::info("[GameServer] Processing CreateMatch request...");
-                
-                if (mSocketToMatch.find(&sender) != mSocketToMatch.end())
+                else if (status == sf::Socket::Status::Disconnected || status == sf::Socket::Status::Error) 
                 {
-                    spdlog::warn("[GameServer] NACK: Client attempted to create a match but is already in one.");
-
-                    std::string code = mSocketToMatch[&sender];
-                    sf::Packet createPacket = formMatchJoinFailedPacket(NetworkProtocol::JoinError::AlreadyInMatch);
-                    sendMatchJoinFailedPacket(sender, createPacket, code, NetworkProtocol::JoinError::AlreadyInMatch);
+                    spdlog::info("[GameServer] Client {} disconnected.", id);
+                    mClientsToDisconnect.push_back(id);
                     break; 
-                } 
-
-                std::string newCode = generateMatchCode();
-                              
-                Server::Player player { UNDECIDED, &sender }; 
-                Server::Match match { newCode, { player } };
-                mMatches[newCode] = match;
-
-                // Register in the reverse-lookup map for quick disconnects
-                mSocketToMatch[&sender] = newCode;
-
-                sf::Packet createPacket = formMatchJoinedPacket(newCode);
-                sendMatchJoinedPacket(sender, createPacket, newCode);
-                break;
-            }
-            case NetworkProtocol::PacketType::JoinMatch:
-            {
-                spdlog::info("[GameServer] Processing JoinMatch request...");
-
-                NetworkProtocol::JoinMatchRequest request;
-                packet >> request;
-                
-                if (mSocketToMatch.find(&sender) != mSocketToMatch.end())
-                {
-                    sf::Packet joinPacket = formMatchJoinFailedPacket(NetworkProtocol::JoinError::AlreadyInMatch);
-                    sendMatchJoinFailedPacket(sender, joinPacket, request.matchCode, NetworkProtocol::JoinError::AlreadyInMatch);
+                }
+                else
+                { // Socket is fully drained for this tick, move to the next client
+                    spdlog::info("[GameServer] Socket is fully drained for Client {}", id);
                     break;
                 }
-
-                auto matchIt = mMatches.find(request.matchCode);
-                if (matchIt != mMatches.end())
-                {
-                    Server::Match& match = matchIt->second;
-                    if (match.players.size() >= MAX_PLAYER)
-                    {
-                        sf::Packet joinPacket = formMatchJoinFailedPacket(NetworkProtocol::JoinError::MatchFull);
-                        sendMatchJoinFailedPacket(sender, joinPacket, request.matchCode, NetworkProtocol::JoinError::MatchFull);
-                        break;
-                    }
-
-                    Server::Player player { UNDECIDED, &sender };
-                    match.players.push_back(player);
-
-                    mSocketToMatch[&sender] = request.matchCode;
-                    
-                    sf::Packet joinPacket = formMatchJoinedPacket(request.matchCode);
-                    sendMatchJoinedPacket(sender, joinPacket, request.matchCode);
-                }
-                else 
-                {
-                    sf::Packet joinPacket = formMatchJoinFailedPacket(NetworkProtocol::JoinError::MatchNotFound);
-                    sendMatchJoinFailedPacket(sender, joinPacket, request.matchCode, NetworkProtocol::JoinError::MatchNotFound);
-                }
-                break;
             }
-            default:
-            {
-                spdlog::warn("[GameServer] Received unexpected packet type on server.");
-                break;
-            }
-        } 
+        }
     }
 }
 
-// A quick helper to translate the enum to a readable string for the logs
-constexpr std::string_view getErrorString(NetworkProtocol::JoinError reason)
+void GameServer::processPacket(sf::Packet& packet, uint32_t clientID)
+{
+    spdlog::info("[GameServer] Client {} processing packet.", clientID);
+    auto& client = mClients[clientID];
+
+    switch(client.state)
+    {
+        case Server::ClientState::TitleState:
+            spdlog::info("[GameServer] Processing TitleState request for Client {}...", client.id);
+            handleTitleStatePackets(packet, client);
+            break;
+        case Server::ClientState::UsernameState:
+            spdlog::info("[GameServer] Processing UsernameState request for Client {}...", client.id);
+            handleUsernameStatePackets(packet, client);
+            break;
+        default:
+            spdlog::warn("Client {} sent an invalid packet", clientID);
+            mClientsToDisconnect.push_back(clientID); 
+            break;
+    }
+}
+
+void GameServer::handleTitleStatePackets(sf::Packet& packet, Server::Client& client)
+{
+    NetworkProtocol::PacketType type;
+    if (!(packet >> type)) 
+    {
+        spdlog::warn("[GameServer] Client {} sent a malformed packet. Dropping.", client.id);
+        mClientsToDisconnect.push_back(client.id);
+        return;
+    }
+
+    switch (type)
+    {
+        case NetworkProtocol::PacketType::CreateMatch:
+        {
+            if (!packet.endOfPacket()) 
+            {
+                spdlog::warn("[GameServer] Client {} sent a malformed packet. Dropping.", client.id);
+                mClientsToDisconnect.push_back(client.id);
+                return; 
+            }
+
+            spdlog::info("[GameServer] Processing CreateMatch request for Client {}...", client.id);
+
+            if (client.currentMatchCode)
+            { // Match already exists
+                std::string matchCode = *client.currentMatchCode;
+
+                // State consistency (Partially created or partially deleted a match)
+                if (mMatches.find(matchCode) == mMatches.end()) {
+                    spdlog::error("State corruption: Client {} in missing match {}", client.id, matchCode);
+                    mClientsToDisconnect.push_back(client.id);
+                    return;
+                }
+
+                sf::Packet createPacket = formMatchJoinFailedPacket(NetworkProtocol::JoinError::AlreadyInMatch);
+                queueMatchJoinFailedPacket(client.id, createPacket, NetworkProtocol::JoinError::AlreadyInMatch);
+                break; 
+            }
+            
+            std::string newCode = generateMatchCode();
+            client.currentMatchCode = newCode;                            
+
+            Server::Match match { newCode, { client.id }};
+            mMatches[newCode] = match;
+
+            sf::Packet createPacket = formMatchJoinedPacket(newCode);
+            queueMatchJoinedPacket(client.id, createPacket, newCode);
+            client.state = Server::ClientState::UsernameState;
+            break;
+        }
+        case NetworkProtocol::PacketType::JoinMatch:
+        {
+
+            NetworkProtocol::JoinMatchRequest request;
+            if (!(packet >> request) || !packet.endOfPacket())
+            {
+                spdlog::warn("[GameServer] Client {} sent a malformed packet. Dropping.", client.id);
+                mClientsToDisconnect.push_back(client.id);
+                return;
+            }
+
+            spdlog::info("[GameServer] Processing JoinMatch request for Client {}...", client.id);
+
+            if (client.currentMatchCode)
+            {
+                sf::Packet joinPacket = formMatchJoinFailedPacket(NetworkProtocol::JoinError::AlreadyInMatch); 
+                queueMatchJoinFailedPacket(client.id, joinPacket, NetworkProtocol::JoinError::AlreadyInMatch);
+                break; 
+            }
+
+            std::string matchCode = request.matchCode;
+
+            auto matchIt = mMatches.find(matchCode);
+            if (matchIt == mMatches.end())
+            { // matches already holds user's match code
+                sf::Packet joinPacket = formMatchJoinFailedPacket(NetworkProtocol::JoinError::MatchNotFound);
+                queueMatchJoinFailedPacket(client.id, joinPacket, NetworkProtocol::JoinError::MatchNotFound);
+                break;
+            }
+
+            Server::Match& match = matchIt->second;
+            if (match.playerIDs.size() >= MAX_PLAYER)
+            {
+                sf::Packet joinPacket = formMatchJoinFailedPacket(NetworkProtocol::JoinError::MatchFull);
+                queueMatchJoinFailedPacket(client.id, joinPacket, NetworkProtocol::JoinError::MatchFull);
+                break;
+            }
+
+            client.currentMatchCode = matchCode;
+            match.playerIDs.push_back(client.id);
+
+            sf::Packet joinPacket = formMatchJoinedPacket(matchCode);
+            queueMatchJoinedPacket(client.id, joinPacket, matchCode);
+            client.state = Server::ClientState::UsernameState;
+            break;
+        }
+        default:
+            spdlog::warn("Client {} sent invalid packet for TitleScreen", client.id);
+            mClientsToDisconnect.push_back(client.id);
+            break;
+    }
+}
+
+void GameServer::handleUsernameStatePackets(sf::Packet& packet, Server::Client& client)
+{
+
+}
+
+void GameServer::removeClient(uint32_t clientID)
+{
+    auto it = mClients.find(clientID);
+    if (it == mClients.end()) 
+    {
+        return;
+    }
+
+    auto& client = it->second;
+    spdlog::info("[GameServer] Removing client {}", clientID);
+
+    if (client.currentMatchCode.has_value())
+    {
+        std::string matchCode = client.currentMatchCode.value();
+        auto& match = mMatches[matchCode];
+        
+        match.playerIDs.erase(
+            std::remove(match.playerIDs.begin(), match.playerIDs.end(), clientID),
+            match.playerIDs.end()
+        );
+        
+        if (match.playerIDs.empty())
+        {
+            mMatches.erase(matchCode);
+        }
+    }
+
+    mSelector.remove(*client.socket);
+    mSocketToID.erase(client.socket.get());
+    
+    mClients.erase(it);
+}
+
+std::string_view GameServer::getJoinErrorString(NetworkProtocol::JoinError reason)
 {
     switch (reason)
     {
-        case NetworkProtocol::JoinError::MatchFull:       return "Match Full";
-        case NetworkProtocol::JoinError::MatchNotFound:   return "Match Not Found";
-        case NetworkProtocol::JoinError::AlreadyInMatch:  return "Already In Match";
-        default:                                          return "Unknown Error";
+        case NetworkProtocol::JoinError::MatchFull:
+            return "Match Full";
+        case NetworkProtocol::JoinError::MatchNotFound:
+            return "Match Not Found";
+        case NetworkProtocol::JoinError::AlreadyInMatch:
+            return "Already In Match";
+        default:
+            return "Unknown Error";
     }
 }
+
 sf::Packet GameServer::formMatchJoinedPacket(std::string_view code)
 {
     sf::Packet packet;
@@ -219,33 +320,51 @@ sf::Packet GameServer::formMatchJoinFailedPacket(NetworkProtocol::JoinError reas
     return packet;
 }
 
-void GameServer::sendMatchJoinedPacket(sf::TcpSocket& client, sf::Packet& packet, std::string_view code)
+void GameServer::flushOutgoingQueues()
 {
-    if (sendToClient(client, packet) == sf::Socket::Status::Done)
+    for (auto& [id, client] : mClients) 
     {
-        spdlog::info("[GameServer] ACK: Client successfully assigned to match with Code: {}", code);
-    }
-    else
-    {
-        spdlog::error("[GameServer] NACK: Failed to send MatchJoined packet to client for Code: {}", code);
+        while (!client.outgoingQueue.empty()) 
+        {
+            sf::Packet& packet = client.outgoingQueue.front();
+            sf::Socket::Status status = client.socket->send(packet);
+            
+            if (status == sf::Socket::Status::Done) 
+            { // Successful send
+                client.outgoingQueue.pop_front(); 
+            } 
+            else if (status == sf::Socket::Status::Partial) 
+            { // The OS buffer is full. Stop trying to send for this client on this tick
+                break; 
+            }
+            else 
+            { // Handle Error / Disconnect
+                mClientsToDisconnect.push_back(id);
+                break;
+            }
+        }
     }
 }
 
-void GameServer::sendMatchJoinFailedPacket(sf::TcpSocket& client, sf::Packet& packet, std::string_view code, NetworkProtocol::JoinError reason)
+void GameServer::queueMatchJoinedPacket(uint32_t clientID, sf::Packet& packet, std::string_view code)
 {
-    if (sendToClient(client, packet) == sf::Socket::Status::Done)
-    {
-        spdlog::warn("[GameServer] NACK: Match join rejected for Code '{}'. Reason: {}", code, getErrorString(reason));
-    }
-    else
-    {
-        spdlog::error("[GameServer] NACK: Failed to send MatchJoinFailed packet to client. Code: '{}', Reason: {}", code, getErrorString(reason));
-    }
+    enqueuePacket(clientID, packet);
+    spdlog::info("[GameServer] Queued MatchJoined for Client {} (Code: {})", clientID, code);
 }
 
-sf::Socket::Status GameServer::sendToClient(sf::TcpSocket& client, sf::Packet& packet)
+void GameServer::queueMatchJoinFailedPacket(uint32_t clientID, sf::Packet& packet, NetworkProtocol::JoinError reason)
 {
-    return client.send(packet);
+    enqueuePacket(clientID, packet);
+    spdlog::warn("[GameServer] Queued MatchJoinFailed for Client {}. Reason: {}", clientID, getJoinErrorString(reason));
+}
+
+void GameServer::enqueuePacket(uint32_t clientID, sf::Packet& packet)
+{
+    auto it = mClients.find(clientID);
+    if (it != mClients.end())
+    {
+        it->second.outgoingQueue.push_back(packet);
+    }
 }
 
 std::string GameServer::generateMatchCode()
@@ -255,8 +374,8 @@ std::string GameServer::generateMatchCode()
     static const size_t alphabetSize = sizeof(alphabet) - 1;
 
     // Static engines are initialized exactly once, preserving entropy and speed
-    static std::random_device rd;
-    static std::mt19937 gen(rd());
+    static thread_local std::random_device rd;
+    static thread_local std::mt19937 gen(rd());
     std::uniform_int_distribution<size_t> distrib(0, alphabetSize - 1);
 
     std::string code(CODE_DIGITS, ' ');

@@ -38,6 +38,7 @@ TitleState::TitleState(StateStack& stack, Context context)
 		mIsConnecting = true;
 		mConnectionFuture = std::async(std::launch::async, [this]()
 		{
+			spdlog::info("[TitleState] Attempting to connect to server");
 			return getContext().networkClient->connect(IpAddress, ServerPort);
 		});
 
