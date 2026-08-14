@@ -51,10 +51,11 @@ cmake --build .
 ```
 ./bin/tests/BlokusClientTests
 ./bin/tests/BlokusSharedTests
+./bin/tests/BlokusServerTests
 ```
 #### Run Game
 ```
-./bin/BlokusClient
+./run_game.sh
 ```
 
 #### Debug Unit Test
