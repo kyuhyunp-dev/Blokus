@@ -22,6 +22,7 @@ public:
     const auto& getClients() const { return mClients; }
     const auto& getMatches() const { return mMatches; }
     sf::SocketSelector& getSelector() { return mSelector; }
+    sf::TcpListener& getListener() { return mListener; }
     const auto& getClientsToDisconnect() const { return mClientsToDisconnect; }
 
     unsigned short getBoundPort() const
@@ -305,14 +306,22 @@ TEST(GameServerTest, Security_AntiSpamRateLimiting)
         ASSERT_EQ(spammer.send(dummyPacket), sf::Socket::Status::Done);
     }
 
-    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));    
+    // TCP may split these writes across several readiness notifications. Keep
+    // polling until the server has observed the rate-limit violation, but do
+    // not make the test depend on a particular delivery batch or latency.
+    constexpr int maxPolls = 100;
+    for (int poll = 0;
+         poll < maxPolls && server.getClientsToDisconnect().empty();
+         ++poll)
+    {
+        if (server.getSelector().wait(sf::milliseconds(10)))
+        {
+            server.handleIncomingPackets();
+        }
+    }
 
-    // This should drain 20, trigger the warning, push to disconnect, and break.
-    server.handleIncomingPackets(); 
-
-    // Verify client was queued for execution
-    EXPECT_EQ(server.getClientsToDisconnect().size(), 1);
-    
+    ASSERT_EQ(server.getClientsToDisconnect().size(), 1)
+        << "Server did not observe all packets and enforce the rate limit.";
     server.processDisconnects();
     EXPECT_EQ(server.getClients().size(), 0) << "Spammer bypassed rate limit and was not dropped.";
 }
@@ -352,17 +361,27 @@ TEST(GameServerTest, Security_PhantomConnectionHandling)
         // phantom instantly goes out of scope and destroys its socket
     } 
     
-    // The OS might still trigger the selector for a fraction of a second.
-    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
-    server.handleIncomingConnections();
+    // Accepting the connection and observing its FIN are separate events. Poll
+    // both with a finite bound so neither event is tied to one 50 ms window.
+    constexpr int maxPolls = 100;
+    for (int poll = 0;
+         poll < maxPolls && server.getClientsToDisconnect().empty();
+         ++poll)
+    {
+        if (!server.getSelector().wait(sf::milliseconds(10)))
+        {
+            continue;
+        }
 
-    // process FIN packet
-    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
-    server.handleIncomingPackets(); 
-    
-    // Purge the dead client from memory
+        if (server.getSelector().isReady(server.getListener()))
+        {
+            server.handleIncomingConnections();
+        }
+        server.handleIncomingPackets();
+    }
+
+    ASSERT_EQ(server.getClientsToDisconnect().size(), 1)
+        << "Server did not observe the phantom peer disconnect.";
     server.processDisconnects();
-    
-    // Because mListener.setBlocking(false) was used, accept() fails gracefully instead of hanging forever
     EXPECT_EQ(server.getClients().size(), 0) << "Server tracked a ghost connection.";
 }

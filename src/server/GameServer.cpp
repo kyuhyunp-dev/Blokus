@@ -105,7 +105,7 @@ void GameServer::handleIncomingPackets()
                     {
                         spdlog::warn("[GameServer] Client {} sent oversized packet ({} bytes). Dropping.", id, packet.getDataSize());
                         mClientsToDisconnect.push_back(id);
-                        continue;
+                        break;
                     }
 
                     processPacket(packet, id); 
@@ -128,9 +128,15 @@ void GameServer::handleIncomingPackets()
 
 void GameServer::processPacket(sf::Packet& packet, uint32_t clientID)
 {
+    auto it = mClients.find(clientID);
+    if (it == mClients.end())
+    {
+        spdlog::warn("[GameServer] Client {} sent a malformed packet. Dropping.", clientID);
+        return;
+    }
+    
     spdlog::info("[GameServer] Client {} processing packet.", clientID);
-    auto& client = mClients[clientID];
-
+    auto& client = it->second;
     switch(client.state)
     {
         case Server::ClientState::TitleState:
@@ -261,6 +267,7 @@ void GameServer::removeClient(uint32_t clientID)
     auto it = mClients.find(clientID);
     if (it == mClients.end()) 
     {
+        spdlog::warn("[GameServer] Client {} sent a malformed packet. Dropping.", clientID);
         return;
     }
 
@@ -270,8 +277,14 @@ void GameServer::removeClient(uint32_t clientID)
     if (client.currentMatchCode.has_value())
     {
         std::string matchCode = client.currentMatchCode.value();
-        auto& match = mMatches[matchCode];
-        
+        auto matchIt = mMatches.find(matchCode);
+        if (matchIt == mMatches.end())
+        {
+            spdlog::warn("[GameServer] Match {} does not exist.", matchCode);
+            return;
+        }
+
+        auto& match = matchIt->second;
         match.playerIDs.erase(
             std::remove(match.playerIDs.begin(), match.playerIDs.end(), clientID),
             match.playerIDs.end()

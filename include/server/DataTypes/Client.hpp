@@ -7,6 +7,8 @@
 #include <memory>
 #include <optional>
 #include <deque>
+#include <string>
+#include <cstdint>
 
 
 namespace Server

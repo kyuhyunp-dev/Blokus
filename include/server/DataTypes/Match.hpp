@@ -2,6 +2,8 @@
 #define MATCH_HPP
 
 #include <vector>
+#include <string>
+#include <cstdint>
 
 
 namespace Server
