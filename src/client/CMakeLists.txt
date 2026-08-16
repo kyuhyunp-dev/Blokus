@@ -46,16 +46,6 @@ target_link_libraries(BlokusClient PRIVATE
     BlokusClientLib
 )
 
-# Assets copy (Portability)
-# This copies the client-specific assets to the build folder automatically
-add_custom_command(
-    TARGET BlokusClient POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/assets"
-        "$<TARGET_FILE_DIR:BlokusClient>/assets"
-    COMMENT "Deploying all assets to build directory..."
-)
-
 # Install
 install(TARGETS BlokusClient RUNTIME DESTINATION bin)
 
