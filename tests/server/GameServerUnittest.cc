@@ -9,7 +9,7 @@
 class TestableGameServer : public GameServer
 {
 public:
-    TestableGameServer(): GameServer(0) {}
+    TestableGameServer(): GameServer(sf::Socket::AnyPort) {}
 
     // Expose protected methods to public
     using GameServer::handleIncomingConnections;
