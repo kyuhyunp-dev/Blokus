@@ -39,7 +39,7 @@ TitleState::TitleState(StateStack& stack, Context context)
 		mConnectionFuture = std::async(std::launch::async, [this]()
 		{
 			sf::IpAddress serverIp = sf::IpAddress::LocalHost; // Or "127.0.0.1"
-			unsigned short serverPort = 443; // Stunnel's public TLS port
+			unsigned short serverPort = 8081; // Stunnel's public TLS port
 
 			spdlog::info("[TitleState] Attempting to connect to server");
 			return getContext().networkClient->connect(serverIp.toString(), serverPort);

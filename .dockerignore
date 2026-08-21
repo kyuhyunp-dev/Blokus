@@ -1,0 +1,11 @@
+# Ignore build output and binaries
+build/
+bin/
+cmake-build-*/
+
+# Ignore IDE and git configurations
+.vscode/
+.idea/
+.git/
+
+run_game.sh

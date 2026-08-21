@@ -385,3 +385,135 @@ TEST(GameServerTest, Security_PhantomConnectionHandling)
     server.processDisconnects();
     EXPECT_EQ(server.getClients().size(), 0) << "Server tracked a ghost connection.";
 }
+
+TEST(GameServerTest, Security_OversizedPacket) 
+{
+    TestableGameServer server;
+    sf::TcpSocket client;
+    ASSERT_EQ(client.connect(sf::IpAddress::LocalHost, server.getBoundPort()), sf::Socket::Status::Done);
+
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingConnections();
+
+    // Create a packet exceeding MAX_PACKET_BYTES (512 bytes)
+    sf::Packet oversizedPacket;
+    std::string largePayload(600, 'A');
+    oversizedPacket << largePayload;
+
+    ASSERT_EQ(client.send(oversizedPacket), sf::Socket::Status::Done);
+
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingPackets();
+
+    EXPECT_EQ(server.getClientsToDisconnect().size(), 1)
+        << "Server failed to flag client sending an oversized packet.";
+
+    server.processDisconnects();
+    EXPECT_EQ(server.getClients().size(), 0) << "Oversized packet sender was not disconnected.";
+}
+
+TEST(GameServerTest, Security_TrailingGarbageData) 
+{
+    TestableGameServer server;
+    sf::TcpSocket client;
+    ASSERT_EQ(client.connect(sf::IpAddress::LocalHost, server.getBoundPort()), sf::Socket::Status::Done);
+
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingConnections();
+
+    // Send CreateMatch appended with trailing unparsed garbage
+    sf::Packet garbagePacket;
+    garbagePacket << NetworkProtocol::PacketType::CreateMatch << std::string("unexpected_trailing_data");
+
+    ASSERT_EQ(client.send(garbagePacket), sf::Socket::Status::Done);
+
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingPackets();
+
+    // packet.endOfPacket() check should fail and flag client for disconnect
+    EXPECT_EQ(server.getClientsToDisconnect().size(), 1)
+        << "Server did not detect trailing garbage bytes in packet.";
+
+    server.processDisconnects();
+    EXPECT_EQ(server.getClients().size(), 0) << "Client with trailing garbage was not dropped.";
+}
+
+TEST(GameServerTest, Security_InvalidPacketTypeForState) 
+{
+    TestableGameServer server;
+    sf::TcpSocket client;
+    ASSERT_EQ(client.connect(sf::IpAddress::LocalHost, server.getBoundPort()), sf::Socket::Status::Done);
+
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingConnections();
+
+    // Send a packet type that is unhandled in TitleState (or out-of-range enum)
+    sf::Packet invalidTypePacket;
+    invalidTypePacket << static_cast<NetworkProtocol::PacketType>(9999);
+
+    ASSERT_EQ(client.send(invalidTypePacket), sf::Socket::Status::Done);
+
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingPackets();
+
+    // Default branch in handleTitleStatePackets should trigger disconnect
+    EXPECT_EQ(server.getClientsToDisconnect().size(), 1);
+
+    server.processDisconnects();
+    EXPECT_EQ(server.getClients().size(), 0) << "Invalid packet type did not disconnect client.";
+}
+
+TEST(GameServerTest, MatchCleanup_GuestLeavesFirst) 
+{
+    TestableGameServer server;
+
+    // Host connects and creates a match
+    sf::TcpSocket host;
+    ASSERT_EQ(host.connect(sf::IpAddress::LocalHost, server.getBoundPort()), sf::Socket::Status::Done);
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingConnections();
+
+    sf::Packet createReq;
+    createReq << NetworkProtocol::PacketType::CreateMatch;
+    ASSERT_EQ(host.send(createReq), sf::Socket::Status::Done);
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingPackets();
+
+    const std::string matchCode = server.getMatches().begin()->first;
+
+    // Guest connects and joins the match
+    sf::TcpSocket guest;
+    ASSERT_EQ(guest.connect(sf::IpAddress::LocalHost, server.getBoundPort()), sf::Socket::Status::Done);
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingConnections();
+
+    sf::Packet joinReq;
+    joinReq << NetworkProtocol::PacketType::JoinMatch << NetworkProtocol::JoinMatchRequest{ matchCode };
+    ASSERT_EQ(guest.send(joinReq), sf::Socket::Status::Done);
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingPackets();
+
+    const auto& matches = server.getMatches();
+    ASSERT_EQ(matches.at(matchCode).playerIDs.size(), 2);
+
+    // Guest disconnects first
+    guest.disconnect();
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingPackets();
+    server.processDisconnects();
+
+    // Verify match still exists with only 1 player remaining (Host)
+    EXPECT_EQ(server.getClients().size(), 1);
+    ASSERT_EQ(matches.count(matchCode), 1) << "Match was prematurely destroyed when guest left.";
+    EXPECT_EQ(matches.at(matchCode).playerIDs.size(), 1);
+
+    // Host disconnects last
+    host.disconnect();
+    ASSERT_TRUE(server.getSelector().wait(sf::milliseconds(50)));
+    server.handleIncomingPackets();
+    server.processDisconnects();
+
+    // Verify match is deleted when player count hits zero
+    EXPECT_EQ(server.getClients().size(), 0);
+    EXPECT_EQ(matches.size(), 0) << "Match was not cleaned up after the host left.";
+}
