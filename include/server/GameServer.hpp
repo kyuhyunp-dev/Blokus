@@ -23,7 +23,7 @@ namespace sf
 class GameServer 
 {
 public:
-    GameServer(unsigned short port = ServerPort);
+    GameServer(unsigned short port = 8080);
     void run();
 
 protected: // for run and unit test

@@ -7,3 +7,8 @@ out
 .vscode
 .DS_Store
 assets/shared
+
+# Ignore generated TLS certificates and keys
+certs/*.key
+certs/*.crt
+certs/*.pem

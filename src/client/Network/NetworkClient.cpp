@@ -1,6 +1,7 @@
 #include "Network/NetworkClient.hpp"
 #include <SFML/Network/IpAddress.hpp>
 #include <spdlog/spdlog.h>
+#include <chrono>
 
 
 NetworkClient::NetworkClient()
@@ -24,7 +25,12 @@ bool NetworkClient::connect(std::string_view ip, unsigned short port)
     mSocket.setBlocking(true);
 
     // Attempt to connect with a 5-second timeout
+    auto start = std::chrono::steady_clock::now();
     sf::Socket::Status status = mSocket.connect(address.value(), port, sf::seconds(5.f));
+    auto end = std::chrono::steady_clock::now();
+
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    spdlog::info("Connection established in {} µs", duration.count());
 
     if (status == sf::Socket::Status::Done)
     {

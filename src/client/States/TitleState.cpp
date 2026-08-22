@@ -7,6 +7,7 @@
 #include "Network/NetworkClient.hpp"
 #include "shared/Network/NetworkProtocol.hpp"
 
+#include <SFML/Network/IpAddress.hpp>
 #include <spdlog/spdlog.h>
 
 
@@ -38,8 +39,11 @@ TitleState::TitleState(StateStack& stack, Context context)
 		mIsConnecting = true;
 		mConnectionFuture = std::async(std::launch::async, [this]()
 		{
+			sf::IpAddress serverIp = sf::IpAddress::LocalHost; // Or "127.0.0.1"
+			unsigned short serverPort = 8081; // Stunnel's public TLS port
+
 			spdlog::info("[TitleState] Attempting to connect to server");
-			return getContext().networkClient->connect(IpAddress, ServerPort);
+			return getContext().networkClient->connect(serverIp.toString(), serverPort);
 		});
 
 		mStatusLabel->setText("Connecting...");
