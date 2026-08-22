@@ -6,11 +6,6 @@
 #include <cstdint>
 
 
-inline constexpr int ServerPort = 49152;
-inline constexpr std::string_view IpAddress = "192.168.0.104"; // Home 
-//"10.167.189.28"; // Library
-//"127.0.0.1"; // Local
-
 namespace NetworkProtocol 
 {
     enum class PacketType : uint8_t 
