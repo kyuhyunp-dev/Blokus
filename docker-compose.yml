@@ -1,7 +1,9 @@
 services:
   # Your C++ Game Server Container
   game-server:
-    build: .                 # Tells Docker to run the Dockerfile above
+    build: 
+      context: .
+      dockerfile: Dockerfile
     expose:
       - "8080"               # Opens port 8080 to Stunnel (but hides it from the internet)
     networks:
@@ -9,14 +11,14 @@ services:
 
   # The Stunnel Proxy Container
   stunnel:
-    image: alpine:latest
-    command: >
-      sh -c "apk add --no-cache stunnel && stunnel /etc/stunnel/stunnel.conf"
+    build:
+      context: .
+      dockerfile: Dockerfile.stunnel
     ports:
       - "443:443"
     volumes:
-      - ./stunnel.conf:/etc/stunnel/stunnel.conf
-      - ./certs:/etc/stunnel/certs
+      - ./stunnel.conf:/etc/stunnel/stunnel.conf:ro
+      - ./certs:/etc/stunnel/certs:ro
     networks:
       - game-network
     depends_on:

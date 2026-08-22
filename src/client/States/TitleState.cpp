@@ -7,6 +7,7 @@
 #include "Network/NetworkClient.hpp"
 #include "shared/Network/NetworkProtocol.hpp"
 
+#include <SFML/Network/IpAddress.hpp>
 #include <spdlog/spdlog.h>
 
 

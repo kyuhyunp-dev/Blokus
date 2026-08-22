@@ -1,0 +1,10 @@
+FROM alpine:3.20.2
+
+# Pre-install stunnel at build time
+RUN apk add --no-cache stunnel
+
+# Expose port 443
+EXPOSE 443
+
+# Start stunnel directly
+CMD ["stunnel", "/etc/stunnel/stunnel.conf"]

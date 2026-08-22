@@ -8,4 +8,7 @@ cmake-build-*/
 .idea/
 .git/
 
+# Local TLS files are mounted at runtime by Docker Compose.
+certs/
+
 run_game.sh

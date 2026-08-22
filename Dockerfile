@@ -26,5 +26,10 @@ RUN mkdir build && cd build && \
     cmake .. && \
     cmake --build .
 
+# Run the game as a non-root user
+RUN useradd --system --create-home --uid 10001 gameserver \
+    && chown -R gameserver:gameserver /app
+USER gameserver
+
 # 5. Tell the container to run the compiled game server on startup
 CMD ["./build/bin/BlokusServer"]
