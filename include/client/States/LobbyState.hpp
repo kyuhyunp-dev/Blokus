@@ -8,8 +8,6 @@
 #include <SFML/Graphics/Sprite.hpp>
 #include <SFML/Graphics/Texture.hpp>
 
-#include <map>
-
 
 class LobbyState : public State
 {
