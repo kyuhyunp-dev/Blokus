@@ -48,13 +48,19 @@ cmake ..
 cmake --build .
 ```
 #### Run Tests
+Move to project folder
 ```
-./bin/tests/BlokusClientTests
-./bin/tests/BlokusSharedTests
+cd ..
+```
+Run tests
+```
+./build/bin/tests/BlokusClientTests
+./build/bin/tests/BlokusSharedTests
+./build/bin/tests/BlokusServerTests
 ```
 #### Run Game
 ```
-./bin/BlokusClient
+./run_game.sh
 ```
 
 #### Debug Unit Test

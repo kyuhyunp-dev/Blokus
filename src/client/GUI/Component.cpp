@@ -2,37 +2,62 @@
 
 
 GUI::Component::Component()
-    : mIsSelected(false)
-    , mIsActive(false)
-    {
-    }
-
-bool GUI::Component::isSelected() const
+    : mIsHovered(false)
+    , mIsPressed(false)
+    , mIsFocused(false)
 {
-    return mIsSelected; 
 }
 
-void GUI::Component::select()
+bool GUI::Component::isHovered() const
 {
-    mIsSelected = true;
+    return mIsHovered; 
 }
 
-void GUI::Component::deselect()
+void GUI::Component::hover()
 {
-    mIsSelected = false;
+    mIsHovered = true;
 }
 
-bool GUI::Component::isActive() const
+void GUI::Component::unhover()
 {
-    return mIsActive;
+    mIsHovered = false;
 }
 
-void GUI::Component::activate()
+bool GUI::Component::isPressed() const
 {
-    mIsActive = true;
+    return mIsPressed;
 }
 
-void GUI::Component::deactivate()
+void GUI::Component::press(std::optional<sf::Vector2f> worldMousePos)
 {
-    mIsActive = false;
+    mIsPressed = true;
+}
+
+void GUI::Component::release(std::optional<sf::Vector2f> worldMousePos)
+{
+    mIsPressed = false;
+}
+
+bool GUI::Component::isFocused() const
+{
+    return mIsFocused;
+}
+		
+void GUI::Component::focus()
+{
+    mIsFocused = true;
+}
+
+void GUI::Component::unfocus()	
+{
+    mIsFocused = false;
+}
+
+void GUI::Component::update(sf::Time)
+{
+};
+
+std::optional<sf::Cursor::Type> GUI::Component::getMouseCursorType() const
+{
+    return std::nullopt;
 }

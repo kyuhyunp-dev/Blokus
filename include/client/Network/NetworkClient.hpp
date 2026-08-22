@@ -10,15 +10,16 @@ class NetworkClient
 {
 public:
     NetworkClient();
-    
-    bool connect(const std::string& ip, unsigned short port);
+    virtual ~NetworkClient() = default; 
+
+    virtual bool connect(std::string_view ip, unsigned short port);
     void disconnect();
     
     // Core communication mechanics
-    void sendPacket(sf::Packet& packet);
-    bool pollPacket(sf::Packet& outPacket); // Non-blocking read
+    virtual void sendPacket(sf::Packet& packet);
+    virtual bool pollPacket(sf::Packet& outPacket); // Non-blocking read
     
-    bool isConnected() const;
+    virtual bool isConnected() const;
 
 private:
     sf::TcpSocket mSocket;         // The actual data pipe

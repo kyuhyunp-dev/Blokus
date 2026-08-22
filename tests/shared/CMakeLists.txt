@@ -7,6 +7,7 @@ target_include_directories(BlokusSharedMocks INTERFACE
 
 # Build the test executable
 add_executable(BlokusSharedTests
+    NetworkProtocolUnittest.cc
     PolyominoUtilsUnittest.cc
     RefereeUnittest.cc
     # add other test files here

@@ -2,7 +2,7 @@
 #define LOBBY_STATE_HPP
 
 #include "States/State.hpp"
-#include "shared/Game/GameSessionData.hpp"
+#include "shared/Network/GameSessionData.hpp"
 
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/Graphics/Sprite.hpp>

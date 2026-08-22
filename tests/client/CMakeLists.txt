@@ -1,7 +1,10 @@
 # Build the test executable
 add_executable(BlokusClientTests
     Command/CommandQueueUnittest.cc
+    GUI/ButtonUnittest.cc
     GUI/ContainerUnittest.cc
+    GUI/LabelUnittest.cc
+    GUI/TextBoxUnittest.cc
     Network/NetworkClientUnittest.cc
     Nodes/SceneNodeUnittest.cc
     Nodes/PieceNodeUnittest.cc
@@ -13,6 +16,7 @@ add_executable(BlokusClientTests
     States/NetworkGameStateUnittest.cc
     States/StateStackUnittest.cc
     States/TitleStateUnittest.cc
+    # States/UsernameStateUnittest.cc
     ApplicationUnittest.cc
     PlayerUnittest.cc
     StatisticsTrackerUnittest.cc

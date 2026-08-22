@@ -7,8 +7,35 @@ FetchContent_Declare(
     EXCLUDE_FROM_ALL
     SYSTEM
 )
+
+set(gtest_build_shared_libs OFF CACHE BOOL "" FORCE)
+set(gmock_build_shared_libs OFF CACHE BOOL "" FORCE)
+
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE) # For Windows compatibility
+
+set(BUILD_SHARED_LIBS_BACKUP ${BUILD_SHARED_LIBS})
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+
 FetchContent_MakeAvailable(googletest)
+
+set(BUILD_SHARED_LIBS ${BUILD_SHARED_LIBS_BACKUP} CACHE BOOL "" FORCE)
+
+# Forcefully strip the DLL expectation macro from all GoogleTest interface targets
+foreach(tgt gtest gtest_main gmock gmock_main)
+    if(TARGET ${tgt})
+        # Clear existing definitions
+        set_property(TARGET ${tgt} PROPERTY INTERFACE_COMPILE_DEFINITIONS)
+        
+        #  Hard-code GTest to think it is static
+        target_compile_definitions(${tgt} INTERFACE 
+            GTEST_HAS_DLL=0
+            GTEST_LINKED_AS_SHARED_LIBRARY=0
+        )
+        
+        #  Ensure MSVC doesn't try to look for import libs
+        set_target_properties(${tgt} PROPERTIES IMPORTED_IMPLIB "")
+    endif()
+endforeach()
 
 # Make GoogleTest commands available to all subdirectories
 include(GoogleTest)
@@ -18,6 +45,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/tests)
 
 # Route to the workers
 add_subdirectory(shared)
+add_subdirectory(server)
 add_subdirectory(client)
 
 

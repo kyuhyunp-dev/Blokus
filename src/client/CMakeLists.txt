@@ -2,8 +2,11 @@
 add_library(BlokusClientLib STATIC
 Command/Command.cpp
 Command/CommandQueue.cpp
+GUI/Button.cpp
 GUI/Component.cpp
 GUI/Container.cpp
+GUI/Label.cpp
+GUI/TextBox.cpp
 Network/NetworkClient.cpp
 Nodes/Arena.cpp
 Nodes/BlockNode.cpp  
@@ -16,6 +19,7 @@ States/NetworkGameState.cpp
 States/State.cpp
 States/StateStack.cpp
 States/TitleState.cpp
+States/UsernameState.cpp
 ClientUtility.cpp
 Application.cpp
 Path.cpp
@@ -40,20 +44,6 @@ add_executable(BlokusClient Main.cpp)
 # Link dependencies
 target_link_libraries(BlokusClient PRIVATE
     BlokusClientLib
-)
-
-# Define PIECES_PATH and ASSETS_PATH
-target_compile_definitions(BlokusClient PRIVATE 
-)
-
-# Assets copy (Portability)
-# This copies the client-specific assets to the build folder automatically
-add_custom_command(
-    TARGET BlokusClient POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/assets"
-        "$<TARGET_FILE_DIR:BlokusClient>/assets"
-    COMMENT "Deploying all assets to build directory..."
 )
 
 # Install

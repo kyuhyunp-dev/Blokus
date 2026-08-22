@@ -6,7 +6,7 @@
 #include "States/StateStack.hpp"
 #include "StatisticsTracker.hpp"
 #include "Network/NetworkClient.hpp"
-#include "shared/Game/GameSessionData.hpp"
+#include "shared/Network/GameSessionData.hpp"
 #include "shared/PolyominoUtil.hpp"
 
 #include <SFML/System/Time.hpp>
