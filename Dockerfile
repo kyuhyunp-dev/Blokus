@@ -6,15 +6,21 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     cmake \
     git \
+    libmbedtls-dev \
+    libssh2-1-dev \
+    libharfbuzz-dev \
     libfreetype6-dev \
+    libx11-dev \
     libxrandr-dev \
     libxcursor-dev \
     libxi-dev \
     libudev-dev \
+    libgl1-mesa-dev \
+    libegl1-mesa-dev \
     libopengl-dev \
     libflac-dev \
+    libogg-dev \
     libvorbis-dev \
-    libgl1-mesa-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # 3. Copy your C++ source code into the container

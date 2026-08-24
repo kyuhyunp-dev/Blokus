@@ -18,7 +18,7 @@ include(FetchContent)
 # Fetch SFML
 FetchContent_Declare(SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 3.0.1
+    GIT_TAG 3.1.0
     GIT_PROGRESS ON
     EXCLUDE_FROM_ALL
     SYSTEM)
