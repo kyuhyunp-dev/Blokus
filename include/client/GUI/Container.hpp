@@ -34,9 +34,9 @@ namespace GUI
         
     private:
         std::vector<Component::Ptr> mChildren;
-        std::optional<int> mHoveredChild;
-        std::optional<int> mFocusedChild;
-        std::optional<int> mPressedChild;
+        std::optional<std::size_t> mHoveredChild;
+        std::optional<std::size_t> mFocusedChild;
+        std::optional<std::size_t> mPressedChild;
         bool mIsDraggingBackground;
 
         friend class ContainerTest;
