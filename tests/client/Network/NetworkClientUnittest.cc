@@ -39,7 +39,7 @@ TEST_F(NetworkClientTest, InitiallyDisconnected)
 TEST_F(NetworkClientTest, ConnectFailsOnInvalidPort) 
 {
     // Port 54321 is arbitrary and extremely likely to be dead
-    bool success = mClient.connect("127.0.0.1", 54321, "localhost", false);
+    bool success = mClient.connect("127.0.0.1", 54321);
     
     EXPECT_FALSE(success);
     EXPECT_FALSE(mClient.isConnected());
@@ -52,7 +52,7 @@ TEST_F(NetworkClientTest, ConnectSuccessAndDisconnect)
     std::atomic<bool> clientAccepted{false};
     
     unsigned short port = startDummyServer(listener, serverSideSocket, clientAccepted);
-    bool success = mClient.connect("127.0.0.1", port, "localhost", false);
+    bool success = mClient.connect("127.0.0.1", port);
     
     // Tiny window for the background thread to finish accepting
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
@@ -73,7 +73,7 @@ TEST_F(NetworkClientTest, SendAndPollPacket)
     std::atomic<bool> clientAccepted{false};
     
     unsigned short port = startDummyServer(listener, serverSideSocket, clientAccepted);
-    ASSERT_TRUE(mClient.connect("127.0.0.1", port, "localhost", false));
+    ASSERT_TRUE(mClient.connect("127.0.0.1", port));
     
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 
@@ -126,7 +126,7 @@ TEST_F(NetworkClientTest, HandlesServerDisconnect)
     std::atomic<bool> clientAccepted{false};
     
     unsigned short port = startDummyServer(listener, serverSideSocket, clientAccepted);
-    ASSERT_TRUE(mClient.connect("127.0.0.1", port, "localhost", false));
+    ASSERT_TRUE(mClient.connect("127.0.0.1", port));
     
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 

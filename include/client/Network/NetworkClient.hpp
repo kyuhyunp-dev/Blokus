@@ -12,7 +12,7 @@ public:
     NetworkClient();
     virtual ~NetworkClient() = default; 
 
-    virtual bool connect(std::string_view ip, unsigned short port, std::string_view tlsHostname, bool verifyPeer);
+    virtual bool connect(std::string_view ip, unsigned short port);
     void disconnect();
     
     // Core communication mechanics

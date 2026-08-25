@@ -12,8 +12,7 @@ NetworkClient::NetworkClient()
 {
 }
 
-bool NetworkClient::connect(std::string_view ip, unsigned short port, 
-    std::string_view tlsHostname, bool verifyPeer)
+bool NetworkClient::connect(std::string_view ip, unsigned short port)
 {
     // In SFML 3.x, IP addresses must be safely resolved
     auto address = sf::Dns::resolve(ip);
@@ -31,22 +30,12 @@ bool NetworkClient::connect(std::string_view ip, unsigned short port,
 
     if (status == sf::Socket::Status::Done)
     {
-        spdlog::info("[NetworkClient] TCP successfully connected to {}:{}", tlsHostname, port);
-
-        sf::TcpSocket::TlsStatus tlsStatus = mSocket.setupTlsClient(tlsHostname, verifyPeer);
-        if (tlsStatus != sf::TcpSocket::TlsStatus::HandshakeComplete)
-        {
-            spdlog::error("[NetworkClient] TLS Handshake failed for hostname: {}", tlsHostname);
-            mSocket.disconnect();
-            return false;
-        }
-
         mIsConnected = true; 
 
         // Set to non-blocking for continuous pollEvent 
         mSocket.setBlocking(false); 
 
-        spdlog::info("[NetworkClient] Successfully established TLS connection to {}:{}", tlsHostname, port);
+        spdlog::info("[NetworkClient] Successfully established TLS connection to {}:{}", ip, port);
         return true;
     }
     else

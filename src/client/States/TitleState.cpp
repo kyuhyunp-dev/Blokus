@@ -40,13 +40,11 @@ TitleState::TitleState(StateStack& stack, Context context)
 		mConnectionFuture = std::async(std::launch::async, [this]()
 		{
 			sf::IpAddress serverIp = sf::IpAddress::LocalHost;
-			unsigned short serverPort = 443;
+			unsigned short serverPort = 8081;
 
 			spdlog::info("[TitleState] Attempting to connect to server");
 			return getContext().networkClient->connect(
-				serverIp.toString(), serverPort,
-				"localhost", 
-				false
+				serverIp.toString(), serverPort
 			);
 		});
 

@@ -40,8 +40,6 @@ private:
 	GUI::Container mGUIContainer;
 	std::future<bool> mConnectionFuture;
 	bool mIsConnecting = false;
-
-	std::chrono::time_point<std::chrono::steady_clock> mRttStart;
 };
 
 #endif
