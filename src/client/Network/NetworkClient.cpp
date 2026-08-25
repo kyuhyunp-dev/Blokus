@@ -1,4 +1,5 @@
 #include "Network/NetworkClient.hpp"
+#include <SFML/Network/Dns.hpp>
 #include <SFML/Network/IpAddress.hpp>
 #include <spdlog/spdlog.h>
 #include <chrono>
@@ -11,11 +12,12 @@ NetworkClient::NetworkClient()
 {
 }
 
-bool NetworkClient::connect(std::string_view ip, unsigned short port)
+bool NetworkClient::connect(std::string_view ip, unsigned short port, 
+    std::string_view tlsHostname, bool verifyPeer)
 {
     // In SFML 3.x, IP addresses must be safely resolved
-    std::optional<sf::IpAddress> address = sf::IpAddress::resolve(ip);
-    if (!address) 
+    auto address = sf::Dns::resolve(ip);
+    if (!address || (*address).empty()) 
     {
         spdlog::error("[NetworkClient] Failed to resolve IP address: {}", ip);        
         return false;
@@ -25,21 +27,26 @@ bool NetworkClient::connect(std::string_view ip, unsigned short port)
     mSocket.setBlocking(true);
 
     // Attempt to connect with a 5-second timeout
-    auto start = std::chrono::steady_clock::now();
-    sf::Socket::Status status = mSocket.connect(address.value(), port, sf::seconds(5.f));
-    auto end = std::chrono::steady_clock::now();
-
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    spdlog::info("Connection established in {} µs", duration.count());
+    sf::Socket::Status status = mSocket.connect((*address).front(), port, sf::seconds(5.f));
 
     if (status == sf::Socket::Status::Done)
     {
-        mIsConnected = true;
-        
+        spdlog::info("[NetworkClient] TCP successfully connected to {}:{}", tlsHostname, port);
+
+        sf::TcpSocket::TlsStatus tlsStatus = mSocket.setupTlsClient(tlsHostname, verifyPeer);
+        if (tlsStatus != sf::TcpSocket::TlsStatus::HandshakeComplete)
+        {
+            spdlog::error("[NetworkClient] TLS Handshake failed for hostname: {}", tlsHostname);
+            mSocket.disconnect();
+            return false;
+        }
+
+        mIsConnected = true; 
+
         // Set to non-blocking for continuous pollEvent 
         mSocket.setBlocking(false); 
-        
-        spdlog::info("[NetworkClient] Successfully connected to {}:{}", ip, port);
+
+        spdlog::info("[NetworkClient] Successfully established TLS connection to {}:{}", tlsHostname, port);
         return true;
     }
     else

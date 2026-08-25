@@ -13,7 +13,7 @@ class MockNetworkClient : public NetworkClient
 {
 public:
     MOCK_METHOD(bool, isConnected, (), (const, override));
-    MOCK_METHOD(bool, connect, (std::string_view ip, unsigned short), (override));
+    MOCK_METHOD(bool, connect, (std::string_view ip, unsigned short port, std::string_view tlsHostname, bool verifyPeer), (override));
     MOCK_METHOD(void, sendPacket, (sf::Packet&), (override));
     MOCK_METHOD(bool, pollPacket, (sf::Packet&), (override));
 };
