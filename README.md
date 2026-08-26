@@ -3,51 +3,32 @@ Blokus game, built in C++ using the [SFML](https://github.com/SFML/SFML) library
 
 Continuous integration using a basic GitHub action. 
 
-## Project Design
 
-## Project Features
-
-### Features To Build
-- Move pieces with the mouse
-- Game Tutorial
-- One vs one on the same computer
-
-## Gameplay
-
-## Run Blokus
-[CMake](https://cmake.org/download/) is used to configure and build (note that you may need to download `ninja`). On Linux, install SFML's dependencies using your system package manager. On Ubuntu and other Debian-based distributions, you can use the following commands:
+## Run Blokus 
+Start the Server
 ```
-sudo apt update
-sudo apt install \
-    libxrandr-dev \
-    libxcursor-dev \
-    libxi-dev \
-    libudev-dev \
-    libfreetype-dev \
-    libflac-dev \
-    libvorbis-dev \
-    libgl1-mesa-dev \
-    libegl1-mesa-dev \
-    libfreetype-dev
+docker compose up --build 
 ```
 
+Start the Client
+```
+./build/bin/BlokusClient
+```
 
-### Terminal
-
-#### Create build directory
+### Create build directory
 ```
 mkdir build
 ```
-#### Configure
+### Configure
 ```
 cd build
 cmake ..
 ```
-#### Build
+### Build
 ```
 cmake --build .
 ```
-#### Run Tests
+### Run Tests
 Move to project folder
 ```
 cd ..
@@ -58,12 +39,8 @@ Run tests
 ./build/bin/tests/BlokusSharedTests
 ./build/bin/tests/BlokusServerTests
 ```
-#### Run Game
-```
-./run_game.sh
-```
 
-#### Debug Unit Test
+### Debug Unit Test
 - Run Unit test on lldb
 ```
 lldb ./bin/tests/BlokusClientTests
