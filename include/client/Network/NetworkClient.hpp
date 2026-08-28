@@ -97,14 +97,8 @@ public:
             return;
         }
 
-        sf::Socket::Status status = mSocket.send(packet);
-
-        if (status == sf::Socket::Status::Disconnected)
-        {
-            mIsConnected = false;
-            mSocket.disconnect();
-            spdlog::warn("[NetworkClient] Lost connection while sending packet.");
-        }
+        mOutgoingQueue.push_back(packet);
+        flushOutgoingQueue();
     }
 
     virtual bool pollPacket(sf::Packet& outPacket)
@@ -137,11 +131,45 @@ public:
 
     SocketType& getSocket() { return mSocket; }
 
+    void flushOutgoingQueue()
+    {
+        if (!mIsConnected)
+        { 
+            return;
+        }
+        
+
+        while (!mOutgoingQueue.empty())
+        {
+            sf::Packet& packet = mOutgoingQueue.front();
+            sf::Socket::Status status = mSocket.send(packet);
+
+            if (status == sf::Socket::Status::Done)
+            {
+                mOutgoingQueue.pop_front(); // Successfully sent
+            }
+            else if (status == sf::Socket::Status::Partial || status == sf::Socket::Status::NotReady)
+            {
+                // Socket buffer is full or blocked. Keep packet at front and retry next tick.
+                break;
+            }
+            else
+            {
+                // Disconnected or Error
+                mIsConnected = false;
+                mSocket.disconnect();
+                mOutgoingQueue.clear();
+                spdlog::warn("[NetworkClient] Lost connection during packet send.");
+                break;
+            }
+        }
+    }
+    
 private:
     SocketType mSocket;         // The actual data pipe
     bool mIsConnected;    // Track if our pipe is open
     sf::Clock mPingClock;      // Useful if you ever add basic heartbeat checks
-
+    std::deque<sf::Packet> mOutgoingQueue;
 };
 
 using NetworkClient = NetworkClientImpl<sf::TcpSocket>;

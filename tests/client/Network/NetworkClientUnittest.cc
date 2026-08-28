@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include "Network/NetworkClient.hpp"
 #include "Mock/Network/MockTcpSocket.hpp"
-
 #include <SFML/Network/TcpListener.hpp>
+#include <SFML/Network/TcpSocket.hpp>
 #include <SFML/Network/Packet.hpp>
 #include <thread>
 #include <chrono>
@@ -116,6 +116,33 @@ TEST_F(NetworkClientTest, SendAndPollFailure)
     EXPECT_FALSE(mClient.pollPacket(receivedPacket));
 
     EXPECT_FALSE(mClient.isConnected());
+}
+
+TEST_F(NetworkClientTest, SendPacketHandlesRetries) 
+{
+    // Connect client
+    EXPECT_CALL(mMockSocket, setBlocking(_)).Times(2);
+    EXPECT_CALL(mMockSocket, connect(_, _, _)).WillOnce(Return(sf::Socket::Status::Done));
+    EXPECT_CALL(mMockSocket, setupTlsClient(_, _)).WillOnce(Return(sf::TcpSocket::TlsStatus::HandshakeComplete));
+    ASSERT_TRUE(mClient.connect("127.0.0.1", 8080, "localhost", false));
+
+    sf::Packet packet;
+    packet << "Large Data Payload";
+
+    EXPECT_CALL(mMockSocket, send(_))
+        .WillOnce(Return(sf::Socket::Status::NotReady));
+    
+    mClient.sendPacket(packet);
+
+    EXPECT_CALL(mMockSocket, send(_))
+        .WillOnce(Return(sf::Socket::Status::Partial));
+
+    mClient.flushOutgoingQueue();
+    
+    EXPECT_CALL(mMockSocket, send(_))
+        .WillOnce(Return(sf::Socket::Status::Done));
+
+    mClient.flushOutgoingQueue();
 }
 
 TEST_F(NetworkClientTest, HandlesTlsHandshakeFailure) 
