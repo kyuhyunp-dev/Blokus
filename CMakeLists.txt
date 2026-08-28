@@ -46,10 +46,16 @@ foreach(OUTPUTCONFIG IN LISTS CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG_UPPER} ${CMAKE_BINARY_DIR}/lib)
 endforeach()
 
-# Copy assets to the main bin directory for the client executable
-file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR}/bin)
-# Copy assets to the tests directory so GTest can find them independently
-file(COPY ${CMAKE_SOURCE_DIR}/assets DESTINATION ${CMAKE_BINARY_DIR}/bin/tests)
+# Build-Time Asset Sync
+add_custom_target(CopyAssets ALL
+    COMMAND ${CMAKE_COMMAND} -E copy_directory 
+        "${CMAKE_SOURCE_DIR}/assets" 
+        "${CMAKE_BINARY_DIR}/bin/assets"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory 
+        "${CMAKE_SOURCE_DIR}/assets" 
+        "${CMAKE_BINARY_DIR}/bin/tests/assets"
+    COMMENT "Synchronizing assets to build directories..."
+)
 
 set(CMAKE_SKIP_BUILD_RPATH FALSE)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH FALSE)

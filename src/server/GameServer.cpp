@@ -346,7 +346,7 @@ void GameServer::flushOutgoingQueues()
             { // Successful send
                 client.outgoingQueue.pop_front(); 
             } 
-            else if (status == sf::Socket::Status::Partial) 
+            else if (status == sf::Socket::Status::Partial || status == sf::Socket::Status::NotReady) 
             { // The OS buffer is full. Stop trying to send for this client on this tick
                 break; 
             }

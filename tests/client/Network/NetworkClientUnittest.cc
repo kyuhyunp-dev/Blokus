@@ -1,144 +1,180 @@
 #include <gtest/gtest.h>
 #include "Network/NetworkClient.hpp"
+#include "Mock/Network/MockTcpSocket.hpp"
 #include <SFML/Network/TcpListener.hpp>
 #include <SFML/Network/TcpSocket.hpp>
 #include <SFML/Network/Packet.hpp>
 #include <thread>
 #include <chrono>
 #include <atomic>
-        
 
-class NetworkClientTest : public ::testing::Test {
+
+class NetworkClientTest : public ::testing::Test 
+{
 protected:
-    NetworkClient mClient;
-
-    // Helper function to create a temporary dummy server for testing connections.
-    // It binds to port 0 (letting the OS pick a free port) and returns that port.
-    unsigned short startDummyServer(sf::TcpListener& listener, sf::TcpSocket& serverSideSocket, std::atomic<bool>& clientAccepted) 
-    {
-        // Listen on any available port
-        EXPECT_EQ(listener.listen(0), sf::Socket::Status::Done);
-        unsigned short port = listener.getLocalPort();
-
-        // Spin up a background thread to accept the incoming connection
-        std::thread([&listener, &serverSideSocket, &clientAccepted]() {
-            if (listener.accept(serverSideSocket) == sf::Socket::Status::Done) {
-                clientAccepted = true;
-            }
-        }).detach();
-
-        return port;
-    }
+    // We instantiate the template using our Mock socket instead of the real one
+    NetworkClientImpl<MockTcpSocket> mClient;
+    MockTcpSocket& mMockSocket = mClient.getSocket();
 };
+
 
 TEST_F(NetworkClientTest, InitiallyDisconnected) 
 {
     EXPECT_FALSE(mClient.isConnected());
+
+    sf::Packet outPacket;
+    EXPECT_NO_THROW(mClient.sendPacket(outPacket));
+
+    sf::Packet receivedPacket;
+    EXPECT_FALSE(mClient.pollPacket(receivedPacket));
 }
 
-TEST_F(NetworkClientTest, ConnectFailsOnInvalidPort) 
+TEST_F(NetworkClientTest, ConnectFailsAtTcpLevel) 
 {
-    // Port 54321 is arbitrary and extremely likely to be dead
+    EXPECT_CALL(mMockSocket, setBlocking(true)).Times(1);
+    
+    // Simulate a hard TCP rejection (e.g., dead port)
+    EXPECT_CALL(mMockSocket, connect(_, _, _))
+        .WillOnce(Return(sf::Socket::Status::Error));
+
     bool success = mClient.connect("127.0.0.1", 54321, "localhost", false);
     
     EXPECT_FALSE(success);
     EXPECT_FALSE(mClient.isConnected());
 }
 
-TEST_F(NetworkClientTest, ConnectSuccessAndDisconnect) 
+TEST_F(NetworkClientTest, SendPollSuccess) 
 {
-    sf::TcpListener listener;
-    sf::TcpSocket serverSideSocket;
-    std::atomic<bool> clientAccepted{false};
+    // Expect the setup sequence
+    EXPECT_CALL(mMockSocket, setBlocking(true)).Times(1);
+    EXPECT_CALL(mMockSocket, connect(_, _, _)).WillOnce(Return(sf::Socket::Status::Done));
+    EXPECT_CALL(mMockSocket, setBlocking(false)).Times(1);
     
-    unsigned short port = startDummyServer(listener, serverSideSocket, clientAccepted);
-    bool success = mClient.connect("127.0.0.1", port, "localhost", false);
-    
-    // Tiny window for the background thread to finish accepting
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    // Simulate an instant, perfect TLS handshake. 
+    // This bypasses the 5-second selector.wait() loop completely!
+    EXPECT_CALL(mMockSocket, setupTlsClient(_, _))
+        .WillOnce(Return(sf::TcpSocket::TlsStatus::HandshakeComplete));
 
-    EXPECT_TRUE(success);
+    // Execute
+    EXPECT_TRUE(mClient.connect("127.0.0.1", 8080, "localhost", false));
     EXPECT_TRUE(mClient.isConnected());
-    EXPECT_TRUE(clientAccepted);
+    
+    // Send and poll packet
+    sf::Packet outPacket;
+    outPacket << "Client to Server";
+    EXPECT_NO_THROW(mClient.sendPacket(outPacket));
 
-    // Explicit disconnect
+    sf::Packet simulatedServerPacket;
+    simulatedServerPacket << "Server to Client";
+    
+    EXPECT_CALL(mMockSocket, receive(_))
+        .WillOnce(DoAll(
+            SetArgReferee<0>(simulatedServerPacket),
+            Return(sf::Socket::Status::Done)
+        ));
+
+    sf::Packet receivedPacket;
+    EXPECT_TRUE(mClient.pollPacket(receivedPacket));
+
+    std::string receivedMessage;
+    receivedPacket >> receivedMessage;
+    EXPECT_EQ(receivedMessage, "Server to Client");
+
+    EXPECT_CALL(mMockSocket, disconnect()).Times(1);
     mClient.disconnect();
     EXPECT_FALSE(mClient.isConnected());
 }
 
-TEST_F(NetworkClientTest, SendAndPollPacket) 
+TEST_F(NetworkClientTest, SendAndPollFailure) 
 {
-    sf::TcpListener listener;
-    sf::TcpSocket serverSideSocket;
-    std::atomic<bool> clientAccepted{false};
+    // Expect the setup sequence
+    EXPECT_CALL(mMockSocket, setBlocking(true)).Times(1);
+    EXPECT_CALL(mMockSocket, connect(_, _, _)).WillOnce(Return(sf::Socket::Status::Done));
+    EXPECT_CALL(mMockSocket, setBlocking(false)).Times(1);
     
-    unsigned short port = startDummyServer(listener, serverSideSocket, clientAccepted);
-    ASSERT_TRUE(mClient.connect("127.0.0.1", port, "localhost", false));
-    
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    // Simulate an instant, perfect TLS handshake. 
+    // This bypasses the 5-second selector.wait() loop completely!
+    EXPECT_CALL(mMockSocket, setupTlsClient(_, _))
+        .WillOnce(Return(sf::TcpSocket::TlsStatus::HandshakeComplete));
 
-    // Sending (Client -> Server) 
+    // Execute
+    EXPECT_TRUE(mClient.connect("127.0.0.1", 8080, "localhost", false));
+    EXPECT_TRUE(mClient.isConnected());
+
     sf::Packet outPacket;
-    outPacket << "Ping";
-    mClient.sendPacket(outPacket);
+    outPacket << "Client to Server";
+    EXPECT_NO_THROW(mClient.sendPacket(outPacket));
 
-    sf::Packet receivedByServer;
-
-    // Server socket is blocking by default, so it will wait for the packet
-    ASSERT_EQ(serverSideSocket.receive(receivedByServer), sf::Socket::Status::Done);
+    sf::Packet simulatedServerPacket;
+    simulatedServerPacket << "Server to Client";
     
-    std::string serverMsg;
-    receivedByServer >> serverMsg;
-    EXPECT_EQ(serverMsg, "Ping");
+    EXPECT_CALL(mMockSocket, receive(_))
+        .WillOnce(Return(sf::Socket::Status::Disconnected));
+    EXPECT_CALL(mMockSocket, disconnect()).Times(1);
 
-    // Polling (Server -> Client) 
-    sf::Packet serverReply;
-    serverReply << "Pong";
-    sf::Socket::Status status = serverSideSocket.send(serverReply);
-    ASSERT_TRUE(status == sf::Socket::Status::Done);
-    
-    // Because pollPacket is non-blocking, we need to poll a few times in case 
-    sf::Packet receivedByClient;
-    bool gotPacket = false;
-    int numTries = 0;
-    while (!gotPacket || numTries < 3) 
-    {
-        if (mClient.pollPacket(receivedByClient)) 
-        {
-            gotPacket = true;
-            break;  
-        }
+    sf::Packet receivedPacket;
+    EXPECT_FALSE(mClient.pollPacket(receivedPacket));
 
-        ++numTries;
-        std::this_thread::sleep_for(std::chrono::milliseconds(10));
-    }
-
-    ASSERT_TRUE(gotPacket);
-    std::string clientMsg;
-    receivedByClient >> clientMsg;
-    EXPECT_EQ(clientMsg, "Pong");
+    EXPECT_FALSE(mClient.isConnected());
 }
 
-TEST_F(NetworkClientTest, HandlesServerDisconnect) 
+TEST_F(NetworkClientTest, SendPacketHandlesRetries) 
 {
-    sf::TcpListener listener;
-    sf::TcpSocket serverSideSocket;
-    std::atomic<bool> clientAccepted{false};
-    
-    unsigned short port = startDummyServer(listener, serverSideSocket, clientAccepted);
-    ASSERT_TRUE(mClient.connect("127.0.0.1", port, "localhost", false));
-    
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    // Connect client
+    EXPECT_CALL(mMockSocket, setBlocking(_)).Times(2);
+    EXPECT_CALL(mMockSocket, connect(_, _, _)).WillOnce(Return(sf::Socket::Status::Done));
+    EXPECT_CALL(mMockSocket, setupTlsClient(_, _)).WillOnce(Return(sf::TcpSocket::TlsStatus::HandshakeComplete));
+    ASSERT_TRUE(mClient.connect("127.0.0.1", 8080, "localhost", false));
 
-    // Force the server to abruptly kill the connection
-    serverSideSocket.disconnect();
+    sf::Packet packet;
+    packet << "Large Data Payload";
+
+    EXPECT_CALL(mMockSocket, send(_))
+        .WillOnce(Return(sf::Socket::Status::NotReady));
     
-    // Give the OS a moment to register the broken pipe
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    mClient.sendPacket(packet);
+
+    EXPECT_CALL(mMockSocket, send(_))
+        .WillOnce(Return(sf::Socket::Status::Partial));
+
+    mClient.flushOutgoingQueue();
+    
+    EXPECT_CALL(mMockSocket, send(_))
+        .WillOnce(Return(sf::Socket::Status::Done));
+
+    mClient.flushOutgoingQueue();
+}
+
+TEST_F(NetworkClientTest, HandlesTlsHandshakeFailure) 
+{
+    EXPECT_CALL(mMockSocket, setBlocking(true)).Times(1);
+    EXPECT_CALL(mMockSocket, connect(_, _, _)).WillOnce(Return(sf::Socket::Status::Done));
+    EXPECT_CALL(mMockSocket, setBlocking(false)).Times(1);    
+
+    // Simulate a TLS failure (e.g., bad certificate)
+    EXPECT_CALL(mMockSocket, setupTlsClient(_, _))
+        .WillOnce(Return(sf::TcpSocket::TlsStatus::Error));
+    
+    // The client should cleanly disconnect upon TLS failure
+    EXPECT_CALL(mMockSocket, disconnect()).Times(1); // Once at start, once on fail
+
+    EXPECT_FALSE(mClient.connect("127.0.0.1", 8080, "localhost", false));
+    EXPECT_FALSE(mClient.isConnected());
+}
+
+TEST_F(NetworkClientTest, HandlesServerDisconnectDuringPoll) 
+{
+    // Setup a connected state directly for testing poll behavior
+    EXPECT_CALL(mMockSocket, connect(_, _, _)).WillOnce(Return(sf::Socket::Status::Done));
+    EXPECT_CALL(mMockSocket, setupTlsClient(_, _)).WillOnce(Return(sf::TcpSocket::TlsStatus::HandshakeComplete));
+    ASSERT_TRUE(mClient.connect("127.0.0.1", 8080, "localhost", false));
 
     sf::Packet emptyPacket;
     
-    // The poll should fail, detect the disconnect, and update internal state
+    // Simulate the server closing the connection abruptly during a read
+    EXPECT_CALL(mMockSocket, receive(_))
+        .WillOnce(Return(sf::Socket::Status::Disconnected));
+
     EXPECT_FALSE(mClient.pollPacket(emptyPacket));
     EXPECT_FALSE(mClient.isConnected());
 }

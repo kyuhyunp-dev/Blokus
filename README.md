@@ -1,39 +1,62 @@
 # Blokus (C++ / SFML / GoogleTest)
 Blokus game, built in C++ using the [SFML](https://github.com/SFML/SFML) library, unit-tested with [GoogleTest](https://github.com/google/googletest). 
 
-Continuous integration using a basic GitHub action. 
+Continuous integration is configured via GitHub Actions.
 
+## Title Page
+![Title Page](assets/client/textures/titlePage.png)
+
+## Prerequisites
+* **Docker Desktop:** Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/). Ensure the Docker app is actively running.
+* **CMake (v3.28+):** Required for configuring and building the client and tests.
 
 ## Run Blokus 
-Start the Server
+
+### Generate TLS Certificates (Stunnel Setup)
+To generate new self-signed certificates for encrypted connections, run:
+
 ```
-docker compose up --build 
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+  -keyout certs/server.key \
+  -out certs/server.crt \
+  -subj "/CN=localhost" \
+  -addext "subjectAltName=DNS:localhost"
+```
+### Start the Server
+- Start the server container in the background (the `-d` flag keeps your terminal free for the next commands)
+```
+docker compose up --build -d
 ```
 
-Start the Client
+### Stop the Server
+```
+docker compose down
+```
+
+### Build
+- Configure
+```
+cmake -B build
+```
+- Build
+```
+cmake --build build
+```
+
+### Start the Client
 ```
 ./build/bin/BlokusClient
 ```
 
-### Create build directory
+
+### Unit Testing 
+- Make sure you're in the project root directory
 ```
-mkdir build
+pwd
 ```
-### Configure
-```
-cd build
-cmake ..
-```
-### Build
-```
-cmake --build .
-```
-### Run Tests
-Move to project folder
-```
-cd ..
-```
-Run tests
+
+- Run Unit Tests
+
 ```
 ./build/bin/tests/BlokusClientTests
 ./build/bin/tests/BlokusSharedTests
@@ -43,36 +66,17 @@ Run tests
 ### Debug Unit Test
 - Run Unit test on lldb
 ```
-lldb ./bin/tests/BlokusClientTests
+lldb ./build/bin/tests/BlokusClientTests
 ```
 
-- Set Breakpoint Example
-```
-(lldb) b Player.cpp:45
-```
-
-`n` (next line)
-
-`s` (step into function)
-
-`p mHeldPiece` (print the value of a variable)
-
-`c` (continue to next breakpoint)
-
-- Backtrace Example
-```
-(lldb) run
-(lldb) bt
-```
-
-### Visual Studio
-`Ctrl+S` to configure
-
-Click `Build` in the menu bar and click `Build All`
-
-Run tests by choosing `BlokusClientTests` and the play button
-
-Run the app by selecting `BlokusClient` and the play button
+Common LLBD commands:
+- Set Breakpoint: `(lldb) b Player.cpp:45`
+- Run: `(lldb) run`
+- Next Line: `n`
+- Step Into: `s`
+- Print Variable: `p mHeldPiece`
+- Continue: `c`
+- Backtrace (on crash); `bt`
 
 
 ## Project Management

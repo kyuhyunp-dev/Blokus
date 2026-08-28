@@ -2,25 +2,12 @@
 FROM ubuntu:24.04
 
 # 2. Install compilers, CMake, and SFML dependencies
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends\
     build-essential \
     cmake \
     git \
     libmbedtls-dev \
     libssh2-1-dev \
-    libharfbuzz-dev \
-    libfreetype6-dev \
-    libx11-dev \
-    libxrandr-dev \
-    libxcursor-dev \
-    libxi-dev \
-    libudev-dev \
-    libgl1-mesa-dev \
-    libegl1-mesa-dev \
-    libopengl-dev \
-    libflac-dev \
-    libogg-dev \
-    libvorbis-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # 3. Copy your C++ source code into the container

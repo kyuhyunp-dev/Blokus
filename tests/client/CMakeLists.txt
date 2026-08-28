@@ -23,6 +23,10 @@ add_executable(BlokusClientTests
     # add other test files here
 )
 
+target_compile_definitions(BlokusClientTests PRIVATE 
+    TEST_ASSET_DIR="${CMAKE_SOURCE_DIR}/assets/"
+)
+
 if(BUILD_SHARED_LIBS)
     target_compile_definitions(BlokusClientTests
         PRIVATE
