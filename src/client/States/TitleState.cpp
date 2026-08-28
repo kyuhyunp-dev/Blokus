@@ -42,11 +42,15 @@ TitleState::TitleState(StateStack& stack, Context context)
 			sf::IpAddress serverIp = sf::IpAddress::LocalHost;
 			unsigned short serverPort = 443;
 
+#ifdef NDEBUG
+    constexpr bool verifyPeer = true;  // Enable verification in release builds
+#else
+    constexpr bool verifyPeer = false; // Disable verification for local dev / self-signed certs
+#endif
 			spdlog::info("[TitleState] Attempting to connect to server");
 			return getContext().networkClient->connect(
 				serverIp.toString(), serverPort,
-				"localhost", 
-				false
+				"localhost", verifyPeer
 			);
 		});
 

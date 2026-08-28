@@ -13,9 +13,13 @@ public:
     {
         // We catch the call and stay silent. 
         // Then we manually insert a dummy texture so 'get()' doesn't crash.
-        auto dummy = std::make_unique<sf::Font>();
+        auto dummy = std::make_unique<sf::Font>(
+            std::string(TEST_ASSET_DIR) + "client/fonts/sansation.ttf"
+        );
+
         insertResource(id, std::move(dummy));
     }
+
 };
 
 #endif
