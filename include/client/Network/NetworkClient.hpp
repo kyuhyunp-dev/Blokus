@@ -8,6 +8,7 @@
 #include <SFML/System/Clock.hpp>
 #include <spdlog/spdlog.h>
 #include <chrono>
+#include <deque>
 
 
 template <typename SocketType = sf::TcpSocket>
