@@ -13,16 +13,20 @@ namespace NetworkProtocol
         // Matchmaking 
         CreateMatch,
         JoinMatch,
-        MatchJoined, // Ack
-        MatchJoinFailed 
+        
+        // Ack
+        MatchJoined, 
+        MatchJoinFailed,
+
+        // Username
+        CreateUsername,
+        
+        // Ack
+        UsernameCreated,
+        AlreadyRegistered
+
     };
-    
-    enum class JoinError : uint8_t 
-    {
-        MatchFull,
-        MatchNotFound,
-        AlreadyInMatch
-    };
+
 
     // Operators for sending and receiving PacketTypes
     inline sf::Packet& operator<<(sf::Packet& packet, PacketType type) 
@@ -38,6 +42,9 @@ namespace NetworkProtocol
         return packet;
     }
 
+// ----------------------------------------------------------------    
+
+    // Packet JoinMatch
     struct JoinMatchRequest 
     { // Client -> Server
         std::string matchCode;
@@ -53,7 +60,7 @@ namespace NetworkProtocol
         return packet >> request.matchCode;
     }
 
-
+    // Packet MatchJoined
     struct MatchJoinedResponse 
     { // Server -> Client
         std::string matchCode;
@@ -69,7 +76,15 @@ namespace NetworkProtocol
         return packet >> response.matchCode;
     }
 
+    // Reasons for MatchJoinFailed
+    enum class JoinError : uint8_t 
+    {
+        MatchFull,
+        MatchNotFound,
+        AlreadyInMatch
+    };
 
+    // Packet MatchJoinFailed
     struct MatchJoinFailedResponse 
     { // Server -> Client
         JoinError reason;
@@ -87,6 +102,39 @@ namespace NetworkProtocol
         response.reason = static_cast<JoinError>(reason);
         return packet;
     }
+
+
+// ----------------------------------------------------------------    
+    struct CreateUsernameRequest
+    {
+        std::string username;
+    };
+
+    inline sf::Packet& operator<<(sf::Packet& packet, const CreateUsernameRequest& request) 
+    {
+        return packet << request.username;
+    }
+
+    inline sf::Packet& operator>>(sf::Packet& packet, CreateUsernameRequest& request) 
+    {
+        return packet >> request.username;
+    }
+
+    struct UsernameCreatedResponse 
+    {
+        std::string username;
+    };
+
+    inline sf::Packet& operator<<(sf::Packet& packet, const UsernameCreatedResponse& response) 
+    {
+        return packet << response.username;
+    }
+
+    inline sf::Packet& operator>>(sf::Packet& packet, UsernameCreatedResponse& response) 
+    {
+        return packet >> response.username;
+    }
 }
+
 
 #endif
